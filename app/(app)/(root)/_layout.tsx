@@ -1,13 +1,11 @@
 import useAuth from "@/hooks/useAuth";
-import { router, SplashScreen, Stack } from "expo-router";
-import { useEffect, useState } from "react";
-import SplashScreenComponent from "@/components/SplashScreen";
+import { Redirect, router, SplashScreen, Stack } from "expo-router";
+import { useEffect } from "react";
 
 export default function RootLayout() {
   const { isAuthenticated, isInitialized } = useAuth();
-  const [preloading, setLoading] = useState(true);
   useEffect(() => {
-    console.log("rooter", isAuthenticated);
+    console.log("root mounted");
     if (isAuthenticated) {
       router.replace("/(tabs)");
     }
@@ -19,9 +17,10 @@ export default function RootLayout() {
     }
   }, [isInitialized]);
 
-//   if (preloading) {
-//     return <SplashScreenComponent />;
-//   }
+  if(!isAuthenticated) {
+    return <Redirect href="/landing" />
+  }
+
 
   return (
     <Stack>

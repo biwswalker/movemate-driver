@@ -7,10 +7,11 @@ import {
 } from "react-native";
 import hexToRgba from "hex-to-rgba";
 import Colors from "@constants/colors";
+import { normalize } from "@/utils/normalizeSize";
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 8,
+    borderRadius: normalize(8),
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
@@ -31,16 +32,16 @@ const styles = StyleSheet.create({
     backgroundColor: hexToRgba(Colors.primary.main, 0.16),
   },
   buttonSM: {
-    padding: 4,
+    padding: normalize(4),
   },
   buttonMD: {
-    padding: 8,
+    padding: normalize(8),
   },
   buttonLG: {
-    padding: 16,
+    padding: normalize(16),
   },
   buttonCircle: {
-    borderRadius: 30,
+    borderRadius: normalize(30),
   },
   fullwidth: {
     width: "100%",

@@ -57,6 +57,7 @@ export default function Landing() {
   }
 
   if (isAuthenticated || !isInitialized) {
+    // router.replace("/(app)/(root)");
     return <SplashScreen />;
   }
 

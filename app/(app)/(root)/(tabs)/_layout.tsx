@@ -1,43 +1,28 @@
 import { Tabs } from "expo-router";
 import React from "react";
-
-import { TabBarIcon } from "@/components/navigation/TabBarIcon";
-import { Colors } from "@constants/colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { tabStyles, IconItem } from "@/components/navigation/TabBarIcon";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
+        tabBarStyle: [tabStyles.shadow, tabStyles.tabBar],
+        tabBarShowLabel: false,
       }}
     >
+      <Tabs.Screen name="index" options={{ tabBarButton: IconItem("home") }} />
       <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon
-              name={focused ? "home" : "home-outline"}
-              color={color}
-            />
-          ),
-        }}
+        name="shipment"
+        options={{ tabBarButton: IconItem("shipment") }}
       />
       <Tabs.Screen
-        name="explore"
-        options={{
-          title: "Explore",
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon
-              name={focused ? "code-slash" : "code-slash-outline"}
-              color={color}
-            />
-          ),
-        }}
+        name="finance"
+        options={{ tabBarButton: IconItem("finance") }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ tabBarButton: IconItem("profile") }}
       />
     </Tabs>
   );

@@ -1,0 +1,14 @@
+mutation OtpRequest($phoneNumber: String!, $action: String!) {
+  otpRequest(action: $action, phoneNumber: $phoneNumber) {
+    _id
+    phoneNumber
+    otp
+    ref
+    action
+    sentDateTime
+    countdown
+    expireDateTime
+    createdAt
+    updatedAt
+  }
+}

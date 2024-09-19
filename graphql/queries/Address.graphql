@@ -1,0 +1,27 @@
+query GetProvince {
+  getProvince {
+    id
+    geographyId
+    nameTh
+    nameEn
+  }
+}
+
+query GetDistrict($provinceThName: String) {
+  getDistrict(provinceThName: $provinceThName) {
+    id
+    provinceId
+    nameTh
+    nameEn
+  }
+}
+
+query GetSubDistrict($districtName: String) {
+  getSubDistrict(districtName: $districtName) {
+    id
+    amphureId
+    zipCode
+    nameTh
+    nameEn
+  }
+}

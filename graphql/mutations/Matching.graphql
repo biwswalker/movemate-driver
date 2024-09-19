@@ -1,0 +1,19 @@
+mutation AcceptShipment($shipmentId: String!) {
+  acceptShipment(shipmentId: $shipmentId)
+}
+
+mutation ConfirmShipmentDatetime($data: ConfirmShipmentDateInput!) {
+  confirmShipmentDatetime(data: $data)
+}
+
+mutation NextShipmentStep($data: NextShipmentStepInput!) {
+  nextShipmentStep(data: $data)
+}
+
+mutation SentPODDocument($data: SentPODDocumentShipmentStepInput!) {
+  sentPODDocument(data: $data)
+}
+
+mutation MarkAsFinish($shipmentId: String!) {
+  markAsFinish(shipmentId: $shipmentId)
+}

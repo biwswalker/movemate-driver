@@ -1,0 +1,8 @@
+mutation FileUpload($file: Upload!) {
+  file_upload(file: $file) {
+    fileId
+    filename
+    mimetype
+    url
+  }
+}

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "movemate-driver",
+    "name": "Movemate Driver",
     "slug": "movemate-driver",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "movemateth",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -19,7 +19,9 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "googleServicesFile": "./google-services.json",
+      "package": "com.movemateth.driver"
     },
     "web": {
       "bundler": "metro",
@@ -27,10 +29,22 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "อนุญาตให้ $(PRODUCT_NAME) เข้าถึงรูปภาพของคุณ",
+          "cameraPermission": "อนุญาตให้ $(PRODUCT_NAME) เข้าถึงกล้องของคุณ"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ffa954ec-4262-44f0-979e-af3c531cadfc"
+      }
     }
   }
 }

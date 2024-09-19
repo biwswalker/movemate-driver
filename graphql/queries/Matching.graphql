@@ -1,0 +1,719 @@
+query GetAvailableShipment(
+  $status: String!
+  $limit: Int
+  $sortField: [String!]
+  $sortAscending: Boolean
+  $skip: Int
+) {
+  getAvailableShipment(
+    status: $status
+    limit: $limit
+    sortField: $sortField
+    sortAscending: $sortAscending
+    skip: $skip
+  ) {
+    _id
+    trackingNumber
+    status
+    adminAcceptanceStatus
+    driverAcceptanceStatus
+    displayDistance
+    displayTime
+    distance
+    returnDistance
+    isRoundedReturn
+    isBookingWithDate
+    bookingDateTime
+    refId
+    remark
+    createdAt
+    updatedAt
+    deliveredDate
+    cancellationReason
+    cancellationDetail
+    customer {
+      _id
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      validationStatus
+      registration
+      lastestOTP
+      lastestOTPRef
+      lastestOTPTime
+      isVerifiedEmail
+      isVerifiedPhoneNumber
+      acceptPolicyVersion
+      acceptPolicyTime
+      createdAt
+      updatedAt
+      individualDetail {
+        _id
+        userNumber
+        email
+        title
+        otherTitle
+        firstname
+        lastname
+        phoneNumber
+        taxId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        fullname
+      }
+      businessDetail {
+        _id
+        userNumber
+        businessTitle
+        businessName
+        businessBranch
+        businessType
+        businessTypeOther
+        taxNumber
+        address
+        province
+        district
+        subDistrict
+        postcode
+        contactNumber
+        businessEmail
+        paymentMethod
+        acceptedEDocumentDate
+        acceptedPoliciesVersion
+        acceptedPoliciesDate
+        acceptedTermConditionVersion
+        acceptedTermConditionDate
+        changePaymentMethodRequest
+      }
+    }
+    requestedDriver {
+      _id
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      validationStatus
+      registration
+      lastestOTP
+      lastestOTPRef
+      lastestOTPTime
+      isVerifiedEmail
+      isVerifiedPhoneNumber
+      acceptPolicyVersion
+      acceptPolicyTime
+      createdAt
+      updatedAt
+      individualDriver {
+        _id
+        title
+        otherTitle
+        firstname
+        lastname
+        taxId
+        phoneNumber
+        lineId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        bank
+        bankBranch
+        bankName
+        bankNumber
+        fullname
+      }
+    }
+    destinations {
+      placeId
+      name
+      detail
+      contactName
+      contactNumber
+      customerRemark
+      location {
+        latitude
+        longitude
+      }
+    }
+    vehicleId {
+      _id
+      type
+      isPublic
+      isLarger
+      name
+      width
+      length
+      height
+      maxCapacity
+      details
+      createdAt
+      updatedAt
+      image {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+    }
+    additionalImages {
+      _id
+      fileId
+      filename
+      mimetype
+      createdAt
+      updatedAt
+    }
+    currentStepSeq
+    steps {
+      _id
+      step
+      seq
+      stepName
+      customerMessage
+      driverMessage
+      stepStatus
+      createdAt
+      updatedAt
+      images {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+    }
+    refund {
+      _id
+      paymentDate
+      paymentTime
+    }
+    payment {
+      _id
+      status
+      paymentMethod
+      createdAt
+      updatedAt
+      calculation {
+        subTotalDropPointCost
+        subTotalDropPointPrice
+        subTotalCost
+        subTotalPrice
+        subTotalRoundedCost
+        subTotalRoundedPrice
+        totalCost
+        totalPrice
+      }
+      invoice {
+        totalCost
+      }
+    }
+  }
+  totalAvailableShipment(status: $status)
+}
+
+query GetAvailableShipmentByTrackingNumber($tracking: String!) {
+  getAvailableShipmentByTrackingNumber(tracking: $tracking) {
+    _id
+    trackingNumber
+    status
+    adminAcceptanceStatus
+    driverAcceptanceStatus
+    displayDistance
+    displayTime
+    distance
+    returnDistance
+    isRoundedReturn
+    isBookingWithDate
+    bookingDateTime
+    refId
+    remark
+    createdAt
+    updatedAt
+    deliveredDate
+    cancellationReason
+    cancellationDetail
+    customer {
+      _id
+      email
+      fullname
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      validationStatus
+      registration
+      lastestOTP
+      lastestOTPRef
+      lastestOTPTime
+      isVerifiedEmail
+      isVerifiedPhoneNumber
+      acceptPolicyVersion
+      acceptPolicyTime
+      createdAt
+      updatedAt
+      profileImage {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+      individualDetail {
+        _id
+        userNumber
+        email
+        title
+        otherTitle
+        firstname
+        lastname
+        phoneNumber
+        taxId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        fullname
+      }
+      businessDetail {
+        _id
+        userNumber
+        businessTitle
+        businessName
+        businessBranch
+        businessType
+        businessTypeOther
+        taxNumber
+        address
+        province
+        district
+        subDistrict
+        postcode
+        contactNumber
+        businessEmail
+        paymentMethod
+        acceptedEDocumentDate
+        acceptedPoliciesVersion
+        acceptedPoliciesDate
+        acceptedTermConditionVersion
+        acceptedTermConditionDate
+        changePaymentMethodRequest
+        creditPayment {
+          _id
+          isSameAddress
+          financialFirstname
+          financialLastname
+          financialContactNumber
+          financialContactEmails
+          financialAddress
+          financialPostcode
+          financialProvince
+          financialDistrict
+          financialSubDistrict
+          billedDateType
+          billedRoundType
+          acceptedFirstCreditTermDate
+          creditLimit
+          creditUsage
+          billedDate {
+            jan
+            feb
+            mar
+            apr
+            may
+            jun
+            jul
+            aug
+            sep
+            oct
+            nov
+            dec
+          }
+          billedRound {
+            jan
+            feb
+            mar
+            apr
+            may
+            jun
+            jul
+            aug
+            sep
+            oct
+            nov
+            dec
+          }
+          businessRegistrationCertificateFile {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyIDAuthorizedSignatoryFile {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          certificateValueAddedTaxRegistrationFile {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+        }
+        cashPayment {
+          _id
+          acceptedEReceiptDate
+        }
+      }
+    }
+    requestedDriver {
+      _id
+      email
+      fullname
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      validationStatus
+      registration
+      lastestOTP
+      lastestOTPRef
+      lastestOTPTime
+      isVerifiedEmail
+      isVerifiedPhoneNumber
+      acceptPolicyVersion
+      acceptPolicyTime
+      createdAt
+      updatedAt
+    }
+    destinations {
+      placeId
+      name
+      detail
+      contactName
+      contactNumber
+      customerRemark
+      location {
+        latitude
+        longitude
+      }
+    }
+    vehicleId {
+      _id
+      type
+      isPublic
+      isLarger
+      name
+      width
+      length
+      height
+      maxCapacity
+      maxDroppoint
+      details
+      createdAt
+      updatedAt
+      image {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+    }
+    additionalServices {
+      _id
+      cost
+      price
+      createdAt
+      updatedAt
+      reference {
+        _id
+        available
+        type
+        cost
+        price
+        createdAt
+        updatedAt
+        additionalService {
+          _id
+          type
+          name
+          permanent
+          status
+          createdAt
+          updatedAt
+          descriptions {
+            _id
+            detail
+            vehicleTypes {
+              _id
+              type
+              isPublic
+              isLarger
+              name
+              width
+              length
+              height
+              maxCapacity
+              maxDroppoint
+              details
+              createdAt
+              updatedAt
+              image {
+                _id
+                fileId
+                filename
+                mimetype
+                createdAt
+                updatedAt
+              }
+            }
+          }
+        }
+      }
+    }
+    distances {
+      _id
+      from
+      to
+      unit
+      cost
+      price
+      benefits
+    }
+    podDetail {
+      fullname
+      address
+      province
+      district
+      subDistrict
+      postcode
+      phoneNumber
+      remark
+    }
+    discountId {
+      _id
+      status
+      name
+      code
+      startDate
+      endDate
+      discount
+      unit
+      minPrice
+      maxDiscountPrice
+      isInfinity
+      usedAmout
+      limitAmout
+      description
+      createdAt
+      updatedAt
+    }
+    additionalImages {
+      _id
+      fileId
+      filename
+      mimetype
+      createdAt
+      updatedAt
+    }
+    directionId {
+      _id
+      rawData
+    }
+    currentStepSeq
+    steps {
+      _id
+      step
+      seq
+      stepName
+      customerMessage
+      driverMessage
+      stepStatus
+      createdAt
+      updatedAt
+      images {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+    }
+    payment {
+      _id
+      status
+      paymentNumber
+      paymentMethod
+      rejectionOtherReason
+      rejectionReason
+      createdAt
+      updatedAt
+      calculation {
+        subTotalDropPointCost
+        subTotalDropPointPrice
+        subTotalCost
+        subTotalPrice
+        subTotalRoundedCost
+        subTotalRoundedPrice
+        totalCost
+        totalPrice
+        calculations {
+          _id
+          from
+          to
+          unit
+          cost
+          price
+          benefits
+          createdAt
+          updatedAt
+          costResult
+          priceResult
+        }
+      }
+      cashDetail {
+        bank
+        bankName
+        bankNumber
+        paymentDate
+        paymentTime
+        imageEvidence {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+      }
+      creditDetail {
+        name
+        address
+        province
+        district
+        subDistrict
+        postcode
+        contactNumber
+      }
+      invoice {
+        shippingPrices {
+          label
+          price
+          cost
+        }
+        discounts {
+          label
+          price
+          cost
+        }
+        additionalServices {
+          label
+          price
+          cost
+        }
+        taxs {
+          label
+          price
+          cost
+        }
+        subTotalCost
+        subTotalPrice
+        totalCost
+        totalPrice
+      }
+    }
+    driver {
+      _id
+      email
+      fullname
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      validationStatus
+      registration
+      lastestOTP
+      lastestOTPRef
+      lastestOTPTime
+      isVerifiedEmail
+      isVerifiedPhoneNumber
+      acceptPolicyVersion
+      acceptPolicyTime
+      createdAt
+      updatedAt
+      individualDriver {
+        _id
+        title
+        otherTitle
+        firstname
+        lastname
+        taxId
+        phoneNumber
+        lineId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        bank
+        bankBranch
+        bankName
+        bankNumber
+        fullname
+      }
+      profileImage {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+    }
+    refund {
+      _id
+      imageEvidence {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+      paymentDate
+      paymentTime
+      createdAt
+      updatedAt
+    }
+  }
+}

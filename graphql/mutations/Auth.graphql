@@ -1,0 +1,91 @@
+mutation Login($username: String!) {
+  login(username: $username) {
+    token
+    requireAcceptedPolicy
+    requirePasswordChange
+    user {
+      _id
+      userNumber
+      userType
+      username
+      remark
+      status
+      validationStatus
+      registration
+      lastestOTP
+      lastestOTPRef
+      isVerifiedEmail
+      isVerifiedPhoneNumber
+      acceptPolicyVersion
+      acceptPolicyTime
+      createdAt
+      updatedAt
+      userRole
+      fullname
+      lastestOTPTime
+      profileImage {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+      individualDriver {
+        _id
+        title
+        otherTitle
+        firstname
+        lastname
+        taxId
+        phoneNumber
+        lineId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        bank
+        bankBranch
+        bankName
+        bankNumber
+        fullname
+        balance
+        serviceVehicleType {
+          _id
+          type
+          isPublic
+          isLarger
+          name
+          width
+          length
+          height
+          maxCapacity
+          details
+          createdAt
+          updatedAt
+          image {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    }
+  }
+}
+
+mutation Logout {
+  logout
+}
+
+mutation ChangePassword($data: PasswordChangeInput!) {
+  changePassword(data: $data)
+}
+
+mutation StoreFCM($fcmToken: String!) {
+  storeFCM(fcmToken: $fcmToken)
+}

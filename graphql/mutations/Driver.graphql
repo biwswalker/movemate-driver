@@ -1,0 +1,31 @@
+mutation IndividualDriverRegister($data: IndividualDriverRegisterInput!) {
+  individualDriverRegister(data: $data) {
+    phoneNumber
+    driverType
+  }
+}
+
+mutation VerifyIndiividualDriverData($data: IndividualDriverDetailInput!) {
+  verifyIndiividualDriverData(data: $data) {
+    policyVersion
+    driverType
+    title
+    otherTitle
+    firstname
+    lastname
+    taxId
+    phoneNumber
+    lineId
+    password
+    address
+    province
+    district
+    subDistrict
+    postcode
+    bank
+    bankBranch
+    bankName
+    bankNumber
+    serviceVehicleType
+  }
+}

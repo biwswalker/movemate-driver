@@ -1,0 +1,8 @@
+query GetDriverPoliciesInfo {
+  getDriverPoliciesInfo {
+    driverPolicies
+    version
+    createdAt
+    updatedAt
+  }
+}

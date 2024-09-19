@@ -1,0 +1,51 @@
+query GetVehicleTypeAvailable {
+  getVehicleTypeAvailable {
+    _id
+    type
+    isPublic
+    isLarger
+    name
+    width
+    length
+    height
+    maxCapacity
+    details
+    maxDroppoint
+    createdAt
+    updatedAt
+    image {
+      _id
+      fileId
+      filename
+      mimetype
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+query GetVehicleTypeById($id: String!) {
+  getVehicleTypeById(id: $id) {
+    _id
+    type
+    isPublic
+    isLarger
+    name
+    width
+    length
+    height
+    maxCapacity
+    details
+    maxDroppoint
+    createdAt
+    updatedAt
+    image {
+      _id
+      fileId
+      filename
+      mimetype
+      createdAt
+      updatedAt
+    }
+  }
+}

@@ -5,7 +5,13 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@assets/*": ["./assets/*"],
+      "@utils/*": ["./utils/*"],
+      "@components/*": ["./components/*"],
+      "@constants/*": ["./constants/*"],
+      "@graphql/*": ["./graphql/*"],
+      "@services/*": ["./services/*"],
     }
   },
   "include": [

@@ -1,0 +1,31 @@
+query GetTransaction(
+  $limit: Int
+  $sortField: [String!]
+  $sortAscending: Boolean
+  $skip: Int
+) {
+  getTransaction(
+    limit: $limit
+    sortField: $sortField
+    sortAscending: $sortAscending
+    skip: $skip
+  ) {
+    _id
+    ownerId
+    ownerType
+    refId
+    refType
+    amount
+    transactionType
+    description
+    status
+    createdAt
+    updatedAt
+  }
+  calculateTransaction {
+    totalPending
+    totalIncome
+    totalOutcome
+    totalOverall
+  }
+}

@@ -69,7 +69,6 @@ export default function AccountHeader({ style: containerStyle = {} }: AccountHea
           {notificationCount > 0 && (
             <Badge
               style={[styles.notificationBadge]}
-              size={normalize(20)}
               theme={{
                 fonts: { default: { fontFamily: getFontVarient().fontFamily } },
               }}>

@@ -120,7 +120,7 @@ interface IndividualParam {
 export default function RegisterIndividualScreen() {
   const { showSnackbar } = useSnackbar();
   const searchParam = useLocalSearchParams<{ param: string }>();
-  // const params = JSON.parse(searchParam.param) as IndividualParam;
+  const params = JSON.parse(searchParam.param) as IndividualParam;
 
   const { data: vehicleData } = useGetVehicleTypeAvailableQuery();
   const { data: prvinces, loading: provinceLoading } = useGetProvinceQuery();
@@ -143,7 +143,7 @@ export default function RegisterIndividualScreen() {
     driverType: Yup.string(),
     title: Yup.string().required("กรุณาเลือกคำนำหน้าชื่อ"),
     otherTitle: Yup.string().when("title", ([title], schema) =>
-      isEqual(title, "other")
+      isEqual(title, "อื่นๆ")
         ? schema.required("ระบุคำนำหน้าชื่อ")
         : schema.notRequired()
     ),
@@ -192,10 +192,8 @@ export default function RegisterIndividualScreen() {
   });
 
   const defaultValues: IndividualDriverFormValue = {
-    policyVersion: 0,
-    driverType: "",
-    // policyVersion: params.version || 0,
-    // driverType: params.driverType || "",
+    policyVersion: params.version || 0,
+    driverType: params.driverType || "",
     title: "",
     otherTitle: "",
     firstname: "",
@@ -328,6 +326,9 @@ export default function RegisterIndividualScreen() {
             labelField="label"
             valueField="value"
           />
+          {values.title === "อื่นๆ" && (
+            <RHFTextInput name="otherTitle" label="ระบุคำนำหน้าชื่อ*" />
+          )}
           <RHFTextInput name="firstname" label="ชื่อ*" />
           <RHFTextInput name="lastname" label="นามสกุล*" />
           <RHFTextInput

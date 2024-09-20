@@ -1,5 +1,5 @@
 import Colors from '@constants/colors';
-import { normBaseW } from '@utils/normalizeSize';
+import { normalize } from '@utils/normalizeSize';
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   image: {
-    width: normBaseW(132),
+    width: normalize(80),
     resizeMode: 'contain',
   },
 });

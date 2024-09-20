@@ -1,5 +1,5 @@
 import colors from "@constants/colors";
-import { normBaseH } from "@/utils/normalizeSize";
+import { normalize } from "@/utils/normalizeSize";
 import React, { ReactNode } from "react";
 import {
   GestureResponderEvent,
@@ -14,31 +14,31 @@ import { router } from "expo-router";
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: normBaseH(32),
-    paddingHorizontal: 32,
+    paddingVertical: normalize(32),
+    paddingHorizontal: normalize(32),
     flexDirection: "row",
     justifyContent: "flex-start",
     alignItems: "center",
-    gap: 16,
+    gap: normalize(16),
   },
   wrapper: {
     flex: 1,
   },
   actionWrapperLeft: {
     position: "absolute",
-    left: 32,
+    left: normalize(32),
     pointerEvents: "auto",
     zIndex: 1,
   },
   actionWrapperRight: {
     position: "absolute",
-    right: 32,
+    right: normalize(32),
     pointerEvents: "auto",
   },
   buttonWrapper: {
-    padding: 8,
+    padding: normalize(8),
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: normalize(8),
     borderColor: colors.divider,
   },
 });

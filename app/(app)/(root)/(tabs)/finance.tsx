@@ -1,15 +1,13 @@
 import React, { useMemo } from "react";
 import {
   FlatList,
-  ListRenderItem,
   ListRenderItemInfo,
-  SafeAreaView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import Text from "@components/Text";
-import { normBaseW } from "@utils/normalizeSize";
+import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
 import AccountHeader from "@components/AccountHeader";
@@ -23,6 +21,8 @@ import {
 } from "@graphql/generated/graphql";
 import colors from "@/constants/colors";
 import useAuth from "@/hooks/useAuth";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
 export default function Financial() {
   const { user } = useAuth();
@@ -33,6 +33,10 @@ export default function Financial() {
     [data?.getTransaction]
   );
 
+  function handleOnPressFinancial() {
+    router.push('/profile-detail')
+  }
+
   const balance = get(user, "individualDriver.balance", 0) || 0;
   return (
     <View style={styles.container}>
@@ -42,49 +46,54 @@ export default function Financial() {
           {user?.status === "pending" && <PendingApproval />}
         </View>
         <View style={styles.content}>
-          <View
-            style={[
-              styles.innerBoxWrapper,
-              { backgroundColor: hexToRgba(colors.primary.main, 0.08) },
-            ]}
-          >
-            <Iconify icon="ion:cash" color={colors.primary.dark} />
-            <Text
-              varient="body1"
-              style={{ color: colors.primary.dark, marginTop: 4 }}
+          <View style={styles.totalWrapper}>
+            <View
+              style={[
+                styles.innerBoxWrapper,
+                { backgroundColor: hexToRgba(colors.primary.main, 0.08) },
+              ]}
             >
-              รายได้ปัจจุบัน
-            </Text>
-            <Text varient="h4" style={{ color: colors.primary.dark }}>
-              {fNumber(balance, "0,0.0")} บาท
-            </Text>
-          </View>
-          <View style={[styles.innerBoxWrapper, { marginTop: 8 }]}>
-            <Iconify icon="streamline:piggy-bank" color={colors.success.main} />
-            <Text
-              varient="body1"
-              style={{ color: colors.success.dark, marginTop: 4 }}
-            >
-              รายได้ทั้งหมด
-            </Text>
-            <Text varient="h4" style={{ color: colors.success.dark }}>
-              {fNumber(data?.calculateTransaction.totalIncome || 0, "0,0.0")} บาท
-            </Text>
+              <Iconify icon="ion:cash" color={colors.primary.dark} />
+              <Text
+                varient="body2"
+                style={{ color: colors.primary.dark, marginTop: 4 }}
+              >
+                รายได้ปัจจุบัน
+              </Text>
+              <Text varient="h5" style={{ color: colors.primary.dark }}>
+                {fNumber(balance, "0,0.0")}
+              </Text>
+            </View>
+            <View style={[styles.innerBoxWrapper]}>
+              <Iconify
+                icon="streamline:piggy-bank"
+                color={colors.success.main}
+              />
+              <Text
+                varient="body2"
+                style={{ color: colors.success.dark, marginTop: 4 }}
+              >
+                รายได้ทั้งหมด
+              </Text>
+              <Text varient="h5" style={{ color: colors.success.dark }}>
+                {fNumber(data?.calculateTransaction.totalIncome || 0, "0,0.0")}{" "}
+              </Text>
+            </View>
           </View>
           <View style={styles.actionWrapper}>
-            <TouchableOpacity style={styles.buttonWrapper}>
+            {/* <TouchableOpacity style={styles.buttonWrapper}>
               <Iconify
                 icon="ant-design:bank-filled"
                 color={colors.text.primary}
-                size={16}
+                size={normalize(16)}
               />
               <Text varient="subtitle1">บัญชีบริษัท</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.buttonWrapper}>
+            </TouchableOpacity> */}
+            <TouchableOpacity style={styles.buttonWrapper} onPress={handleOnPressFinancial}>
               <Iconify
                 icon="uil:setting"
                 color={colors.text.primary}
-                size={16}
+                size={normalize(16)}
               />
               <Text varient="subtitle1">ตั้งค่าบัญชี</Text>
             </TouchableOpacity>
@@ -135,12 +144,12 @@ function PendingApproval() {
       <View style={styles.infoTextWrapper}>
         <Iconify
           icon="iconoir:warning-circle-solid"
-          size={18}
+          size={normalize(18)}
           color={colors.warning.dark}
           style={styles.iconWrapper}
         />
-        <Text varient="body2" color="primary" style={styles.infoText}>
-          บัญชีของคุณรอการตรวจสอบจากผู้ดูแล
+        <Text varient="body2" color="secondary" style={styles.infoText}>
+          {`บัญชีของคุณรอการตรวจสอบจากผู้ดูแล`}
         </Text>
       </View>
     </View>
@@ -149,12 +158,12 @@ function PendingApproval() {
 
 const finStyle = StyleSheet.create({
   container: {
-    marginVertical: 4,
-    paddingVertical: 8,
-    padding: 12,
-    borderRadius: 8,
+    marginVertical: normalize(4),
+    paddingVertical: normalize(8),
+    padding: normalize(12),
+    borderRadius: normalize(8),
     borderColor: colors.divider,
-    borderWidth: 1.5,
+    borderWidth: normalize(1.5),
   },
   trackingNumberWrapper: {
     flexDirection: "row",
@@ -189,7 +198,6 @@ function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -199,52 +207,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountContainer: {
-    paddingHorizontal: 32,
-    paddingBottom: 8,
+    paddingHorizontal: normalize(32),
+    paddingBottom: normalize(8),
   },
   contentWrapper: {
-    paddingTop: normBaseW(24),
-    alignItems: "center",
+    paddingTop: normalize(24),
+    // alignItems: "center",
   },
   textCenter: {
     textAlign: "center",
   },
   infoTextContainer: {
-    marginBottom: 24,
-    flexGrow: 1,
-    flex: 1,
-    width: "100%",
-    paddingHorizontal: 24,
+    marginBottom: normalize(24),
+    paddingHorizontal: normalize(24),
   },
   infoTextWrapper: {
     backgroundColor: hexToRgba(colors.warning.main, 0.08),
-    borderRadius: 8,
-    padding: 16,
+    padding: normalize(16),
+    borderRadius: normalize(8),
     gap: 4,
     flexDirection: "row",
     alignItems: "center",
   },
   iconWrapper: {
-    minWidth: 32,
+    minWidth: normalize(32),
   },
   infoText: {
     color: colors.warning.dark,
   },
   content: {
-    flex: 1,
+    // flex: 1,
+  },
+  totalWrapper: {
+    marginHorizontal: normalize(32),
+    borderRadius: normalize(8),
+    flexDirection: "row",
+    gap: 8,
   },
   innerBoxWrapper: {
-    marginHorizontal: 32,
-    borderRadius: 16,
+    flex: 1,
+    borderRadius: normalize(16),
     backgroundColor: hexToRgba(colors.success.main, 0.08),
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(16),
   },
   actionWrapper: {
-    marginTop: 24,
-    marginHorizontal: 32,
-    padding: 8,
-    borderRadius: 8,
+    marginTop: normalize(24),
+    marginHorizontal: normalize(32),
+    padding: normalize(8),
+    borderRadius: normalize(8),
     backgroundColor: colors.grey[100],
     flexDirection: "row",
     gap: 8,

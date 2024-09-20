@@ -1,16 +1,20 @@
 import React from "react";
-import { SafeAreaView, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Text from "@components/Text";
-import { normBaseW } from "@utils/normalizeSize";
+import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
-import AccountHeader from "@components/AccountHeader";
-import { Avatar } from "react-native-paper";
 import { imagePath } from "@utils/file";
 import { ScrollView } from "react-native-gesture-handler";
 import colors from "@/constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const styles = StyleSheet.create({
   container: {
@@ -20,35 +24,31 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
-  accountContainer: {
-    paddingHorizontal: 32,
-    paddingBottom: 8,
-  },
   contentWrapper: {
     flex: 1,
-    paddingTop: normBaseW(24),
+    paddingTop: normalize(24),
     alignItems: "center",
   },
   textCenter: {
     textAlign: "center",
   },
   infoTextContainer: {
-    marginBottom: 24,
+    marginBottom: normalize(24),
     flexGrow: 1,
     flex: 1,
     width: "100%",
-    paddingHorizontal: 24,
+    paddingHorizontal: normalize(24),
   },
   infoTextWrapper: {
     backgroundColor: hexToRgba(colors.warning.main, 0.08),
     borderRadius: 8,
-    padding: 16,
-    gap: 4,
+    padding: normalize(16),
+    gap: normalize(4),
     flexDirection: "row",
     alignItems: "center",
   },
   iconWrapper: {
-    minWidth: 32,
+    minWidth: normalize(32),
   },
   infoText: {
     color: colors.warning.dark,
@@ -57,16 +57,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   userInfoTextWrapper: {
-    paddingTop: 8,
+    paddingTop: normalize(8),
     alignItems: "center",
   },
   menuWrapper: {
     width: "100%",
-    paddingTop: 32,
-    paddingBottom: 104,
+    paddingTop: normalize(32),
+    paddingBottom: normalize(104),
   },
   menuItemWrapper: {
-    paddingTop: 8,
+    paddingTop: normalize(8),
     width: "100%",
   },
 });
@@ -76,7 +76,7 @@ export default function Profile() {
 
   function handleLogout() {
     logout();
-    router.replace('/landing')
+    router.replace("/landing");
   }
 
   const userImageUri = user?.profileImage
@@ -86,19 +86,17 @@ export default function Profile() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.wrapper}>
-        <AccountHeader style={styles.accountContainer} />
         <ScrollView>
           <View style={styles.contentWrapper}>
             {user?.status === "pending" && <PendingApproval />}
             <View style={styles.userInfoWrapper}>
-              <Avatar.Image
-                size={normBaseW(108)}
+              <Image
                 source={userImageUri}
+                tintColor={colors.text.secondary}
                 style={{
-                  backgroundColor: colors.common.white,
-                  borderColor: colors.divider,
-                  borderWidth: 1,
-                  borderStyle: "dashed",
+                  width: normalize(100),
+                  height: normalize(100),
+                  borderRadius: normalize(50),
                 }}
               />
               <View style={styles.userInfoTextWrapper}>
@@ -110,50 +108,50 @@ export default function Profile() {
             </View>
             <View style={[styles.menuWrapper]}>
               <Text
-                varient="caption"
+                varient="body2"
                 color="secondary"
-                style={[{ paddingHorizontal: 32 }]}
+                style={[{ paddingHorizontal: normalize(32) }]}
               >
                 ตั้งค่าโปรไฟล์
               </Text>
               <View style={styles.menuItemWrapper}>
                 <Item
                   label="ข้อมูลส่วนตัว"
-                  onPress={() => {}} // navigation.navigate("ProfileInfo")
+                  onPress={() => router.push('/profile-detail')}
                 />
                 <Item
                   label="ข้อมูลเอกสาร"
-                  onPress={() => {}} // navigation.navigate("ProfileInfo")
+                  onPress={() => router.push('/profile-document')}
                 />
                 <Item
                   label="งานขนส่ง/แจ้งเตือน"
-                  onPress={() => {}} // navigation.navigate("ProfileNotification")
+                  onPress={() => router.push('/profile-setting')}
                 />
               </View>
               <Text
-                varient="caption"
+                varient="body2"
                 color="secondary"
-                style={[{ paddingHorizontal: 32, paddingTop: 16 }]}
+                style={[{ paddingHorizontal: normalize(32), paddingTop: normalize(16) }]}
               >
                 ข้อกำหนด
               </Text>
               <View style={styles.menuItemWrapper}>
                 <Item
                   label="ข้อกำหนดการให้บริการ"
-                  onPress={() => {}} // navigation.navigate("ProfileTerm")
+                  onPress={() => router.push('/profile-policy')}
                 />
               </View>
               <View
                 style={{
                   alignItems: "flex-start",
-                  paddingHorizontal: 32,
-                  paddingTop: 16,
+                  paddingHorizontal: normalize(32),
+                  paddingTop: normalize(16),
                 }}
               >
                 <TouchableOpacity onPress={handleLogout}>
                   <Text
-                    varient="body2"
-                    style={{ width: normBaseW(64), color: colors.error.main }}
+                    varient="body1"
+                    style={{ width: normalize(64), color: colors.error.main }}
                   >
                     ลงชื่อออก
                   </Text>
@@ -173,7 +171,7 @@ function PendingApproval() {
       <View style={styles.infoTextWrapper}>
         <Iconify
           icon="iconoir:warning-circle-solid"
-          size={18}
+          size={normalize(18)}
           color={colors.warning.dark}
           style={styles.iconWrapper}
         />
@@ -188,10 +186,11 @@ function PendingApproval() {
 const itemStyled = StyleSheet.create({
   wrapper: {
     width: "100%",
-    paddingVertical: 8,
+    paddingVertical: normalize(12),
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 32,
+    alignItems: 'center',
+    paddingHorizontal: normalize(32),
   },
 });
 
@@ -210,7 +209,7 @@ function Item({ onPress, label }: ItemProps) {
         <Text varient="body1">{label}</Text>
         <Iconify
           icon="mi:chevron-right"
-          size={24}
+          size={normalize(16)}
           color={colors.text.primary}
         />
       </View>

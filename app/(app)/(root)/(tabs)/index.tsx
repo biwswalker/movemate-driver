@@ -88,7 +88,7 @@ export default function HomeScreen() {
                 data={menus}
                 value={activeMenu}
                 onChange={handleChangeTabMenu}
-                width={normalize(150)}
+                width={normalize(132)}
                 height={36}
               />
               <View

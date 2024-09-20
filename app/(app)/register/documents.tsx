@@ -14,6 +14,7 @@ import { isEmpty } from "lodash";
 import { fData } from "@utils/number";
 import { IndividualDriverFormValue } from "./individual";
 import { router, useLocalSearchParams } from "expo-router";
+import { normalize } from "@/utils/normalizeSize";
 
 const styles = StyleSheet.create({
   container: {
@@ -23,24 +24,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWrapper: {
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(32),
   },
   rowWrapper: {
     flexDirection: "row",
     gap: 8,
   },
   sectionContainer: {
-    paddingBottom: 32,
-    paddingHorizontal: 32,
+    paddingBottom: normalize(32),
+    paddingHorizontal: normalize(32),
   },
   documentList: {
-    gap: 12,
+    gap: normalize(12),
   },
   sectionTitleWrapper: {
-    paddingTop: 48,
+    paddingTop: normalize(48),
   },
   submitStyle: {
-    paddingTop: 32,
+    paddingTop: normalize(32),
   },
 });
 

@@ -6,6 +6,7 @@
 //   return <Icon {...props} />;
 // }
 
+import { normalize } from "@/utils/normalizeSize";
 import React from "react";
 import { Iconify as RNIconify } from "react-native-iconify";
 import { XmlProps } from "react-native-svg";
@@ -15,6 +16,10 @@ type Props = {
   size?: number;
 } & Omit<XmlProps, "xml">;
 
-export default function Iconify({ icon, size = 24, ...props }: Props) {
+export default function Iconify({
+  icon,
+  size = normalize(24),
+  ...props
+}: Props) {
   return <RNIconify {...props} size={size} icon={icon} />;
 }

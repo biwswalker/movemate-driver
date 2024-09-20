@@ -76,6 +76,7 @@ export const tabStyles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     justifyContent: "center",
+    height: normalize(40)
   },
   menuActive: {
     backgroundColor: colors.master.main,

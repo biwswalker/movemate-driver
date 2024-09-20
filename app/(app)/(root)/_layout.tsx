@@ -17,16 +17,31 @@ export default function RootLayout() {
     }
   }, [isInitialized]);
 
-  if(!isAuthenticated) {
-    return <Redirect href="/landing" />
+  if (!isAuthenticated) {
+    return <Redirect href="/landing" />;
   }
-
 
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="shipment-list"
+        options={{ headerShown: false, presentation: "fullScreenModal" }}
+      />
+      <Stack.Screen
+        name="profile-detail"
+        options={{ headerShown: false, presentation: "fullScreenModal" }}
+      />
+      <Stack.Screen
+        name="profile-document"
+        options={{ headerShown: false, presentation: "fullScreenModal" }}
+      />
+      <Stack.Screen
+        name="profile-setting"
+        options={{ headerShown: false, presentation: "fullScreenModal" }}
+      />
+      <Stack.Screen
+        name="profile-policy"
         options={{ headerShown: false, presentation: "fullScreenModal" }}
       />
     </Stack>

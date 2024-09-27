@@ -7,8 +7,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: [tabStyles.shadow, tabStyles.tabBar],
         tabBarShowLabel: false,
+        tabBarStyle: [tabStyles.shadow, tabStyles.tabBar],
       }}
     >
       <Tabs.Screen name="index" options={{ tabBarButton: IconItem("home") }} />

@@ -66,7 +66,6 @@ const styles = StyleSheet.create({
     paddingBottom: normalize(104),
   },
   menuItemWrapper: {
-    paddingTop: normalize(8),
     width: "100%",
   },
 });
@@ -110,7 +109,7 @@ export default function Profile() {
               <Text
                 varient="body2"
                 color="secondary"
-                style={[{ paddingHorizontal: normalize(32) }]}
+                style={[{ paddingHorizontal: normalize(16) }]}
               >
                 ตั้งค่าโปรไฟล์
               </Text>
@@ -131,7 +130,7 @@ export default function Profile() {
               <Text
                 varient="body2"
                 color="secondary"
-                style={[{ paddingHorizontal: normalize(32), paddingTop: normalize(16) }]}
+                style={[{ paddingHorizontal: normalize(16), paddingTop: normalize(16) }]}
               >
                 ข้อกำหนด
               </Text>
@@ -144,7 +143,7 @@ export default function Profile() {
               <View
                 style={{
                   alignItems: "flex-start",
-                  paddingHorizontal: normalize(32),
+                  paddingHorizontal: normalize(16),
                   paddingTop: normalize(16),
                 }}
               >
@@ -190,7 +189,7 @@ const itemStyled = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: 'center',
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
   },
 });
 

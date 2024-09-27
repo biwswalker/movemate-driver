@@ -56,6 +56,7 @@ export default function TabCarousel({
         const isActive = isEqual(value, item.value);
         return (
           <Button
+            fullWidth
             varient="soft"
             size="medium"
             color="inherit"

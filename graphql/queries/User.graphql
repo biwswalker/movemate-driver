@@ -19,6 +19,7 @@ query Me {
     updatedAt
     fullname
     fcmToken
+    drivingStatus
     profileImage {
       _id
       fileId
@@ -45,8 +46,99 @@ query Me {
       bankBranch
       bankName
       bankNumber
-      fullname
       balance
+      fullname
+      documents {
+        _id
+        frontOfVehicle {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        backOfVehicle {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        leftOfVehicle {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        rigthOfVehicle {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyVehicleRegistration {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyIDCard {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyDrivingLicense {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyBookBank {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyHouseRegistration {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        insurancePolicy {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        criminalRecordCheckCert {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+      }
       serviceVehicleType {
         _id
         type
@@ -57,6 +149,7 @@ query Me {
         length
         height
         maxCapacity
+        maxDroppoint
         details
         createdAt
         updatedAt

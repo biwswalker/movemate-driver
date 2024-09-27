@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWrapper: {
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
   },
   rowWrapper: {
     flexDirection: "row",
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     paddingBottom: normalize(32),
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
   },
   documentList: {
     gap: normalize(12),

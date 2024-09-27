@@ -17,25 +17,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.common.white,
   },
   headerWrapper: {
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(16),
   },
   rowWrapper: {
     flexDirection: "row",
   },
   sectionContainer: {
     marginTop: normalize(32),
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(16),
   },
   titleText: {
     color: colors.primary.darker,
-    marginTop: 48,
-    marginBottom: 16,
+    marginTop: normalize(48),
+    marginBottom: normalize(16),
   },
   textCenter: {
     textAlign: "center",
   },
   subTitleText: {
-    marginTop: 24,
+    marginTop: normalize(24),
   },
   emailText: {
     color: colors.primary.darker,
@@ -51,8 +51,8 @@ const styles = StyleSheet.create({
   actionTextWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 16,
-    gap: 4,
+    marginTop: normalize(16),
+    gap: normalize(4),
   },
   textButton: {
     color: colors.info.main,

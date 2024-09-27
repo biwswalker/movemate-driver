@@ -3,46 +3,54 @@ import { useState, useEffect, useRef } from "react";
 import * as Device from "expo-device";
 import {
   Notification,
-  ExpoPushToken,
   setNotificationHandler,
   Subscription,
   getPermissionsAsync,
   requestPermissionsAsync,
-  getExpoPushTokenAsync,
   setNotificationChannelAsync,
   AndroidImportance,
   addNotificationReceivedListener,
   addNotificationResponseReceivedListener,
   removeNotificationSubscription,
+  getDevicePushTokenAsync,
+  DevicePushToken,
+  getExpoPushTokenAsync,
+  ExpoPushToken,
 } from "expo-notifications";
-import Constants from "expo-constants";
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 
 interface PushNotificationState {
+  status: boolean;
+  refetchPermissionStatus: Function;
+  requestPermission: () => Promise<void>;
   notification?: Notification;
   expoPushToken?: ExpoPushToken;
+  devicePushToken?: DevicePushToken;
 }
 
 export const usePushNotifications = (): PushNotificationState => {
   setNotificationHandler({
     handleNotification: async () => ({
-      shouldPlaySound: false,
+      shouldPlaySound: true,
       shouldSetBadge: true,
       shouldShowAlert: true,
     }),
   });
 
+  const [devicePushToken, setDevicePushToken] = useState<
+    DevicePushToken | undefined
+  >();
   const [expoPushToken, setExpoPushToken] = useState<
     ExpoPushToken | undefined
   >();
   const [notification, setNotification] = useState<Notification | undefined>();
+  const [status, setStatus] = useState(false);
 
   const notificationListener = useRef<Subscription>();
   const responsListener = useRef<Subscription>();
 
   async function registerForPushNotificationsAsync() {
-    let token;
-
     if (Device.isDevice) {
       const { status: existingStatus } = await getPermissionsAsync();
       let finalStatus = existingStatus;
@@ -50,14 +58,17 @@ export const usePushNotifications = (): PushNotificationState => {
         const { status } = await requestPermissionsAsync();
         finalStatus = status;
       }
-      if (finalStatus !== "granted") {
+      const isGranted = finalStatus === "granted";
+      setStatus(isGranted);
+      if (!isGranted) {
         // TODO:
         console.log("Failed to get push token");
       }
 
-      token = await getExpoPushTokenAsync({
+      const expoToken = await getExpoPushTokenAsync({
         projectId: Constants.expoConfig?.extra?.eas?.projectId,
       });
+      const deviceToken = await getDevicePushTokenAsync();
 
       if (Platform.OS === "android") {
         setNotificationChannelAsync("default", {
@@ -67,18 +78,35 @@ export const usePushNotifications = (): PushNotificationState => {
           lightColor: "#FF231F7C",
         });
       }
-      return token;
+      return { expoToken, deviceToken };
     } else {
       console.log("Error: Please use a physical device");
+      return { expoToken: undefined, deviceToken: undefined };
     }
   }
 
-  useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => {
-      console.log("Expo FCM Token: ", token);
-      setExpoPushToken(token);
-    });
+  async function refetchPermissionStatus() {
+    if (Device.isDevice) {
+      const { status: existingStatus } = await getPermissionsAsync();
+      setStatus(existingStatus === "granted");
+    }
+  }
 
+  async function requestPermission() {
+    return await registerForPushNotificationsAsync().then(
+      ({ deviceToken, expoToken }) => {
+        if (__DEV__) {
+          console.log("Expo FCM Token: ", expoToken);
+          console.log("Device FCM Token: ", deviceToken);
+        }
+        setDevicePushToken(deviceToken);
+        setExpoPushToken(expoToken);
+      }
+    );
+  }
+
+  useEffect(() => {
+    requestPermission()
     notificationListener.current = addNotificationReceivedListener(
       (notification) => setNotification(notification)
     );
@@ -95,6 +123,10 @@ export const usePushNotifications = (): PushNotificationState => {
   }, []);
 
   return {
+    status,
+    refetchPermissionStatus,
+    requestPermission,
+    devicePushToken,
     expoPushToken,
     notification,
   };

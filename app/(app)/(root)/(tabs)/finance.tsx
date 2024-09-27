@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   FlatList,
   ListRenderItemInfo,
@@ -23,21 +23,39 @@ import colors from "@/constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function Financial() {
+  const isFocused = useIsFocused();
   const { user } = useAuth();
-  const { data } = useGetTransactionQuery({ variables: { limit: 10 } });
+  const { data, refetch } = useGetTransactionQuery({
+    variables: { limit: 10 },
+    onError: (error) => {
+      console.log("error: ", error);
+    },
+  });
 
   const transactions = useMemo(
     () => data?.getTransaction || [],
     [data?.getTransaction]
   );
 
+  useEffect(() => {
+    if (isFocused) {
+      refetch();
+    }
+  }, [isFocused]);
+
+  console.log("data: ", data);
+
   function handleOnPressFinancial() {
-    router.push('/profile-detail')
+    router.push("/profile-detail");
+  }
+  
+  function handleOnViewTransaction() {
+    router.push("/finance-list");
   }
 
-  const balance = get(user, "individualDriver.balance", 0) || 0;
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.wrapper}>
@@ -46,50 +64,51 @@ export default function Financial() {
           {user?.status === "pending" && <PendingApproval />}
         </View>
         <View style={styles.content}>
-          <View style={styles.totalWrapper}>
-            <View
-              style={[
-                styles.innerBoxWrapper,
-                { backgroundColor: hexToRgba(colors.primary.main, 0.08) },
-              ]}
-            >
-              <Iconify icon="ion:cash" color={colors.primary.dark} />
-              <Text
-                varient="body2"
-                style={{ color: colors.primary.dark, marginTop: 4 }}
+          {data?.calculateTransaction && (
+            <View style={styles.totalWrapper}>
+              <View
+                style={[
+                  styles.innerBoxWrapper,
+                  { backgroundColor: hexToRgba(colors.primary.main, 0.08) },
+                ]}
               >
-                รายได้ปัจจุบัน
-              </Text>
-              <Text varient="h5" style={{ color: colors.primary.dark }}>
-                {fNumber(balance, "0,0.0")}
-              </Text>
+                <Iconify icon="ion:cash" color={colors.primary.dark} />
+                <Text
+                  varient="body2"
+                  style={{ color: colors.primary.dark, marginTop: 4 }}
+                >
+                  รายได้ปัจจุบัน
+                </Text>
+                <Text varient="h5" style={{ color: colors.primary.dark }}>
+                  {fNumber(
+                    data.calculateTransaction.totalPending || 0,
+                    "0,0.0"
+                  )}{" "}
+                </Text>
+              </View>
+              <View style={[styles.innerBoxWrapper]}>
+                <Iconify
+                  icon="streamline:piggy-bank"
+                  color={colors.success.main}
+                />
+                <Text
+                  varient="body2"
+                  style={{ color: colors.success.dark, marginTop: 4 }}
+                >
+                  รายได้ทั้งหมด
+                </Text>
+                <Text varient="h5" style={{ color: colors.success.dark }}>
+                  {fNumber(data.calculateTransaction.totalIncome || 0, "0,0.0")}{" "}
+                </Text>
+              </View>
             </View>
-            <View style={[styles.innerBoxWrapper]}>
-              <Iconify
-                icon="streamline:piggy-bank"
-                color={colors.success.main}
-              />
-              <Text
-                varient="body2"
-                style={{ color: colors.success.dark, marginTop: 4 }}
-              >
-                รายได้ทั้งหมด
-              </Text>
-              <Text varient="h5" style={{ color: colors.success.dark }}>
-                {fNumber(data?.calculateTransaction.totalIncome || 0, "0,0.0")}{" "}
-              </Text>
-            </View>
-          </View>
+          )}
+
           <View style={styles.actionWrapper}>
-            {/* <TouchableOpacity style={styles.buttonWrapper}>
-              <Iconify
-                icon="ant-design:bank-filled"
-                color={colors.text.primary}
-                size={normalize(16)}
-              />
-              <Text varient="subtitle1">บัญชีบริษัท</Text>
-            </TouchableOpacity> */}
-            <TouchableOpacity style={styles.buttonWrapper} onPress={handleOnPressFinancial}>
+            <TouchableOpacity
+              style={styles.buttonWrapper}
+              onPress={handleOnPressFinancial}
+            >
               <Iconify
                 icon="uil:setting"
                 color={colors.text.primary}
@@ -103,7 +122,7 @@ export default function Financial() {
               <Text varient="subtitle1" style={{ color: colors.primary.dark }}>
                 รายกาารเงินล่าสุด
               </Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={handleOnViewTransaction}>
                 <Text varient="body2" color="secondary">
                   ดูทั้งหมด
                 </Text>
@@ -127,9 +146,9 @@ export default function Financial() {
               </View>
             }
             contentContainerStyle={{
-              paddingBottom: 104,
-              paddingTop: 8,
-              paddingHorizontal: 32,
+              paddingBottom: normalize(64),
+              paddingTop: normalize(8),
+              paddingHorizontal: normalize(15),
             }}
           />
         </View>
@@ -176,11 +195,21 @@ function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
   return (
     <View style={finStyle.container}>
       <View style={finStyle.trackingNumberWrapper}>
-        <Text varient="body1">{item.refId}</Text>
+        <Text varient="body2">{item.description}</Text>
+      </View>
+      <View
+        style={[
+          finStyle.trackingNumberWrapper,
+          { alignItems: "center", paddingTop: normalize(4) },
+        ]}
+      >
+        <Text varient="caption" color="secondary">
+          {format(item.createdAt, "EEEE dd MMM yyyy HH:mm", { locale: th })}
+        </Text>
         <Text
-          varient="subtitle1"
+          varient="h5"
           style={{
-            textAlign: "right",
+            textAlign: "left",
             flexShrink: 0,
             color: colors.success.dark,
           }}
@@ -188,12 +217,6 @@ function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
           {fNumber(item.amount, "0,0.0")}
         </Text>
       </View>
-      {/* <Text varient="body2" color="secondary">
-        ค่าขนส่งจาก เชียงราย ไปยัง เชียงใหม่
-      </Text> */}
-      <Text varient="body2" color="secondary" style={{ textAlign: "right" }}>
-        {format(item.createdAt, "EEEE dd MMM yyyy HH:mm", { locale: th })}
-      </Text>
     </View>
   );
 }
@@ -207,7 +230,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountContainer: {
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
     paddingBottom: normalize(8),
   },
   contentWrapper: {
@@ -236,10 +259,10 @@ const styles = StyleSheet.create({
     color: colors.warning.dark,
   },
   content: {
-    // flex: 1,
+    flex: 1,
   },
   totalWrapper: {
-    marginHorizontal: normalize(32),
+    marginHorizontal: normalize(16),
     borderRadius: normalize(8),
     flexDirection: "row",
     gap: 8,
@@ -253,27 +276,28 @@ const styles = StyleSheet.create({
     paddingVertical: normalize(16),
   },
   actionWrapper: {
-    marginTop: normalize(24),
-    marginHorizontal: normalize(32),
+    marginTop: normalize(8),
+    marginHorizontal: normalize(16),
     padding: normalize(8),
     borderRadius: normalize(8),
     backgroundColor: colors.grey[100],
     flexDirection: "row",
-    gap: 8,
+    gap: normalize(8),
   },
   buttonWrapper: {
     flex: 1,
     backgroundColor: colors.common.white,
-    borderRadius: 8,
+    borderRadius: normalize(8),
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    padding: 8,
-    gap: 8,
+    padding: normalize(8),
+    gap: normalize(8),
   },
   transactionWrapper: {
-    paddingTop: 24,
-    paddingHorizontal: 32,
+    paddingTop: normalize(16),
+    paddingBottom: normalize(8),
+    paddingHorizontal: normalize(16),
   },
   transactionTitleWrapper: {
     flexDirection: "row",
@@ -281,7 +305,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   emptyTransaction: {
-    paddingTop: 32,
+    paddingTop: normalize(32),
     alignItems: "center",
   },
 });

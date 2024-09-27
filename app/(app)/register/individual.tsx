@@ -27,6 +27,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import useSnackbar from "@/hooks/useSnackbar";
 import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
+import { normalize } from "@/utils/normalizeSize";
 
 const styles = StyleSheet.create({
   container: {
@@ -37,30 +38,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWrapper: {
-    paddingHorizontal: 32,
-    paddingBottom: 32,
+    paddingHorizontal: normalize(16),
+    paddingBottom: normalize(32),
   },
   contentWrapper: {
-    marginTop: 48,
-    gap: 12,
+    marginTop: normalize(48),
+    gap: normalize(12),
   },
   inputWrapper: {
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(16),
   },
   actionWrapper: {
-    paddingVertical: 32,
+    paddingVertical: normalize(32),
   },
   formSubtitle: {
-    paddingTop: 32,
+    paddingTop: normalize(32),
     paddingLeft: 8,
   },
   helperText: {
-    marginTop: 8,
-    paddingLeft: 12,
+    marginTop: normalize(8),
+    paddingLeft: normalize(12),
   },
   inputWrapperColumn: {
     flexDirection: "row",
-    gap: 8,
+    gap: normalize(8),
   },
 });
 

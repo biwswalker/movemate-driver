@@ -1,12 +1,11 @@
 import hexToRgba from "hex-to-rgba";
 import React, { Fragment, useRef } from "react";
-import { StyleSheet, View, ViewStyle, TouchableOpacity } from "react-native";
+import { StyleSheet, View, ViewStyle, TouchableOpacity, Image } from "react-native";
 import { Iconify } from "react-native-iconify";
 import Text, { getFontVarient } from "./Text";
 import { fData } from "@utils/number";
 import { fileData, fileFormat } from "@utils/file";
 import { get, isEmpty, isNumber, map, pull } from "lodash";
-import FlexImage from "react-native-flex-image";
 import ButtonIcon from "@components/ButtonIcon";
 import colors from "@/constants/colors";
 import { useActionSheet } from "@expo/react-native-action-sheet";
@@ -253,7 +252,7 @@ export default function UploadButton({
                 [{ padding: 0 }],
               ]}
             >
-              <FlexImage style={[styles.imageStyle]} source={{ uri }} />
+              <Image style={[styles.imageStyle]} source={{ uri }} />
               {typeof onRemove === "function" && !disabled && uri && (
                 <View style={[styles.removeOnImagePreview]}>
                   <ButtonIcon

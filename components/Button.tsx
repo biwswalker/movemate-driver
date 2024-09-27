@@ -10,11 +10,12 @@ import Text from "./Text";
 import colors from "@constants/colors";
 import hexToRgba from "hex-to-rgba";
 import { ActivityIndicator } from "react-native-paper";
+import { normalize } from "@/utils/normalizeSize";
 
 const styles = StyleSheet.create({
   button: {
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingHorizontal: normalize(16),
+    borderRadius: normalize(8),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -33,13 +34,13 @@ const styles = StyleSheet.create({
     backgroundColor: hexToRgba(colors.primary.main, 0.16),
   },
   buttonSM: {
-    height: 30,
+    height: normalize(30),
   },
   buttonMD: {
-    height: 36,
+    height: normalize(36),
   },
   buttonLG: {
-    height: 48,
+    height: normalize(48),
   },
   fullwidth: {
     width: "100%",
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
   rowDirection: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: normalize(8),
   },
 });
 

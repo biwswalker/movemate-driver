@@ -29,3 +29,7 @@ mutation VerifyIndiividualDriverData($data: IndividualDriverDetailInput!) {
     serviceVehicleType
   }
 }
+
+mutation ChangeDrivingStatus($status: String!) {
+  changeDrivingStatus(status: $status)
+}

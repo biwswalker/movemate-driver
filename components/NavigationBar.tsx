@@ -15,7 +15,7 @@ import { router } from "expo-router";
 const styles = StyleSheet.create({
   container: {
     paddingVertical: normalize(32),
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
     flexDirection: "row",
     justifyContent: "flex-start",
     alignItems: "center",
@@ -26,13 +26,13 @@ const styles = StyleSheet.create({
   },
   actionWrapperLeft: {
     position: "absolute",
-    left: normalize(32),
+    left: normalize(16),
     pointerEvents: "auto",
     zIndex: 1,
   },
   actionWrapperRight: {
     position: "absolute",
-    right: normalize(32),
+    right: normalize(16),
     pointerEvents: "auto",
   },
   buttonWrapper: {

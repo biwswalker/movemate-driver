@@ -4,7 +4,7 @@ import NavigationBar from "@components/NavigationBar";
 import Button from "@components/Button";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { normBaseW } from "@utils/normalizeSize";
+import { normalize } from "@utils/normalizeSize";
 import OTPInput from "@components/OTPInput";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { get, pick } from "lodash";
@@ -36,22 +36,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWrapper: {
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(16),
   },
   rowWrapper: {
     flexDirection: "row",
-    gap: 8,
+    gap: normalize(8),
   },
   sectionContainer: {
-    padding: 32,
-    paddingTop: 48,
+    padding: normalize(32),
+    paddingTop: normalize(48),
     alignItems: "center",
   },
   documentList: {
     gap: 12,
   },
   secureImage: {
-    width: normBaseW(224),
+    width: normalize(224),
     alignSelf: "center",
     resizeMode: "contain",
   },
@@ -60,11 +60,11 @@ const styles = StyleSheet.create({
   },
   actionContainer: {
     width: `100%`,
-    gap: 8,
-    marginTop: normBaseW(48),
+    gap: normalize(8),
+    marginTop: normalize(48),
   },
   titleWrapper: {
-    marginTop: 16,
+    marginTop: normalize(16),
   },
   backEditTextsWrapper: {
     justifyContent: "center",

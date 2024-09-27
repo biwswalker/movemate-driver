@@ -736,6 +736,7 @@ export type Mutation = {
   approvalCashPayment: Scalars["Boolean"]["output"];
   approvalUser: User;
   approveCreditPayment: Scalars["Boolean"]["output"];
+  changeDrivingStatus: Scalars["Boolean"]["output"];
   changePassword: Scalars["Boolean"]["output"];
   confirmInvoiceSent: Scalars["Boolean"]["output"];
   confirmReceiptSent: Scalars["Boolean"]["output"];
@@ -752,6 +753,7 @@ export type Mutation = {
   login: AuthPayload;
   logout: Scalars["Boolean"]["output"];
   makeCancellation: Scalars["Boolean"]["output"];
+  markAsCancelled: Scalars["Boolean"]["output"];
   markAsFinish: Scalars["Boolean"]["output"];
   markAsVerifiedEmail: Scalars["Boolean"]["output"];
   markAsVerifiedOTP: Scalars["Boolean"]["output"];
@@ -761,12 +763,14 @@ export type Mutation = {
   otpRequest: OtpRequst;
   refund: Scalars["Boolean"]["output"];
   register: Scalars["Boolean"]["output"];
+  removeFCM: Scalars["Boolean"]["output"];
   removePODAddress: Scalars["Boolean"]["output"];
   resentEmail: VerifyPayload;
   resentInvoiceToEmail: Scalars["Boolean"]["output"];
   resentOTP: VerifyOtpPayload;
   resentReceiptToEmail: Scalars["Boolean"]["output"];
   sentPODDocument: Scalars["Boolean"]["output"];
+  sentTextDriverNotification: Scalars["Boolean"]["output"];
   storeFCM: Scalars["Boolean"]["output"];
   subtotalCalculation: SubtotalCalculatedPayload;
   triggerAdminMenuNotificationCount: Scalars["Boolean"]["output"];
@@ -846,6 +850,10 @@ export type MutationApproveCreditPaymentArgs = {
   paymentTime: Scalars["DateTimeISO"]["input"];
 };
 
+export type MutationChangeDrivingStatusArgs = {
+  status: Scalars["String"]["input"];
+};
+
 export type MutationChangePasswordArgs = {
   data: PasswordChangeInput;
 };
@@ -908,6 +916,10 @@ export type MutationLoginArgs = {
 export type MutationMakeCancellationArgs = {
   reason: Scalars["String"]["input"];
   reasonDetail: Scalars["String"]["input"];
+  shipmentId: Scalars["String"]["input"];
+};
+
+export type MutationMarkAsCancelledArgs = {
   shipmentId: Scalars["String"]["input"];
 };
 
@@ -1367,6 +1379,8 @@ export type Query = {
   totalMonthBilling: Scalars["Int"]["output"];
   totalNotification: Scalars["Int"]["output"];
   totalShipment: Scalars["Int"]["output"];
+  totalTransaction: Scalars["Int"]["output"];
+  trigNewAvailableShipment: Scalars["Boolean"]["output"];
   unreadCount: Scalars["Int"]["output"];
   users: UserPaginationAggregatePayload;
 };
@@ -2091,6 +2105,7 @@ export type SubDistrict = {
 export type Subscription = {
   __typename?: "Subscription";
   getAdminNotificationCount: AdminNotificationCountPayload;
+  listenAvailableShipment: Array<Shipment>;
   requestLocationLimitCount: LocationRequestLimitPayload;
 };
 
@@ -2426,6 +2441,10 @@ export type StoreFcmMutationVariables = Exact<{
 
 export type StoreFcmMutation = { __typename?: "Mutation"; storeFCM: boolean };
 
+export type RemoveFcmMutationVariables = Exact<{ [key: string]: never }>;
+
+export type RemoveFcmMutation = { __typename?: "Mutation"; removeFCM: boolean };
+
 export type IndividualDriverRegisterMutationVariables = Exact<{
   data: IndividualDriverRegisterInput;
 }>;
@@ -2468,6 +2487,15 @@ export type VerifyIndiividualDriverDataMutation = {
     bankNumber: string;
     serviceVehicleType: string;
   };
+};
+
+export type ChangeDrivingStatusMutationVariables = Exact<{
+  status: Scalars["String"]["input"];
+}>;
+
+export type ChangeDrivingStatusMutation = {
+  __typename?: "Mutation";
+  changeDrivingStatus: boolean;
 };
 
 export type AcceptShipmentMutationVariables = Exact<{
@@ -3409,6 +3437,7 @@ export type GetTransactionQueryVariables = Exact<{
 
 export type GetTransactionQuery = {
   __typename?: "Query";
+  totalTransaction: number;
   getTransaction: Array<{
     __typename?: "Transaction";
     _id: string;
@@ -3458,6 +3487,7 @@ export type MeQuery = {
     updatedAt: any;
     fullname?: string | null;
     fcmToken?: string | null;
+    drivingStatus?: string | null;
     profileImage?: {
       __typename?: "File";
       _id: string;
@@ -3486,8 +3516,111 @@ export type MeQuery = {
       bankBranch: string;
       bankName: string;
       bankNumber: string;
-      fullname?: string | null;
       balance: number;
+      fullname?: string | null;
+      documents: {
+        __typename?: "DriverDocument";
+        _id: string;
+        frontOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        backOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        leftOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        rigthOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyVehicleRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyIDCard?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyDrivingLicense?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyBookBank?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyHouseRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        insurancePolicy?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        criminalRecordCheckCert?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+      };
       serviceVehicleType: {
         __typename?: "VehicleType";
         _id: string;
@@ -3499,6 +3632,7 @@ export type MeQuery = {
         length: number;
         height: number;
         maxCapacity: number;
+        maxDroppoint?: number | null;
         details?: string | null;
         createdAt: any;
         updatedAt: any;
@@ -3585,6 +3719,240 @@ export type GetVehicleTypeByIdQuery = {
       updatedAt: any;
     };
   };
+};
+
+export type ListenAvailableShipmentSubscriptionVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type ListenAvailableShipmentSubscription = {
+  __typename?: "Subscription";
+  listenAvailableShipment: Array<{
+    __typename?: "Shipment";
+    _id: string;
+    trackingNumber: string;
+    status: string;
+    adminAcceptanceStatus: string;
+    driverAcceptanceStatus: string;
+    displayDistance: number;
+    displayTime: number;
+    distance: number;
+    returnDistance: number;
+    isRoundedReturn: boolean;
+    isBookingWithDate: boolean;
+    bookingDateTime?: any | null;
+    refId?: string | null;
+    remark?: string | null;
+    createdAt: any;
+    updatedAt: any;
+    deliveredDate?: any | null;
+    cancellationReason?: string | null;
+    cancellationDetail?: string | null;
+    currentStepSeq: number;
+    customer: {
+      __typename?: "User";
+      _id: string;
+      userNumber: string;
+      userRole: string;
+      userType: string;
+      username: string;
+      remark?: string | null;
+      status: string;
+      validationStatus: string;
+      registration: string;
+      lastestOTP?: string | null;
+      lastestOTPRef?: string | null;
+      lastestOTPTime?: any | null;
+      isVerifiedEmail: boolean;
+      isVerifiedPhoneNumber: boolean;
+      acceptPolicyVersion?: number | null;
+      acceptPolicyTime?: any | null;
+      createdAt: any;
+      updatedAt: any;
+      individualDetail?: {
+        __typename?: "IndividualCustomer";
+        _id: string;
+        userNumber: string;
+        email: string;
+        title: string;
+        otherTitle?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      businessDetail?: {
+        __typename?: "BusinessCustomer";
+        _id: string;
+        userNumber: string;
+        businessTitle: string;
+        businessName: string;
+        businessBranch?: string | null;
+        businessType: string;
+        businessTypeOther?: string | null;
+        taxNumber: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        contactNumber: string;
+        businessEmail: string;
+        paymentMethod: string;
+        acceptedEDocumentDate?: any | null;
+        acceptedPoliciesVersion?: number | null;
+        acceptedPoliciesDate?: any | null;
+        acceptedTermConditionVersion?: number | null;
+        acceptedTermConditionDate?: any | null;
+        changePaymentMethodRequest?: boolean | null;
+      } | null;
+    };
+    requestedDriver?: {
+      __typename?: "User";
+      _id: string;
+      userNumber: string;
+      userRole: string;
+      userType: string;
+      username: string;
+      remark?: string | null;
+      status: string;
+      validationStatus: string;
+      registration: string;
+      lastestOTP?: string | null;
+      lastestOTPRef?: string | null;
+      lastestOTPTime?: any | null;
+      isVerifiedEmail: boolean;
+      isVerifiedPhoneNumber: boolean;
+      acceptPolicyVersion?: number | null;
+      acceptPolicyTime?: any | null;
+      createdAt: any;
+      updatedAt: any;
+      individualDriver?: {
+        __typename?: "IndividualDriver";
+        _id: string;
+        title: string;
+        otherTitle: string;
+        firstname: string;
+        lastname: string;
+        taxId: string;
+        phoneNumber: string;
+        lineId: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        bank: string;
+        bankBranch: string;
+        bankName: string;
+        bankNumber: string;
+        fullname?: string | null;
+      } | null;
+    } | null;
+    destinations: Array<{
+      __typename?: "Destination";
+      placeId: string;
+      name: string;
+      detail: string;
+      contactName: string;
+      contactNumber: string;
+      customerRemark?: string | null;
+      location: {
+        __typename?: "Location";
+        latitude: number;
+        longitude: number;
+      };
+    }>;
+    vehicleId: {
+      __typename?: "VehicleType";
+      _id: string;
+      type: string;
+      isPublic?: boolean | null;
+      isLarger?: boolean | null;
+      name: string;
+      width: number;
+      length: number;
+      height: number;
+      maxCapacity: number;
+      details?: string | null;
+      createdAt: any;
+      updatedAt: any;
+      image: {
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      };
+    };
+    additionalImages?: Array<{
+      __typename?: "File";
+      _id: string;
+      fileId: string;
+      filename: string;
+      mimetype: string;
+      createdAt: any;
+      updatedAt: any;
+    }> | null;
+    steps: Array<{
+      __typename?: "StepDefinition";
+      _id: string;
+      step: string;
+      seq: number;
+      stepName: string;
+      customerMessage: string;
+      driverMessage: string;
+      stepStatus: string;
+      createdAt: any;
+      updatedAt?: any | null;
+      images: Array<{
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      }>;
+    }>;
+    refund?: {
+      __typename?: "Refund";
+      _id: string;
+      paymentDate?: any | null;
+      paymentTime?: any | null;
+    } | null;
+    payment: {
+      __typename?: "Payment";
+      _id: string;
+      status: string;
+      paymentMethod: string;
+      createdAt: any;
+      updatedAt: any;
+      calculation?: {
+        __typename?: "PricingCalculationMethodPayload";
+        subTotalDropPointCost: number;
+        subTotalDropPointPrice: number;
+        subTotalCost: number;
+        subTotalPrice: number;
+        subTotalRoundedCost: number;
+        subTotalRoundedPrice: number;
+        totalCost: number;
+        totalPrice: number;
+      } | null;
+      invoice?: {
+        __typename?: "SubtotalCalculatedPayload";
+        totalCost: number;
+      } | null;
+    };
+  }>;
 };
 
 export const LoginDocument = gql`
@@ -3845,6 +4213,52 @@ export type StoreFcmMutationOptions = Apollo.BaseMutationOptions<
   StoreFcmMutation,
   StoreFcmMutationVariables
 >;
+export const RemoveFcmDocument = gql`
+  mutation RemoveFCM {
+    removeFCM
+  }
+`;
+export type RemoveFcmMutationFn = Apollo.MutationFunction<
+  RemoveFcmMutation,
+  RemoveFcmMutationVariables
+>;
+
+/**
+ * __useRemoveFcmMutation__
+ *
+ * To run a mutation, you first call `useRemoveFcmMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveFcmMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeFcmMutation, { data, loading, error }] = useRemoveFcmMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useRemoveFcmMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    RemoveFcmMutation,
+    RemoveFcmMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<RemoveFcmMutation, RemoveFcmMutationVariables>(
+    RemoveFcmDocument,
+    options,
+  );
+}
+export type RemoveFcmMutationHookResult = ReturnType<
+  typeof useRemoveFcmMutation
+>;
+export type RemoveFcmMutationResult = Apollo.MutationResult<RemoveFcmMutation>;
+export type RemoveFcmMutationOptions = Apollo.BaseMutationOptions<
+  RemoveFcmMutation,
+  RemoveFcmMutationVariables
+>;
 export const IndividualDriverRegisterDocument = gql`
   mutation IndividualDriverRegister($data: IndividualDriverRegisterInput!) {
     individualDriverRegister(data: $data) {
@@ -3967,6 +4381,54 @@ export type VerifyIndiividualDriverDataMutationOptions =
     VerifyIndiividualDriverDataMutation,
     VerifyIndiividualDriverDataMutationVariables
   >;
+export const ChangeDrivingStatusDocument = gql`
+  mutation ChangeDrivingStatus($status: String!) {
+    changeDrivingStatus(status: $status)
+  }
+`;
+export type ChangeDrivingStatusMutationFn = Apollo.MutationFunction<
+  ChangeDrivingStatusMutation,
+  ChangeDrivingStatusMutationVariables
+>;
+
+/**
+ * __useChangeDrivingStatusMutation__
+ *
+ * To run a mutation, you first call `useChangeDrivingStatusMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useChangeDrivingStatusMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [changeDrivingStatusMutation, { data, loading, error }] = useChangeDrivingStatusMutation({
+ *   variables: {
+ *      status: // value for 'status'
+ *   },
+ * });
+ */
+export function useChangeDrivingStatusMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    ChangeDrivingStatusMutation,
+    ChangeDrivingStatusMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    ChangeDrivingStatusMutation,
+    ChangeDrivingStatusMutationVariables
+  >(ChangeDrivingStatusDocument, options);
+}
+export type ChangeDrivingStatusMutationHookResult = ReturnType<
+  typeof useChangeDrivingStatusMutation
+>;
+export type ChangeDrivingStatusMutationResult =
+  Apollo.MutationResult<ChangeDrivingStatusMutation>;
+export type ChangeDrivingStatusMutationOptions = Apollo.BaseMutationOptions<
+  ChangeDrivingStatusMutation,
+  ChangeDrivingStatusMutationVariables
+>;
 export const AcceptShipmentDocument = gql`
   mutation AcceptShipment($shipmentId: String!) {
     acceptShipment(shipmentId: $shipmentId)
@@ -5548,6 +6010,7 @@ export const GetTransactionDocument = gql`
       totalOutcome
       totalOverall
     }
+    totalTransaction
   }
 `;
 
@@ -5646,6 +6109,7 @@ export const MeDocument = gql`
       updatedAt
       fullname
       fcmToken
+      drivingStatus
       profileImage {
         _id
         fileId
@@ -5672,8 +6136,99 @@ export const MeDocument = gql`
         bankBranch
         bankName
         bankNumber
-        fullname
         balance
+        fullname
+        documents {
+          _id
+          frontOfVehicle {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          backOfVehicle {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          leftOfVehicle {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          rigthOfVehicle {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyVehicleRegistration {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyIDCard {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyDrivingLicense {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyBookBank {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyHouseRegistration {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          insurancePolicy {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          criminalRecordCheckCert {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+        }
         serviceVehicleType {
           _id
           type
@@ -5684,6 +6239,7 @@ export const MeDocument = gql`
           length
           height
           maxCapacity
+          maxDroppoint
           details
           createdAt
           updatedAt
@@ -5950,3 +6506,249 @@ export type GetVehicleTypeByIdQueryResult = Apollo.QueryResult<
   GetVehicleTypeByIdQuery,
   GetVehicleTypeByIdQueryVariables
 >;
+export const ListenAvailableShipmentDocument = gql`
+  subscription ListenAvailableShipment {
+    listenAvailableShipment {
+      _id
+      trackingNumber
+      status
+      adminAcceptanceStatus
+      driverAcceptanceStatus
+      displayDistance
+      displayTime
+      distance
+      returnDistance
+      isRoundedReturn
+      isBookingWithDate
+      bookingDateTime
+      refId
+      remark
+      createdAt
+      updatedAt
+      deliveredDate
+      cancellationReason
+      cancellationDetail
+      customer {
+        _id
+        userNumber
+        userRole
+        userType
+        username
+        remark
+        status
+        validationStatus
+        registration
+        lastestOTP
+        lastestOTPRef
+        lastestOTPTime
+        isVerifiedEmail
+        isVerifiedPhoneNumber
+        acceptPolicyVersion
+        acceptPolicyTime
+        createdAt
+        updatedAt
+        individualDetail {
+          _id
+          userNumber
+          email
+          title
+          otherTitle
+          firstname
+          lastname
+          phoneNumber
+          taxId
+          address
+          province
+          district
+          subDistrict
+          postcode
+          fullname
+        }
+        businessDetail {
+          _id
+          userNumber
+          businessTitle
+          businessName
+          businessBranch
+          businessType
+          businessTypeOther
+          taxNumber
+          address
+          province
+          district
+          subDistrict
+          postcode
+          contactNumber
+          businessEmail
+          paymentMethod
+          acceptedEDocumentDate
+          acceptedPoliciesVersion
+          acceptedPoliciesDate
+          acceptedTermConditionVersion
+          acceptedTermConditionDate
+          changePaymentMethodRequest
+        }
+      }
+      requestedDriver {
+        _id
+        userNumber
+        userRole
+        userType
+        username
+        remark
+        status
+        validationStatus
+        registration
+        lastestOTP
+        lastestOTPRef
+        lastestOTPTime
+        isVerifiedEmail
+        isVerifiedPhoneNumber
+        acceptPolicyVersion
+        acceptPolicyTime
+        createdAt
+        updatedAt
+        individualDriver {
+          _id
+          title
+          otherTitle
+          firstname
+          lastname
+          taxId
+          phoneNumber
+          lineId
+          address
+          province
+          district
+          subDistrict
+          postcode
+          bank
+          bankBranch
+          bankName
+          bankNumber
+          fullname
+        }
+      }
+      destinations {
+        placeId
+        name
+        detail
+        contactName
+        contactNumber
+        customerRemark
+        location {
+          latitude
+          longitude
+        }
+      }
+      vehicleId {
+        _id
+        type
+        isPublic
+        isLarger
+        name
+        width
+        length
+        height
+        maxCapacity
+        details
+        createdAt
+        updatedAt
+        image {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+      }
+      additionalImages {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+      currentStepSeq
+      steps {
+        _id
+        step
+        seq
+        stepName
+        customerMessage
+        driverMessage
+        stepStatus
+        createdAt
+        updatedAt
+        images {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+      }
+      refund {
+        _id
+        paymentDate
+        paymentTime
+      }
+      payment {
+        _id
+        status
+        paymentMethod
+        createdAt
+        updatedAt
+        calculation {
+          subTotalDropPointCost
+          subTotalDropPointPrice
+          subTotalCost
+          subTotalPrice
+          subTotalRoundedCost
+          subTotalRoundedPrice
+          totalCost
+          totalPrice
+        }
+        invoice {
+          totalCost
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * __useListenAvailableShipmentSubscription__
+ *
+ * To run a query within a React component, call `useListenAvailableShipmentSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useListenAvailableShipmentSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListenAvailableShipmentSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useListenAvailableShipmentSubscription(
+  baseOptions?: Apollo.SubscriptionHookOptions<
+    ListenAvailableShipmentSubscription,
+    ListenAvailableShipmentSubscriptionVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useSubscription<
+    ListenAvailableShipmentSubscription,
+    ListenAvailableShipmentSubscriptionVariables
+  >(ListenAvailableShipmentDocument, options);
+}
+export type ListenAvailableShipmentSubscriptionHookResult = ReturnType<
+  typeof useListenAvailableShipmentSubscription
+>;
+export type ListenAvailableShipmentSubscriptionResult =
+  Apollo.SubscriptionResult<ListenAvailableShipmentSubscription>;

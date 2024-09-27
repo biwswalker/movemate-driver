@@ -13,6 +13,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PermissionsAndroid } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { SnackbarProvider } from "@/contexts/SnackbarContext";
+import { SnackbarV2Provider } from "@/contexts/SnackbarV2Context";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { StatusBar } from "expo-status-bar";
 
@@ -52,12 +53,14 @@ export default function RootLayout() {
           <PaperProvider theme={RNPaperConfig}>
             <ThemeProvider value={DefaultTheme}>
               <SnackbarProvider>
-                <ActionSheetProvider>
-                  <SafeAreaProvider>
-                    <StatusBar style="dark" />
-                    <Slot />
-                  </SafeAreaProvider>
-                </ActionSheetProvider>
+                <SnackbarV2Provider>
+                  <ActionSheetProvider>
+                    <SafeAreaProvider>
+                      <StatusBar style="dark" />
+                      <Slot />
+                    </SafeAreaProvider>
+                  </ActionSheetProvider>
+                </SnackbarV2Provider>
               </SnackbarProvider>
             </ThemeProvider>
           </PaperProvider>

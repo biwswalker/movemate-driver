@@ -28,4 +28,5 @@ query GetTransaction(
     totalOutcome
     totalOverall
   }
+  totalTransaction
 }

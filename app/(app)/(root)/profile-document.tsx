@@ -4,21 +4,38 @@ import RHFUploadButton from "@/components/HookForm/RHFUploadButton";
 import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
+import useAuth from "@/hooks/useAuth";
+import { imagePath } from "@/utils/file";
 import { normalize } from "@/utils/normalizeSize";
 import { fData } from "@/utils/number";
 import Yup from "@/utils/yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isEmpty } from "lodash";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type FormValue = RegisterUploadsFormValueType;
+interface FormValue {
+  frontOfVehicle: FileInput | string;
+  backOfVehicle: FileInput | string;
+  leftOfVehicle: FileInput | string;
+  rigthOfVehicle: FileInput | string;
+  copyVehicleRegistration: FileInput | string;
+  copyIDCard: FileInput | string;
+  copyDrivingLicense: FileInput | string;
+  copyBookBank: FileInput | string;
+  copyHouseRegistration: FileInput | string;
+  insurancePolicy: FileInput | string;
+  criminalRecordCheckCert: FileInput | string;
+}
 
 export const MAX_FILE_SIZE = 2 * 1000 * 1000;
 const MAXIMUM_FILE_SIZE_TEXT = `ขนาดไฟล์ไม่เกิน ${fData(MAX_FILE_SIZE)}`;
 
 export default function ProfileDocument() {
+  const { user } = useAuth();
+  const documents = useMemo(() => user?.individualDriver?.documents, [user]);
   const RegisterUploadSchema = Yup.object().shape({
     frontOfVehicle: Yup.mixed()
       .test("require-file", "อัพโหลดรูปด้านหน้ารถ", (value) => !isEmpty(value))
@@ -70,26 +87,58 @@ export default function ProfileDocument() {
     criminalRecordCheckCert: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
   });
 
-  const defaultValues = {
-    frontOfVehicle: undefined,
-    backOfVehicle: undefined,
-    leftOfVehicle: undefined,
-    rigthOfVehicle: undefined,
-    copyVehicleRegistration: undefined,
-    copyIDCard: undefined,
-    copyDrivingLicense: undefined,
-    copyBookBank: undefined,
-    copyHouseRegistration: undefined,
-    insurancePolicy: undefined,
-    criminalRecordCheckCert: undefined,
-  };
+  const defaultValues = useMemo(
+    () => ({
+      frontOfVehicle: documents?.frontOfVehicle
+        ? imagePath(documents.frontOfVehicle.filename)
+        : undefined,
+      backOfVehicle: documents?.backOfVehicle
+        ? imagePath(documents.backOfVehicle.filename)
+        : undefined,
+      leftOfVehicle: documents?.leftOfVehicle
+        ? imagePath(documents.leftOfVehicle.filename)
+        : undefined,
+      rigthOfVehicle: documents?.rigthOfVehicle
+        ? imagePath(documents.rigthOfVehicle.filename)
+        : undefined,
+      copyVehicleRegistration: documents?.copyVehicleRegistration
+        ? imagePath(documents.copyVehicleRegistration.filename)
+        : undefined,
+      copyIDCard: documents?.copyIDCard
+        ? imagePath(documents.copyIDCard.filename)
+        : undefined,
+      copyDrivingLicense: documents?.copyDrivingLicense
+        ? imagePath(documents.copyDrivingLicense.filename)
+        : undefined,
+      copyBookBank: documents?.copyBookBank
+        ? imagePath(documents.copyBookBank.filename)
+        : undefined,
+      copyHouseRegistration: documents?.copyHouseRegistration
+        ? imagePath(documents.copyHouseRegistration.filename)
+        : undefined,
+      insurancePolicy: documents?.insurancePolicy
+        ? imagePath(documents.insurancePolicy.filename)
+        : undefined,
+      criminalRecordCheckCert: documents?.criminalRecordCheckCert
+        ? imagePath(documents.criminalRecordCheckCert.filename)
+        : undefined,
+    }),
+    []
+  );
 
   const methods = useForm<FormValue>({
     resolver: yupResolver(RegisterUploadSchema) as any,
     defaultValues,
   });
 
-  const { handleSubmit } = methods;
+  const { handleSubmit, reset } = methods;
+
+  useEffect(() => {
+    if (documents) {
+      reset(defaultValues);
+      console.log('defaultValues: ', defaultValues)
+    }
+  }, [documents]);
 
   async function onSubmit(values: FormValue) {
     try {
@@ -205,7 +254,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1
+    flex: 1,
   },
   rowWrapper: {
     flexDirection: "row",
@@ -213,7 +262,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     paddingBottom: normalize(32),
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
   },
   documentList: {
     gap: normalize(12),

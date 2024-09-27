@@ -4,12 +4,14 @@ import {
   useLogoutMutation,
   useMeLazyQuery,
   User,
+  useRemoveFcmMutation,
   useStoreFcmMutation,
 } from "@/graphql/generated/graphql";
 import { usePushNotifications } from "@/hooks/usePushNotification";
 import { encryption } from "@/utils/crypto";
 import { ApolloError } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import { get, isEqual, isNumber } from "lodash";
 import {
   createContext,
@@ -33,7 +35,9 @@ interface AuthContextProps {
   refetchMe: () => void;
   login: (data: ILogin) => Promise<void>;
   logout: () => Promise<void>;
-  clearAuthError: Function
+  removeFCM: () => Promise<void>;
+  initializeFCM: () => Promise<void>;
+  clearAuthError: Function;
   requireAcceptedPolicy: boolean;
   requirePasswordChange: boolean;
   notificationCount: number;
@@ -46,7 +50,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | undefined>(
     undefined
   );
-  const { expoPushToken } = usePushNotifications();
+  const { devicePushToken } = usePushNotifications();
   const [notificationCount, setNotificationCount] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -61,6 +65,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   // CONTACT GRAPHQL
   const [me, { refetch, data }] = useMeLazyQuery();
   const [storeFCMToken] = useStoreFcmMutation();
+  const [removeFCMToken] = useRemoveFcmMutation();
   const [auth] = useLoginMutation();
 
   const refetchMe = () => {
@@ -140,6 +145,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setRequireAcceptedPolicy(login.requireAcceptedPolicy);
         setRequirePasswordChange(login.requirePasswordChange);
         refetchMe();
+        router.replace("/");
       } else {
         setLoading(false);
         setAuthError(
@@ -156,7 +162,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   };
 
   const getEncryptedFCMToken = async () => {
-    const fcmToken = expoPushToken?.data;
+    const fcmToken = devicePushToken?.data;
     if (fcmToken) {
       const fcmTokenEncryption = encryption(fcmToken);
       return fcmTokenEncryption;
@@ -164,7 +170,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return null;
   };
 
-  const initializeFCM = async () => {
+  async function initializeFCM() {
     const token = await getEncryptedFCMToken();
     if (token) {
       await storeFCMToken({
@@ -174,7 +180,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
         },
       });
     }
-  };
+  }
+
+  async function removeFCM() {
+    await removeFCMToken();
+    await refetchMe()
+  }
 
   const handleAuthError = (error: ApolloError) => {
     console.log(error);
@@ -217,6 +228,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
         loading,
         authError,
         isFirstLaunch,
+        initializeFCM,
+        removeFCM,
         refetchMe,
         login,
         logout,

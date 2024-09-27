@@ -51,9 +51,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerActionWrapper: {
-    width: 40,
+    width: normalize(40),
     position: "absolute",
-    right: 24,
+    right: normalize(16),
   },
   contentWrapper: {
     paddingBottom: 16,
@@ -66,10 +66,10 @@ const styles = StyleSheet.create({
     pointerEvents: "auto",
   },
   scrollViewWrapper: {
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(16),
   },
   actionWrapper: {
-    paddingBottom: 64,
+    paddingBottom: normalize(64),
   },
   checkboxTextWrapper: {
     flexDirection: "row",

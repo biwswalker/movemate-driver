@@ -3,15 +3,8 @@ import Text from "@/components/Text";
 import Colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { Redirect, router } from "expo-router";
-import React, { Fragment, useEffect } from "react";
-import {
-  View,
-  SafeAreaView,
-  StyleSheet,
-  Image,
-  PermissionsAndroid,
-  Platform,
-} from "react-native";
+import React, { Fragment } from "react";
+import { View, SafeAreaView, StyleSheet, Image } from "react-native";
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -48,39 +41,6 @@ export default function GetStarted() {
 
   function handleGetStarted() {
     router.replace("/landing");
-  }
-
-  useEffect(() => {
-    mapsPermissionRequest();
-  }, []);
-
-  async function mapsPermissionRequest() {
-    try {
-      if (Platform.OS === "android") {
-        // Location
-        const locationGranted = await PermissionsAndroid.check(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        if (!locationGranted) {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-            {
-              title: "ขออนุญาตใช้ตำแหน่งที่ตั้ง",
-              message: "แอพต้องการเข้าถึงตำแหน่งที่ตั้งของคุณ.",
-              buttonNeutral: "ถามฉันภายหลัง",
-              buttonNegative: "ยกเลิก",
-              buttonPositive: "ตกลง",
-            }
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-            console.log("การอนุญาตใช้ตำแหน่งที่ตั้งถูกปฏิเสธ");
-          }
-        }
-      }
-    } catch (err) {
-      console.log("initial error");
-      console.warn(err);
-    }
   }
 
   if (!isFirstLaunch) {

@@ -1,16 +1,22 @@
 import colors from "@/constants/colors";
 import { SafeAreaView } from "react-native-safe-area-context";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
   Dimensions,
   Easing,
   FlatList,
   Image,
-  Linking,
   ListRenderItemInfo,
   Platform,
-  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
@@ -18,26 +24,28 @@ import AccountHeader from "@components/AccountHeader";
 import TabCarousel, { TabItem } from "@components/TabCarousel";
 import Text from "@components/Text";
 import { fDate, fDateTime, fSecondsToDuration } from "@utils/formatTime";
-import ButtonIcon from "@components/ButtonIcon";
 import { normalize } from "@utils/normalizeSize";
 import Button from "@components/Button";
 import Iconify from "@components/Iconify";
-import { find, get, head, isEmpty, map, tail } from "lodash";
+import { get, head, isEmpty, map, tail } from "lodash";
 import hexToRgba from "hex-to-rgba";
 import {
   Shipment,
-  useGetAvailableShipmentQuery,
+  useListenAvailableShipmentSubscription,
 } from "@graphql/generated/graphql";
 import { fCurrency, fNumber } from "@utils/number";
 import { addMinutes } from "date-fns";
 import useAuth from "@/hooks/useAuth";
-import { useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { imagePath } from "@/utils/file";
+import { useIsFocused } from "@react-navigation/native";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, refetchMe } = useAuth();
   const [activeMenu, setActiveMenu] = useState("new");
+  const [refreshing, setRefreshing] = useState(false);
+  const newShipmentsRef = useRef<NewShipmentsRef>(null);
 
   const menus = useMemo<TabItem[]>(() => {
     return [
@@ -59,12 +67,20 @@ export default function HomeScreen() {
     setActiveMenu(menu);
   }
 
-  function handleShowShipmentDetail(trackingNumber: string) {
-    // TODO
-  }
+  const handleShowShipmentDetail = useCallback((trackingNumber: string) => {
+    router.push({ pathname: "/shipment-overview", params: { trackingNumber } });
+  }, []);
 
-  function handleAcceptedShipment() {
-    // navigation.jumpTo("Shipment");
+  async function handleOnRefresh() {
+    // Refresh
+    setRefreshing(true);
+    await refetchMe();
+    if (newShipmentsRef.current) {
+      newShipmentsRef.current.onRestartListening();
+    }
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 940);
   }
 
   return (
@@ -80,7 +96,14 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <SafeAreaView style={styles.wrapper}>
         <AccountHeader style={styles.accountContainer} />
-        <ScrollView>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleOnRefresh}
+            />
+          }
+        >
           {user?.status !== "pending" && <TodayCard />}
           <View style={styles.contentWrapper}>
             <View style={styles.tabMenuWrapper}>
@@ -88,7 +111,7 @@ export default function HomeScreen() {
                 data={menus}
                 value={activeMenu}
                 onChange={handleChangeTabMenu}
-                width={normalize(132)}
+                width={normalize(140)}
                 height={36}
               />
               <View
@@ -118,7 +141,10 @@ export default function HomeScreen() {
             {user?.status === "pending" ? (
               <PendingApproval />
             ) : user?.status === "active" ? (
-              <NewShipments onPress={handleShowShipmentDetail} />
+              <NewShipments
+                onPress={handleShowShipmentDetail}
+                ref={newShipmentsRef}
+              />
             ) : user?.status === "inactive" ? (
               <></>
             ) : (
@@ -140,7 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountContainer: {
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
     paddingBottom: normalize(8),
   },
   contentWrapper: {
@@ -189,7 +215,7 @@ const styles = StyleSheet.create({
 const todayCardStyles = StyleSheet.create({
   todayContainer: {
     marginTop: normalize(16),
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
   },
   todayWrapper: {
     position: "relative",
@@ -340,19 +366,19 @@ function PendingApproval() {
 const shipmentStyle = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 16,
+    // paddingTop: normalize(8),
   },
   cardWrapper: {
     flex: 1,
-    padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 24,
+    padding: normalize(16),
+    marginVertical: normalize(8),
+    marginHorizontal: normalize(16),
     ...Platform.select({
       ios: {
         shadowColor: colors.grey[500],
-        shadowOpacity: 0.12,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.16,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
       },
       android: {
         elevation: 8,
@@ -360,7 +386,7 @@ const shipmentStyle = StyleSheet.create({
       },
     }),
     backgroundColor: colors.common.white,
-    borderRadius: 16,
+    borderRadius: normalize(16),
   },
   titleContainer: {
     flexDirection: "row",
@@ -370,13 +396,13 @@ const shipmentStyle = StyleSheet.create({
   titleWrapper: {},
   titleText: {
     flexDirection: "row",
-    gap: 4,
+    gap: normalize(4),
   },
   newContainer: {
     flexDirection: "row",
     paddingHorizontal: 2,
     alignItems: "center",
-    gap: 2,
+    gap: normalize(2),
     transform: [{ translateY: -1 }],
   },
   newText: {
@@ -385,219 +411,303 @@ const shipmentStyle = StyleSheet.create({
   descriptionWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: normalize(8),
   },
   detailWrapper: {
-    paddingTop: 12,
+    paddingTop: normalize(12),
   },
   netPriceWrapper: {
-    paddingTop: 16,
-  },
-  pricingLabelText: {
-    height: 22,
+    paddingTop: normalize(8),
   },
   pricingText: {
-    verticalAlign: "middle",
-    height: 28,
     color: colors.success.main,
+    lineHeight: normalize(32)
   },
   actionWrapper: {
-    gap: 8,
-    paddingTop: 12,
+    gap: normalize(8),
+    paddingTop: normalize(12),
     flexDirection: "row",
   },
   favLabelWrapper: {
     backgroundColor: hexToRgba("#E02D69", 0.16),
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(4),
     flexDirection: "row",
-    borderRadius: 6,
-    gap: 6,
+    borderRadius: normalize(6),
+    gap: normalize(6),
   },
   footerWrapper: {
-    paddingTop: 8,
-    paddingHorizontal: 24,
+    paddingTop: normalize(8),
+    paddingHorizontal: normalize(24),
+    alignItems: "center",
   },
 });
+
+interface NewShipmentsRef {
+  onRestartListening: Function;
+}
 
 interface NewShipmentsProps {
   onPress: (trackingNumber: string) => void;
 }
 
-function NewShipments({ onPress }: NewShipmentsProps) {
-  const { data, refetch } = useGetAvailableShipmentQuery({
-    variables: { limit: 3, skip: 0, status: "new" },
-    onError: (error) => {
-      console.log("error: ", error);
-    },
-  });
+const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
+  ({ onPress }, ref) => {
+    const isFocused = useIsFocused();
+    const { user } = useAuth();
+    const { data, restart } = useListenAvailableShipmentSubscription({
+      onError: (errr) => {
+        console.log("Listen error: ", JSON.stringify(errr));
+      },
+    });
 
-  useFocusEffect(() => {
-    refetch();
-  });
+    useImperativeHandle(ref, () => ({
+      onRestartListening: restart,
+    }));
 
-  const shipments = useMemo<Shipment[]>(() => {
-    if (data?.getAvailableShipment) {
-      return data.getAvailableShipment as Shipment[];
-    }
-    return [];
-  }, [data?.getAvailableShipment]);
+    useEffect(() => {
+      if (isFocused) {
+        // restart();
+      }
+    }, [isFocused]);
 
-  function Item({ item, index }: ListRenderItemInfo<Shipment>) {
-    const pickupLocation = head(item.destinations);
-    const dropoffLocations = tail(item.destinations);
+    const shipments = useMemo<Shipment[]>(() => {
+      if (data?.listenAvailableShipment) {
+        return data.listenAvailableShipment as Shipment[];
+      }
+      return [];
+    }, [data?.listenAvailableShipment]);
 
-    const createTime = addMinutes(new Date(item.createdAt), 60).getTime();
-    const isNew = new Date().getTime() < createTime;
+    function Item({ item, index }: ListRenderItemInfo<Shipment>) {
+      const pickupLocation = head(item.destinations);
+      const dropoffLocations = tail(item.destinations);
 
-    return (
-      <View style={shipmentStyle.cardWrapper} key={`${index}-${item._id}`}>
-        <View style={shipmentStyle.titleContainer}>
-          <View style={shipmentStyle.titleWrapper}>
-            <View style={shipmentStyle.titleText}>
-              <Text
-                varient="subtitle1"
-                style={{ color: colors.primary.darker }}
-              >
-                {item.trackingNumber}
+      const createTime = addMinutes(new Date(item.createdAt), 60).getTime();
+      const isNew = new Date().getTime() < createTime;
+
+      return (
+        <View style={shipmentStyle.cardWrapper} key={`${index}-${item._id}`}>
+          <View style={shipmentStyle.titleContainer}>
+            <View style={shipmentStyle.titleWrapper}>
+              <View style={shipmentStyle.titleText}>
+                <Text
+                  varient="subtitle1"
+                  style={{ color: colors.primary.darker }}
+                >
+                  {item.trackingNumber}
+                </Text>
+                {isNew && (
+                  <View style={shipmentStyle.newContainer}>
+                    <Iconify
+                      icon="ic:round-new-releases"
+                      size={12}
+                      color={colors.error.dark}
+                    />
+                    <Text varient="overline" style={shipmentStyle.newText}>
+                      ใหม่
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text varient="body2">
+                เริ่มงาน
+                <Text varient="body2" color="secondary">
+                  {" "}
+                  {fDateTime(item.bookingDateTime, "dd/MM/yyyy p")}
+                </Text>
               </Text>
-              {isNew && (
-                <View style={shipmentStyle.newContainer}>
-                  <Iconify
-                    icon="ic:round-new-releases"
-                    size={12}
-                    color={colors.error.dark}
-                  />
-                  <Text varient="overline" style={shipmentStyle.newText}>
-                    ใหม่
+            </View>
+            <View>
+              {item.requestedDriver && (
+                <View style={shipmentStyle.favLabelWrapper}>
+                  <Iconify icon="solar:star-bold" size={16} color="#E02D69" />
+                  <Text varient="overline" style={{ color: "#E02D69" }}>
+                    เห็นเป็นคนแรก
                   </Text>
                 </View>
               )}
             </View>
-            <Text varient="body2">
-              เริ่มงาน
-              <Text varient="body2" color="secondary">
-                {" "}
-                {fDateTime(item.bookingDateTime, "dd/MM/yyyy p")}
-              </Text>
-            </Text>
           </View>
-          <View>
-            {item.requestedDriver && (
-              <View style={shipmentStyle.favLabelWrapper}>
-                <Iconify icon="solar:star-bold" size={16} color="#E02D69" />
-                <Text varient="overline" style={{ color: "#E02D69" }}>
-                  เห็นเป็นคนแรก
+          <View style={shipmentStyle.detailWrapper}>
+            <View style={shipmentStyle.descriptionWrapper}>
+              <Iconify
+                icon="humbleicons:location"
+                color={colors.text.disabled}
+                size={normalize(16)}
+              />
+              <Text varient="body2" color="secondary" numberOfLines={1}>
+                จาก {pickupLocation?.detail}
+              </Text>
+            </View>
+            {map(dropoffLocations, (location, index) => {
+              return (
+                <View
+                  style={shipmentStyle.descriptionWrapper}
+                  key={`${index}-${location.placeId}`}
+                >
+                  <Iconify
+                    icon="mage:flag"
+                    color={colors.text.disabled}
+                    size={normalize(16)}
+                  />
+                  <Text varient="body2" color="secondary" numberOfLines={1}>
+                    ถึง {location?.detail}
+                  </Text>
+                </View>
+              );
+            })}
+            {item?.isRoundedReturn && (
+              <View style={shipmentStyle.descriptionWrapper}>
+                <Iconify
+                  icon="icon-park-outline:return"
+                  color={colors.text.disabled}
+                  size={normalize(16)}
+                />
+                <Text varient="body2" color="secondary" numberOfLines={1}>
+                  ไป-กลับ
                 </Text>
               </View>
             )}
           </View>
-        </View>
-        <View style={shipmentStyle.detailWrapper}>
-          <View style={shipmentStyle.descriptionWrapper}>
-            <Iconify
-              icon="humbleicons:location"
-              color={colors.text.disabled}
-              size={16}
-            />
-            <Text varient="body2" color="secondary" numberOfLines={1}>
-              จาก {pickupLocation?.detail}
+          <View style={shipmentStyle.netPriceWrapper}>
+            <Text varient="caption" color="disabled">
+              ราคาสุทธิ
+            </Text>
+            <View style={{ flexDirection: "row", gap: normalize(6), alignItems: 'flex-end' }}>
+              <Text varient="h3" style={shipmentStyle.pricingText}>
+                {fCurrency(item.payment.invoice?.totalCost || 0)}
+              </Text>
+              <Text varient="body2" color="secondary" style={{ lineHeight: normalize(28)}}>บาท</Text>
+            </View>
+            <Text
+              varient="body2"
+              color="secondary"
+              style={{ lineHeight: normalize(18) }}
+            >
+              ระยะทาง {fNumber(item.displayDistance / 1000, "0,0.0")} กม. (
+              {fSecondsToDuration(item.displayTime, {
+                format: ["days", "hours", "minutes"],
+              })}
+              )
             </Text>
           </View>
-          {map(dropoffLocations, (location, index) => {
-            return (
-              <View
-                style={shipmentStyle.descriptionWrapper}
-                key={`${index}-${location.placeId}`}
-              >
-                <Iconify
-                  icon="humbleicons:location"
-                  color={colors.text.disabled}
-                  size={16}
-                />
-                <Text varient="body2" color="secondary" numberOfLines={1}>
-                  ถึง {location?.detail}
-                </Text>
-              </View>
-            );
-          })}
+          <View style={shipmentStyle.actionWrapper}>
+            <Button
+              fullWidth
+              varient="outlined"
+              color="inherit"
+              size="large"
+              title="รายละเอียดงาน"
+              onPress={() => onPress(item.trackingNumber)}
+              style={{ paddingHorizontal: normalize(32) }}
+              StartIcon={
+                <Iconify icon="gg:details-more" color={colors.text.primary} />
+              }
+            />
+          </View>
         </View>
-        <View style={shipmentStyle.netPriceWrapper}>
-          <Text
-            varient="caption"
-            color="disabled"
-            style={shipmentStyle.pricingLabelText}
-          >
-            ราคาสุทธิ
-          </Text>
-          <Text varient="h3" style={shipmentStyle.pricingText}>
-            {fCurrency(item.payment.invoice?.totalCost || 0)}
-            <Text varient="body2"> บาท</Text>
-          </Text>
-          <Text varient="body2" color="secondary" style={{ lineHeight: 18 }}>
-            ระยะทาง {fNumber(item.displayDistance / 1000, "0,0.0")} กม. (
-            {fSecondsToDuration(item.displayTime, {
-              format: ["days", "hours", "minutes"],
-            })}
-            )
-          </Text>
-        </View>
-        <View style={shipmentStyle.actionWrapper}>
-          <Button
-            fullWidth
-            varient="outlined"
-            color="inherit"
-            size="large"
-            title="รายละเอียดงาน"
-            onPress={() => onPress(item.trackingNumber)}
-            style={{ paddingHorizontal: normalize(32) }}
-            StartIcon={
-              <Iconify icon="gg:details-more" color={colors.text.primary} />
-            }
-          />
-        </View>
-      </View>
-    );
-  }
+      );
+    }
 
-  function FooterAction() {
-    if (isEmpty(shipments)) {
+    function FooterAction() {
+      if (isEmpty(shipments)) {
+        if (user?.drivingStatus === "idle") {
+          return (
+            <View style={shipmentStyle.footerWrapper}>
+              <Image
+                source={require("@assets/images/notfound-shipment.png")}
+                style={{ height: normalize(144), objectFit: "contain" }}
+              />
+              <Text
+                varient="subtitle1"
+                style={[styles.textCenter, { color: colors.primary.darker }]}
+              >
+                ไม่พบงานขนส่ง
+              </Text>
+              <Text
+                style={[styles.textCenter, { paddingTop: 4 }]}
+                varient="caption"
+                color="secondary"
+              >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nโปรดตรวจสอบอีกครั้ง`}</Text>
+            </View>
+          );
+        } else if (user?.drivingStatus === "busy") {
+          return (
+            <View style={shipmentStyle.footerWrapper}>
+              <Iconify
+                icon="pepicons-print:eye-closed"
+                size={normalize(112)}
+                color={colors.text.secondary}
+              />
+              <Text
+                varient="subtitle1"
+                style={[
+                  styles.textCenter,
+                  { color: colors.primary.darker, paddingTop: normalize(8) },
+                ]}
+              >
+                ขณะนี้ท่านปิดการรับงานขนส่ง
+              </Text>
+              <Text
+                style={[styles.textCenter, { paddingTop: 4 }]}
+                varient="caption"
+                color="secondary"
+              >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nโปรดเปิดการรับงาน`}</Text>
+            </View>
+          );
+        } else if (user?.drivingStatus === "working") {
+          return (
+            <View style={shipmentStyle.footerWrapper}>
+              <Iconify
+                icon="solar:box-bold-duotone"
+                size={normalize(112)}
+                color={colors.text.disabled}
+              />
+              <Text
+                varient="subtitle1"
+                style={[
+                  styles.textCenter,
+                  { color: colors.primary.darker, paddingTop: normalize(8) },
+                ]}
+              >
+                ท่านกำลังดำเนินการขนส่งอยู่
+              </Text>
+              <Text
+                style={[styles.textCenter, { paddingTop: 4 }]}
+                varient="caption"
+                color="secondary"
+              >{`เมื่อท่านดำเนินการขนส่งเสร็จสิ้นแล้ว\nท่านจะสามารถรับงานต่อไปได้`}</Text>
+            </View>
+          );
+        } else {
+          return <></>;
+        }
+      }
       return (
         <View style={shipmentStyle.footerWrapper}>
-          <Image
-            source={require("@assets/images/notfound-shipment.png")}
-            style={{ height: normalize(144), objectFit: "contain" }}
+          <Button
+            title="งานขนส่งทั้งหมด"
+            fullWidth
+            size="large"
+            varient="soft"
+            onPress={() => {
+              router.push("/shipment-list");
+            }}
           />
-          <Text
-            varient="subtitle1"
-            style={[styles.textCenter, { color: colors.primary.darker }]}
-          >
-            ไม่พบงานขนส่ง
-          </Text>
-          <Text
-            style={[styles.textCenter, { paddingTop: 4 }]}
-            varient="caption"
-            color="secondary"
-          >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nโปรดตรวจสอบอีกครั้ง`}</Text>
         </View>
       );
     }
     return (
-      <View style={shipmentStyle.footerWrapper}>
-        <Button title="งานขนส่งทั้งหมด" fullWidth size="large" varient="soft" />
+      <View style={shipmentStyle.container}>
+        <FlatList
+          data={shipments}
+          renderItem={Item}
+          keyExtractor={(item) => item._id}
+          scrollEnabled={false}
+          contentContainerStyle={{ paddingBottom: normalize(104) }}
+          ListFooterComponent={FooterAction}
+        />
       </View>
     );
   }
-  return (
-    <View style={shipmentStyle.container}>
-      <FlatList
-        data={shipments}
-        renderItem={Item}
-        keyExtractor={(item) => item._id}
-        scrollEnabled={false}
-        contentContainerStyle={{ paddingBottom: 104 }}
-        ListFooterComponent={FooterAction}
-      />
-    </View>
-  );
-}
+);

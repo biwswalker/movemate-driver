@@ -89,12 +89,6 @@ export default function RegisterIndividualPreviewScreen() {
   const [otpRequest, { loading }] = useOtpRequestMutation();
   const { data: vehicleType } = useGetVehicleTypeByIdQuery({
     variables: { id: detail?.serviceVehicleType || "" },
-    onCompleted: (response) => {
-      console.log("ff", response);
-    },
-    onError: (error) => {
-      console.log("error: ", error);
-    },
   });
 
   function onSuccessRequestOTP(data: OtpRequestMutation) {

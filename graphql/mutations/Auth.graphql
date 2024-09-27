@@ -89,3 +89,7 @@ mutation ChangePassword($data: PasswordChangeInput!) {
 mutation StoreFCM($fcmToken: String!) {
   storeFCM(fcmToken: $fcmToken)
 }
+
+mutation RemoveFCM {
+  removeFCM
+}

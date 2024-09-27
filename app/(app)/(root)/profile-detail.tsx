@@ -17,12 +17,13 @@ import {
 } from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
 import useSnackbar from "@/hooks/useSnackbar";
+import { normalize } from "@/utils/normalizeSize";
 import Yup from "@/utils/yup";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFocusEffect } from "expo-router";
 import { find, forEach, get, isEqual } from "lodash";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -57,6 +58,18 @@ export default function ProfileDetail() {
   const individualDriver = useMemo<IndividualDriver | undefined>(() => {
     return user?.individualDriver as IndividualDriver;
   }, [user]);
+
+  useEffect(() => {
+    if (user?.individualDriver) {
+      const driver = user.individualDriver;
+      if (driver.province) {
+        getDistrict({ variables: { provinceThName: driver.province } });
+      }
+      if (driver.district) {
+        getSubDistrict({ variables: { districtName: driver.district } });
+      }
+    }
+  }, [user?.individualDriver]);
 
   const IndividualScema = Yup.object().shape({
     policyVersion: Yup.number(),
@@ -341,18 +354,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputWrapper: {
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(16),
   },
   actionWrapper: {
-    paddingVertical: 32,
+    paddingVertical: normalize(32),
   },
   formSubtitle: {
-    paddingTop: 32,
-    paddingLeft: 8,
+    paddingTop: normalize(32),
+    paddingLeft: normalize(8),
   },
   helperText: {
-    marginTop: 8,
-    paddingLeft: 12,
+    marginTop: normalize(8),
+    paddingLeft: normalize(12),
   },
   inputWrapperColumn: {
     flexDirection: "row",

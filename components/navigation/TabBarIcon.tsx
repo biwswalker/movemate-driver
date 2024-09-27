@@ -17,13 +17,25 @@ const Icon: Record<TMenu, ReactNode> = {
     />
   ),
   shipment: (
-    <Iconify icon="mdi:truck-fast" size={normalize(26)} color={colors.common.white} />
+    <Iconify
+      icon="mdi:truck-fast"
+      size={normalize(26)}
+      color={colors.common.white}
+    />
   ),
   finance: (
-    <Iconify icon="solar:document-bold" size={normalize(26)} color={colors.common.white} />
+    <Iconify
+      icon="solar:document-bold"
+      size={normalize(26)}
+      color={colors.common.white}
+    />
   ),
   profile: (
-    <Iconify icon="mage:user-fill" size={normalize(26)} color={colors.common.white} />
+    <Iconify
+      icon="mage:user-fill"
+      size={normalize(26)}
+      color={colors.common.white}
+    />
   ),
 };
 const Label: Record<TMenu, string> = {
@@ -58,9 +70,11 @@ export const tabStyles = StyleSheet.create({
     right: normalize(24),
     elevation: 0,
     backgroundColor: colors.text.primary,
-    borderRadius: normalize(32),
-    height: normalize(56),
+    borderRadius: normalize(27),
+    height: normalize(54),
     paddingHorizontal: normalize(8),
+    alignItems: "center",
+    justifyContent: "center",
   },
   shadow: {
     shadowColor: colors.grey[500],
@@ -70,13 +84,13 @@ export const tabStyles = StyleSheet.create({
   },
   menuContainer: {
     backgroundColor: "transparent",
-    borderRadius: normalize(32),
+    height: normalize(40),
+    borderRadius: normalize(20),
     paddingHorizontal: normalize(8),
     marginVertical: normalize(8),
     flexGrow: 1,
     alignItems: "center",
     justifyContent: "center",
-    height: normalize(40)
   },
   menuActive: {
     backgroundColor: colors.master.main,

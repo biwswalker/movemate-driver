@@ -28,8 +28,9 @@ import {
 import { isEmpty } from "lodash";
 import colors from "@/constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
-import useSnackbar from "@/hooks/useSnackbar";
+import useSnackbar, { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { ActivityIndicator } from "react-native-paper";
+import { DropdownAlertPosition, DropdownAlertType } from "react-native-dropdownalert";
 
 const styles = StyleSheet.create({
   superContainer: {
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     flex: 1,
-    gap: 16,
+    gap: normalize(16),
   },
   headerWrapper: {
     alignItems: "center",
@@ -54,9 +55,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerActionWrapper: {
-    width: 40,
+    width: normalize(40),
     position: "absolute",
-    right: 24,
+    right: normalize(16),
   },
   contentWrapper: {
     paddingBottom: 16,
@@ -65,20 +66,20 @@ const styles = StyleSheet.create({
     paddingVertical: normalize(32),
   },
   checkboxWrapper: {
-    paddingBottom: 32,
+    paddingBottom: normalize(32),
     pointerEvents: "auto",
   },
   scrollViewWrapper: {
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(16),
   },
   actionWrapper: {
-    paddingBottom: 64,
+    paddingBottom: normalize(64),
   },
   checkboxTextWrapper: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    gap: 4,
+    gap: normalize(4),
     flexWrap: "wrap",
   },
   underlineText: {
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
 });
 
 export default function PrivacyPolicy() {
-  const { showSnackbar } = useSnackbar();
+  const { showSnackbar } = useSnackbarV2();
   const [isAccept, setAccept] = useState(false);
   const insets = useSafeAreaInsets();
   const isPresented = router.canGoBack();
@@ -97,7 +98,12 @@ export default function PrivacyPolicy() {
   const { data, loading } = useGetDriverPoliciesInfoQuery({
     onError: (error: Error) => {
       console.log("error: ", error.message);
-      showSnackbar({ message: error.message, varient: "warning" });
+      showSnackbar({
+        message: error.message,
+        title: "ข้อผิดพลาด",
+        type: DropdownAlertType.Error,
+        alertPosition: DropdownAlertPosition.Top
+      });
     },
   });
 

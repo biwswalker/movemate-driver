@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWrapper: {
-    paddingHorizontal: 32,
+    paddingHorizontal: normalize(16),
   },
   contentWrapper: {
     marginTop: normalize(32),
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     position: "relative",
     paddingBottom: normalize(32),
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: normalize(16),
   },
   cardWrapper: {
     borderWidth: 2,

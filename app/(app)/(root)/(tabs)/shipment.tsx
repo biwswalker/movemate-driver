@@ -1,15 +1,7 @@
 import colors from "@/constants/colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  FlatList,
-  Image,
-  ListRenderItemInfo,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Image, Platform, ScrollView, StyleSheet, View } from "react-native";
 import TabCarousel, { TabItem } from "@components/TabCarousel";
 import Text from "@components/Text";
 import { fDateTime } from "@utils/formatTime";
@@ -24,8 +16,10 @@ import {
 } from "@graphql/generated/graphql";
 import { fCurrency } from "@utils/number";
 import useAuth from "@/hooks/useAuth";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -73,78 +67,68 @@ export default function HomeScreen() {
     setActiveMenu(menu);
   }
 
-  function handleShowShipmentDetail(trackingNumber: string) {
-    // TODO
-    // navigation.navigate("ShipmentWorking", { trackingNumber });
-  }
-
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.wrapper}>
-        <ScrollView>
-          <View style={styles.contentWrapper}>
-            {user?.status === "pending" && <PendingApproval />}
-            <View style={styles.tabMenuWrapper}>
-              <TabCarousel
-                data={menus}
-                value={activeMenu}
-                onChange={handleChangeTabMenu}
-                width={normalize(132)}
-                height={36}
+        <View style={styles.contentWrapper}>
+          {user?.status === "pending" && <PendingApproval />}
+          <View style={styles.tabMenuWrapper}>
+            <TabCarousel
+              data={menus}
+              value={activeMenu}
+              onChange={handleChangeTabMenu}
+              width={normalize(132)}
+              height={36}
+            />
+            <View
+              style={[StyleSheet.absoluteFillObject, styles.gradientWrapper]}
+            >
+              <LinearGradient
+                colors={[
+                  hexToRgba(colors.common.white, 0),
+                  hexToRgba(colors.common.white, 1),
+                ]}
+                style={styles.gradient}
+                start={{ x: 1, y: 0 }}
+                end={{ x: 0, y: 0 }}
               />
-              <View
-                style={[StyleSheet.absoluteFillObject, styles.gradientWrapper]}
-              >
-                <LinearGradient
-                  colors={[
-                    hexToRgba(colors.common.white, 0),
-                    hexToRgba(colors.common.white, 1),
-                  ]}
-                  style={styles.gradient}
-                  start={{ x: 1, y: 0 }}
-                  end={{ x: 0, y: 0 }}
-                />
-                <View style={[styles.gradient, { flex: 2 }]} />
-                <LinearGradient
-                  colors={[
-                    hexToRgba(colors.common.white, 0),
-                    hexToRgba(colors.common.white, 1),
-                  ]}
-                  style={styles.gradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                />
-              </View>
+              <View style={[styles.gradient, { flex: 2 }]} />
+              <LinearGradient
+                colors={[
+                  hexToRgba(colors.common.white, 0),
+                  hexToRgba(colors.common.white, 1),
+                ]}
+                style={styles.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              />
             </View>
-            {user?.status === "active" ? (
-              <Shipments
-                status={activeMenu as TShipmentStatus}
-                onPress={handleShowShipmentDetail}
-              />
-            ) : (
-              <View style={shipmentStyle.footerEmptyWrapper}>
-                <Image
-                  source={require("@assets/images/notfound-shipment.png")}
-                  style={{ height: normalize(144), objectFit: "contain" }}
-                />
-                <Text
-                  varient="h4"
-                  style={[
-                    styles.textCenter,
-                    { color: colors.primary.darker, paddingTop: normalize(16) },
-                  ]}
-                >
-                  ไม่พบงานขนส่ง
-                </Text>
-                <Text
-                  style={[styles.textCenter, { paddingTop: normalize(4) }]}
-                  varient="body1"
-                  color="secondary"
-                >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nกรุณารอการตรวจสอบข้อมูลจกแอดมิน`}</Text>
-              </View>
-            )}
           </View>
-        </ScrollView>
+          {user?.status === "active" ? (
+            <Shipments status={activeMenu as TShipmentStatus} />
+          ) : (
+            <View style={shipmentStyle.footerEmptyWrapper}>
+              <Image
+                source={require("@assets/images/notfound-shipment.png")}
+                style={{ height: normalize(144), objectFit: "contain" }}
+              />
+              <Text
+                varient="h4"
+                style={[
+                  styles.textCenter,
+                  { color: colors.primary.darker, paddingTop: normalize(16) },
+                ]}
+              >
+                ไม่พบงานขนส่ง
+              </Text>
+              <Text
+                style={[styles.textCenter, { paddingTop: normalize(4) }]}
+                varient="body1"
+                color="secondary"
+              >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nกรุณารอการตรวจสอบข้อมูลจกแอดมิน`}</Text>
+            </View>
+          )}
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -168,8 +152,8 @@ const styles = StyleSheet.create({
   },
   infoTextContainer: {
     marginBottom: normalize(24),
-    flexGrow: 1,
-    flex: 1,
+    // flexGrow: 1,
+    // flex: 1,
     width: "100%",
     paddingHorizontal: normalize(24),
   },
@@ -222,19 +206,19 @@ function PendingApproval() {
 const shipmentStyle = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 16,
+    paddingTop: normalize(16),
   },
   cardWrapper: {
     flex: 1,
-    padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 24,
+    padding: normalize(16),
+    marginVertical: normalize(8),
+    marginHorizontal: normalize(8),
     ...Platform.select({
       ios: {
         shadowColor: colors.grey[500],
         shadowOpacity: 0.12,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 12 },
+        shadowRadius: normalize(4),
+        shadowOffset: { width: 0, height: normalize(12) },
       },
       android: {
         elevation: 8,
@@ -242,7 +226,7 @@ const shipmentStyle = StyleSheet.create({
       },
     }),
     backgroundColor: colors.common.white,
-    borderRadius: 16,
+    borderRadius: normalize(16),
   },
   titleContainer: {
     flexDirection: "row",
@@ -253,39 +237,39 @@ const shipmentStyle = StyleSheet.create({
   descriptionWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: normalize(8),
   },
   detailWrapper: {
-    paddingTop: 12,
+    paddingTop: normalize(12),
   },
   pricingLabelText: {
-    height: 22,
+    height: normalize(16),
   },
   pricingText: {
     verticalAlign: "middle",
-    height: 28,
+    // height: normalize(28),
   },
   actionWrapper: {
-    gap: 8,
-    paddingTop: 12,
+    gap: normalize(8),
+    paddingTop: normalize(12),
     flexDirection: "row",
   },
   statusContainer: {
-    paddingTop: 12,
+    paddingTop: normalize(12),
   },
   statusWrapper: {
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(4),
+    borderRadius: normalize(8),
     backgroundColor: hexToRgba(colors.info.main, 0.32),
   },
   footerWrapper: {
-    paddingTop: 16,
-    paddingHorizontal: 24,
+    paddingTop: normalize(16),
+    paddingHorizontal: normalize(24),
   },
   footerEmptyWrapper: {
-    paddingTop: 56,
-    paddingHorizontal: 24,
+    paddingTop: normalize(56),
+    paddingHorizontal: normalize(24),
   },
 });
 
@@ -293,10 +277,11 @@ type TShipmentStatus = "new" | "progressing" | "dilivered" | "cancelled";
 
 interface ShipmentsProps {
   status: TShipmentStatus;
-  onPress: (trackingNumber: string) => void;
 }
 
-function Shipments({ status, onPress }: ShipmentsProps) {
+function Shipments({ status }: ShipmentsProps) {
+  const isFocused = useIsFocused();
+
   const [hasMore, setHasMore] = useState(false);
   const { data, refetch, fetchMore, loading } = useGetAvailableShipmentQuery({
     variables: { limit: 5, skip: 0, status },
@@ -306,13 +291,15 @@ function Shipments({ status, onPress }: ShipmentsProps) {
     },
   });
 
-  useFocusEffect(() => {
-    refetch();
-  });
-
   useEffect(() => {
     refetch({ limit: 5, skip: 0, status });
   }, [status]);
+
+  useEffect(() => {
+    if(isFocused) {
+      refetch();
+    }
+  }, [isFocused]);
 
   // TODO: Add skelleton loader
   function loadMoreShipments() {
@@ -331,7 +318,7 @@ function Shipments({ status, onPress }: ShipmentsProps) {
         return {
           ...prevResult,
           ...fetchMoreResult,
-          notifications: [
+          getAvailableShipment: [
             ...prevResult.getAvailableShipment,
             ...fetchMoreResult.getAvailableShipment,
           ],
@@ -341,7 +328,7 @@ function Shipments({ status, onPress }: ShipmentsProps) {
   }
 
   function handleDetailShipment(trackingNumber: string) {
-    onPress(trackingNumber);
+    router.push({ pathname: "/shipment-working", params: { trackingNumber } });
   }
 
   const shipments = useMemo<Shipment[]>(() => {
@@ -401,7 +388,7 @@ function Shipments({ status, onPress }: ShipmentsProps) {
             </Text>
             <Text varient="h3" style={shipmentStyle.pricingText}>
               {fCurrency(item.payment.invoice?.totalCost || 0)}
-              <Text varient="body2"> บาท</Text>
+              {/* <Text varient="body2"> บาท</Text> */}
             </Text>
           </View>
         </View>
@@ -423,7 +410,7 @@ function Shipments({ status, onPress }: ShipmentsProps) {
                 key={`${index}-${location.placeId}`}
               >
                 <Iconify
-                  icon="humbleicons:location"
+                  icon="mage:flag"
                   color={colors.text.disabled}
                   size={16}
                 />
@@ -433,6 +420,18 @@ function Shipments({ status, onPress }: ShipmentsProps) {
               </View>
             );
           })}
+          {item?.isRoundedReturn && (
+            <View style={shipmentStyle.descriptionWrapper}>
+              <Iconify
+                icon="icon-park-outline:return"
+                color={colors.text.disabled}
+                size={16}
+              />
+              <Text varient="body2" color="secondary" numberOfLines={1}>
+                ไป-กลับ
+              </Text>
+            </View>
+          )}
         </View>
         <View style={shipmentStyle.statusContainer}>
           <View
@@ -513,13 +512,13 @@ function Shipments({ status, onPress }: ShipmentsProps) {
   }
 
   return (
-    <View style={shipmentStyle.container}>
-      <FlatList
+    <View style={[{ paddingTop: normalize(16) }]}>
+      <FlashList
         data={shipments}
         renderItem={Item}
-        keyExtractor={(item) => item._id}
-        scrollEnabled={false}
-        contentContainerStyle={{ paddingBottom: normalize(104) }}
+        keyExtractor={(item, index) => `${index}-${item._id}`}
+        estimatedItemSize={normalize(224)}
+        contentContainerStyle={{ paddingBottom: normalize(104), paddingHorizontal: normalize(16) }}
         ListFooterComponent={FooterAction}
       />
     </View>

@@ -21,7 +21,8 @@
         "backgroundColor": "#ffffff"
       },
       "googleServicesFile": "./google-services.json",
-      "package": "com.movemateth.driver"
+      "package": "com.movemateth.driver",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",

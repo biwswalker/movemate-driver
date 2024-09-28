@@ -37,6 +37,14 @@
           "photosPermission": "อนุญาตให้ $(PRODUCT_NAME) เข้าถึงรูปภาพของคุณ",
           "cameraPermission": "อนุญาตให้ $(PRODUCT_NAME) เข้าถึงกล้องของคุณ"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
       ]
     ],
     "experiments": {

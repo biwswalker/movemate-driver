@@ -518,7 +518,7 @@ function Shipments({ status }: ShipmentsProps) {
         renderItem={Item}
         keyExtractor={(item, index) => `${index}-${item._id}`}
         estimatedItemSize={normalize(224)}
-        contentContainerStyle={{ paddingBottom: normalize(104), paddingHorizontal: normalize(16) }}
+        contentContainerStyle={{ paddingBottom: normalize(156), paddingHorizontal: normalize(16) }}
         ListFooterComponent={FooterAction}
       />
     </View>

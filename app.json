@@ -39,6 +39,12 @@
         }
       ],
       [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "อนุญาตให้ $(PRODUCT_NAME) ใช้ตำแหน่งปัจจุบันของคุณ"
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {

@@ -6,8 +6,9 @@ import Colors from "@constants/colors";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { Fragment, useEffect } from "react";
-import { View, StyleSheet, Image, Platform, PermissionsAndroid } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { requestForegroundPermissionsAsync } from "expo-location";
 
 const styles = StyleSheet.create({
   container: {
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
 export default function Landing() {
   const { isAuthenticated, isInitialized } = useAuth();
   function handleRegister() {
-    router.push("/register"); 
+    router.push("/register");
   }
   function handleLogin() {
     router.push("/login");
@@ -61,35 +62,18 @@ export default function Landing() {
   }, []);
 
   async function mapsPermissionRequest() {
-    console.log('Request notification permisssion!')
+    console.log("Request notification permisssion!");
     try {
-      if (Platform.OS === "android") {
-        // Location
-        const locationGranted = await PermissionsAndroid.check(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        if (!locationGranted) {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-            {
-              title: "ขออนุญาตใช้ตำแหน่งที่ตั้ง",
-              message: "แอพต้องการเข้าถึงตำแหน่งที่ตั้งของคุณ.",
-              buttonNeutral: "ถามฉันภายหลัง",
-              buttonNegative: "ยกเลิก",
-              buttonPositive: "ตกลง",
-            }
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-            console.log("การอนุญาตใช้ตำแหน่งที่ตั้งถูกปฏิเสธ");
-          }
-        }
+      const { status } = await requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
       }
     } catch (err) {
       console.log("initial error");
       console.warn(err);
     }
   }
-
 
   if (isAuthenticated || !isInitialized) {
     // router.replace("/(app)/(root)");

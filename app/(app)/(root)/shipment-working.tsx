@@ -14,19 +14,16 @@ import { normalize } from "@/utils/normalizeSize";
 import { ApolloError } from "@apollo/client";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
-import hexToRgba from "hex-to-rgba";
 import { filter, get, isEmpty } from "lodash";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
 import Accordion from "react-native-collapsible/Accordion";
 import StepHeader from "@/components/Shipment/Steps/StepHeader";
 import StepContent from "@/components/Shipment/Steps/StepContent";
 import * as Haptics from "expo-haptics";
+import MapsComponent from "@/components/Shipment/Maps";
 
 export default function ShipmentDetail() {
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
@@ -100,19 +97,20 @@ export default function ShipmentDetail() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView>
-        <View style={styles.backButtonWrapper}>
-          <ButtonIcon
-            onPress={handleCloseModal}
-            varient="outlined"
-            color="inherit"
-          >
-            {({ color }) => (
-              <Iconify icon="mi:chevron-left" size={24} color={color} />
-            )}
-          </ButtonIcon>
-        </View>
-      </SafeAreaView>
+      <View style={[StyleSheet.absoluteFillObject]}>
+        {shipment && <MapsComponent shipment={shipment} />}
+      </View>
+      <View style={styles.backButtonWrapper}>
+        <ButtonIcon
+          onPress={handleCloseModal}
+          varient="outlined"
+          color="inherit"
+        >
+          {({ color }) => (
+            <Iconify icon="mi:chevron-left" size={24} color={color} />
+          )}
+        </ButtonIcon>
+      </View>
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
@@ -280,13 +278,14 @@ function FinishShipment({ shipmentId, onFinishComplete }: FinishShipmentProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.divider,
+    backgroundColor: colors.action.hover,
   },
+  mapContainer: {},
   backButtonWrapper: {
     position: "absolute",
     left: normalize(24),
     top: normalize(48),
-    backgroundColor: colors.common.white,
+    backgroundColor: colors.background.default,
     overflow: "hidden",
     borderRadius: normalize(8),
   },

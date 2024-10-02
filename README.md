@@ -1,5 +1,6 @@
 # Welcome to your Expo app 👋
 
+<!-- Before build add env on eas.json with inside env name -->
 <!-- react-native-copilot -->
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).

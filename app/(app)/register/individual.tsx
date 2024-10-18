@@ -19,15 +19,18 @@ import {
 } from "@graphql/generated/graphql";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Yup from "@utils/yup";
-import { find, forEach, get, isEqual } from "lodash";
-import React, { useMemo } from "react";
+import { find, forEach, get, head, isEqual, map, omit } from "lodash";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import useSnackbar from "@/hooks/useSnackbar";
+import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { normalize } from "@/utils/normalizeSize";
+import { TextInput } from "react-native-paper";
+import { DropdownAlertType } from "react-native-dropdownalert";
+import { IndividualDriverFormValue, IndividualRegisterParam } from "./types";
 
 const styles = StyleSheet.create({
   container: {
@@ -39,7 +42,7 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     paddingHorizontal: normalize(16),
-    paddingBottom: normalize(32),
+    paddingBottom: normalize(16),
   },
   contentWrapper: {
     marginTop: normalize(48),
@@ -65,63 +68,13 @@ const styles = StyleSheet.create({
   },
 });
 
-export class IndividualDriverFormValue
-  implements IndividualDriverFormValueType
-{
-  constructor(data: IndividualDriverFormValueType) {
-    this.policyVersion = data.policyVersion;
-    this.driverType = data.driverType;
-    this.title = data.title;
-    this.otherTitle = data.otherTitle;
-    this.firstname = data.firstname;
-    this.lastname = data.lastname;
-    this.taxId = data.taxId;
-    this.phoneNumber = data.phoneNumber;
-    this.lineId = data.lineId;
-    this.password = data.password;
-    this.address = data.address;
-    this.province = data.province;
-    this.district = data.district;
-    this.subDistrict = data.subDistrict;
-    this.postcode = data.postcode;
-    this.bank = data.bank;
-    this.bankBranch = data.bankBranch;
-    this.bankName = data.bankName;
-    this.bankNumber = data.bankNumber;
-    this.serviceVehicleType = data.serviceVehicleType;
-  }
-
-  policyVersion: number;
-  driverType: string;
-  title: string;
-  otherTitle?: string;
-  firstname: string;
-  lastname: string;
-  taxId: string;
-  phoneNumber: string;
-  lineId: string;
-  password: string;
-  address: string;
-  province: string;
-  district: string;
-  subDistrict: string;
-  postcode: string;
-  bank: string;
-  bankBranch: string;
-  bankName: string;
-  bankNumber: string;
-  serviceVehicleType: string;
-}
-
-interface IndividualParam {
-  driverType: string;
-  version: number;
-}
-
 export default function RegisterIndividualScreen() {
-  const { showSnackbar } = useSnackbar();
+  const { showSnackbar } = useSnackbarV2();
   const searchParam = useLocalSearchParams<{ param: string }>();
-  const params = JSON.parse(searchParam.param) as IndividualParam;
+  const params = JSON.parse(searchParam.param) as IndividualRegisterParam;
+
+  const [openPassword, setOpenPassword] = useState(false);
+  const [openConfirmPassword, setOpenConfirmPassword] = useState(false);
 
   const { data: vehicleData } = useGetVehicleTypeAvailableQuery();
   const { data: prvinces, loading: provinceLoading } = useGetProvinceQuery();
@@ -134,7 +87,10 @@ export default function RegisterIndividualScreen() {
 
   const vehicleTypes = useMemo<VehicleType[]>(() => {
     if (vehicleData?.getVehicleTypeAvailable) {
-      return vehicleData.getVehicleTypeAvailable as VehicleType[];
+      return map(vehicleData.getVehicleTypeAvailable, (vehi) => ({
+        ...vehi,
+        name: `${vehi.name}${vehi.isConfigured ? "" : " (ยังไม่เปิดให้บริการ)"}`,
+      })) as VehicleType[];
     }
     return [];
   }, [vehicleData]);
@@ -148,8 +104,12 @@ export default function RegisterIndividualScreen() {
         ? schema.required("ระบุคำนำหน้าชื่อ")
         : schema.notRequired()
     ),
-    firstname: Yup.string().required("ระบุชื่อ"),
-    lastname: Yup.string().required("ระบุนามสกุล"),
+    firstname: Yup.string()
+      .required("ระบุชื่อ")
+      .matches(/^[ก-๙\s]+$/, "ระบุเป็นภาษาไทยเท่านั้น"),
+    lastname: Yup.string()
+      .required("ระบุนามสกุล")
+      .matches(/^[ก-๙\s]+$/, "ระบุเป็นภาษาไทยเท่านั้น"),
     taxId: Yup.string()
       .matches(/^[0-9]+$/, "เลขประจำตัวผู้เสียภาษีเป็นตัวเลขเท่านั้น")
       .min(13, "เลขประจำตัวผู้เสียภาษี 13 หลัก")
@@ -162,12 +122,19 @@ export default function RegisterIndividualScreen() {
     lineId: Yup.string(), //.required('ระบุไลน์ไอดี'),
     password: Yup.string()
       .matches(
-        /^[a-zA-Z0-9_.-]*$/,
+        /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
         "รหัสผ่านสามารถระบุตัวเลขและตัวอักษร ห้ามมีสัญลักษณ์"
       )
       .min(8, "รหัสผ่านจำเป็นต้องมี 8 ตัวขึ้นไป")
       .required("รหัสผ่านสามารถระบุตัวเลขและตัวอักษร ห้ามมีสัญลักษณ์"),
-
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password")], "รหัสผ่านไม่ตรงกัน")
+      .matches(
+        /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+        "รหัสผ่านสามารถระบุตัวเลขและตัวอักษร ห้ามมีสัญลักษณ์"
+      )
+      .min(8, "รหัสผ่านจำเป็นต้องมี 8 ตัวขึ้นไป")
+      .required("รหัสผ่านสามารถระบุตัวเลขและตัวอักษร ห้ามมีสัญลักษณ์"),
     address: Yup.string().required("ระบุที่อยู่"),
     province: Yup.string().required("ระบุจังหวัด"),
     district: Yup.string().required("ระบุอำเภอ/แขวง"),
@@ -192,31 +159,44 @@ export default function RegisterIndividualScreen() {
     serviceVehicleType: Yup.string().required("ระบุประเภทรถที่ให้บริการ"),
   });
 
-  const defaultValues: IndividualDriverFormValue = {
-    policyVersion: params.version || 0,
-    driverType: params.driverType || "",
-    title: "",
-    otherTitle: "",
-    firstname: "",
-    lastname: "",
-    taxId: "",
-    phoneNumber: "",
-    lineId: "",
-    password: "",
-    // Address
-    address: "",
-    province: "",
-    district: "",
-    subDistrict: "",
-    postcode: "",
-    // Bank
-    bank: "",
-    bankBranch: "",
-    bankName: "",
-    bankNumber: "",
-    // Vehicle type
-    serviceVehicleType: "",
-  };
+  const defaultValues: IndividualDriverFormValue = useMemo(() => {
+    const type = params.type;
+    const detail = params.detail;
+    return {
+      policyVersion: type?.version || 0,
+      driverType: type?.driverType || "",
+      title: detail?.title || "",
+      otherTitle: detail?.otherTitle || "",
+      firstname: detail?.firstname || "",
+      lastname: detail?.lastname || "",
+      taxId: detail?.taxId || "",
+      phoneNumber: detail?.phoneNumber || "",
+      lineId: detail?.lineId || "",
+      password: detail?.password || "",
+      confirmPassword: detail?.confirmPassword || "",
+      // Address
+      address: detail?.address || "",
+      province: detail?.province || "",
+      district: detail?.district || "",
+      subDistrict: detail?.subDistrict || "",
+      postcode: detail?.postcode || "",
+      // Bank
+      bank: detail?.bank || "",
+      bankBranch: detail?.bankBranch || "",
+      bankName: detail?.bankName || "",
+      bankNumber: detail?.bankNumber || "",
+      // Vehicle type
+      serviceVehicleType: detail?.serviceVehicleType || "",
+    };
+  }, []);
+
+  useEffect(() => {
+    if (params.detail) {
+      const detail = params.detail;
+      getDistrict({ variables: { provinceThName: detail.province } });
+      getSubDistrict({ variables: { districtName: detail.district } });
+    }
+  }, []);
 
   // eslint-disable-next-line react/no-unstable-nested-components
   const PassworHelperText = (error: boolean) => {
@@ -227,7 +207,35 @@ export default function RegisterIndividualScreen() {
           style={[error && { color: colors.error.main }]}
           color="secondary"
         >
-          • รหัสผ่านความยาวจำนวน 6 ตัวขึ้นไป
+          • รหัสผ่านความยาวจำนวน 8 ตัวขึ้นไป
+        </Text>
+        <Text
+          varient="caption"
+          style={[error && { color: colors.error.main }]}
+          color="secondary"
+        >
+          • สามารถระบุตัวอักษรภาษาอังกฤษและตัวเลข
+        </Text>
+      </View>
+    );
+  };
+
+  const ConfirmPassworHelperText = (error: boolean) => {
+    return (
+      <View style={styles.helperText}>
+        <Text
+          varient="caption"
+          style={[error && { color: colors.error.main }]}
+          color="secondary"
+        >
+          • รหัสผ่านต้องตรงกันกับต้นฉบับ
+        </Text>
+        <Text
+          varient="caption"
+          style={[error && { color: colors.error.main }]}
+          color="secondary"
+        >
+          • รหัสผ่านความยาวจำนวน 8 ตัวขึ้นไป
         </Text>
         <Text
           varient="caption"
@@ -243,6 +251,7 @@ export default function RegisterIndividualScreen() {
   const methods = useForm<IndividualDriverFormValue>({
     resolver: yupResolver(IndividualScema) as any,
     defaultValues,
+    mode: "onBlur",
   });
 
   const {
@@ -256,6 +265,13 @@ export default function RegisterIndividualScreen() {
 
   const values = watch();
 
+  const eyeIcon = openPassword
+    ? require("@/assets/images/eye-duotone.png")
+    : require("@/assets/images/eyeclose-duotone.png");
+  const eyeIconConfirm = openConfirmPassword
+    ? require("@/assets/images/eye-duotone.png")
+    : require("@/assets/images/eyeclose-duotone.png");
+
   function handleErrorVerified(error: ApolloError) {
     const graphQLErrors = get(error, "graphQLErrors", []);
     if (error.graphQLErrors) {
@@ -268,20 +284,31 @@ export default function RegisterIndividualScreen() {
             const errorlength = get(errors, "length", 0);
             if (errorlength > 0) {
               showSnackbar({
+                title: "พบข้อผิดพลาด",
                 message: `ไม่สามารถบันทึกได้ พบ ${errorlength} ข้อผิดพลาด`,
+                type: DropdownAlertType.Warn,
               });
             }
             forEach(errors, ({ path, ...message }) => setError(path, message));
             setFocus(get(errors, "0.path", ""));
             break;
           default:
-            showSnackbar({ message: "เกิดข้อผิดพลาด กรุณาลองใหม่" });
+            console.log(graphQLError);
+            showSnackbar({
+              title: "พบข้อผิดพลาด",
+              message: graphQLError?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+              type: DropdownAlertType.Warn,
+            });
             break;
         }
       });
     } else {
       console.log("error: ", error);
-      showSnackbar({ message: error.message || "เกิดข้อผิดพลาด กรุณาลองใหม่" });
+      showSnackbar({
+        title: "พบข้อผิดพลาด",
+        message: error.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+        type: DropdownAlertType.Warn,
+      });
     }
   }
 
@@ -289,7 +316,7 @@ export default function RegisterIndividualScreen() {
     const formValue = new IndividualDriverFormValue(
       data.verifyIndiividualDriverData as IndividualDriverFormValueType
     );
-    const param = JSON.stringify(formValue);
+    const param = JSON.stringify(Object.assign(params, { detail: formValue }));
     router.push({ pathname: "/register/documents", params: { param } });
   }
 
@@ -297,7 +324,7 @@ export default function RegisterIndividualScreen() {
     try {
       const submitData = new IndividualDriverFormValue(values);
       verifyData({
-        variables: { data: submitData },
+        variables: { data: omit(submitData, ["confirmPassword"]) },
         onCompleted: handleVerifySuccess,
         onError: handleErrorVerified,
       });
@@ -355,8 +382,30 @@ export default function RegisterIndividualScreen() {
           <RHFTextInput
             name="password"
             label="ตั้งค่ารหัสผ่าน*"
-            secureTextEntry
+            secureTextEntry={!openPassword}
             helperText={PassworHelperText}
+            right={
+              <TextInput.Icon
+                icon={eyeIcon}
+                forceTextInputFocus={false}
+                color={colors.text.secondary}
+                onPress={() => setOpenPassword(!openPassword)}
+              />
+            }
+          />
+          <RHFTextInput
+            name="confirmPassword"
+            label="ยืนยันรหัสผ่าน*"
+            secureTextEntry={!openConfirmPassword}
+            helperText={ConfirmPassworHelperText}
+            right={
+              <TextInput.Icon
+                icon={eyeIconConfirm}
+                forceTextInputFocus={false}
+                color={colors.text.secondary}
+                onPress={() => setOpenConfirmPassword(!openConfirmPassword)}
+              />
+            }
           />
 
           <View style={styles.formSubtitle}>

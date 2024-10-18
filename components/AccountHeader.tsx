@@ -5,7 +5,7 @@ import ButtonIcon from './ButtonIcon';
 import { Iconify } from 'react-native-iconify';
 import { Badge } from 'react-native-paper';
 import { imagePath } from '@utils/file';
-import colors from '@/constants/colors';
+import colors from '@constants/colors';
 import useAuth from '@/hooks/useAuth';
 import { normalize } from '@/utils/normalizeSize';
 

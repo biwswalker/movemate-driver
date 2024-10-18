@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import Text from './Text';
-import colors from '@/constants/colors';
+import colors from '@constants/colors';
 
 const styles = StyleSheet.create({
   container: {

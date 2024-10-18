@@ -3,7 +3,7 @@ import FormProvider from "@/components/HookForm/FormProvider";
 import RHFUploadButton from "@/components/HookForm/RHFUploadButton";
 import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { imagePath } from "@/utils/file";
 import { normalize } from "@/utils/normalizeSize";
@@ -30,7 +30,7 @@ interface FormValue {
   criminalRecordCheckCert: FileInput | string;
 }
 
-export const MAX_FILE_SIZE = 2 * 1000 * 1000;
+export const MAX_FILE_SIZE = 10 * 1000 * 1000;
 const MAXIMUM_FILE_SIZE_TEXT = `ขนาดไฟล์ไม่เกิน ${fData(MAX_FILE_SIZE)}`;
 
 export default function ProfileDocument() {

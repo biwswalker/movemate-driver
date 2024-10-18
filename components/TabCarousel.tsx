@@ -1,9 +1,9 @@
 import { isEqual } from "lodash";
-import React, { ReactNode } from "react";
+import React, { forwardRef, ReactNode, RefObject } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 import Button from "./Button";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { normalize } from "@/utils/normalizeSize";
 
 const buttonCarouselStyle = StyleSheet.create({
@@ -30,18 +30,12 @@ export interface TabCarousel {
   height: number;
 }
 
-export default function TabCarousel({
-  data,
-  value,
-  onChange = () => {},
-  width,
-  height,
-}: TabCarousel) {
-  const carouselRef = React.useRef<ICarouselInstance>(null);
+const TabCarousel = forwardRef<ICarouselInstance, TabCarousel>((props, ref) => {
+  const { data, value, onChange = () => {}, width, height } = props;
 
   return (
     <Carousel
-      ref={carouselRef}
+      ref={ref}
       style={{
         width: Dimensions.get("window").width,
         height: height,
@@ -66,14 +60,19 @@ export default function TabCarousel({
             style={{ width: width - 8 }}
             onPress={() => {
               onChange(item.value);
-              carouselRef.current?.scrollTo({
-                count: animationValue.value,
-                animated: true,
-              });
+              const carouselRef = ref as RefObject<ICarouselInstance>;
+              if (carouselRef?.current) {
+                carouselRef.current.scrollTo({
+                  count: animationValue.value,
+                  animated: true,
+                });
+              }
             }}
           />
         );
       }}
     />
   );
-}
+});
+
+export default TabCarousel;

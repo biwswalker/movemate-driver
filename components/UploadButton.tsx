@@ -1,17 +1,24 @@
 import hexToRgba from "hex-to-rgba";
 import React, { Fragment, useRef } from "react";
-import { StyleSheet, View, ViewStyle, TouchableOpacity, Image } from "react-native";
+import {
+  StyleSheet,
+  View,
+  ViewStyle,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import { Iconify } from "react-native-iconify";
 import Text, { getFontVarient } from "./Text";
 import { fData } from "@utils/number";
 import { fileData, fileFormat } from "@utils/file";
 import { get, isEmpty, isNumber, map, pull } from "lodash";
 import ButtonIcon from "@components/ButtonIcon";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
+import { useSnackbarV2 } from "@/hooks/useSnackbar";
 
 const styles = StyleSheet.create({
   container: {
@@ -117,6 +124,7 @@ export default function UploadButton({
   disabled,
   actionMenus = ["CAMERA", "FILE", "GALLERY", "CANCEL"],
 }: UploadButtonProps) {
+  const { showSnackbar, DropdownType, Position } = useSnackbarV2();
   const { showActionSheetWithOptions } = useActionSheet();
 
   const { name, size, uri } = fileData(inputFile || "");
@@ -134,8 +142,21 @@ export default function UploadButton({
         | undefined;
       if (asset) {
         const fileUri = get(asset, "uri", "");
-        const fileSize = get(asset, "fileSize", 0);
         const fileTrueType = get(asset, "mimeType", "") || "";
+        const fileInfo = await getFileInfo(fileUri);
+
+        const MAX_FILE_SIZE = 10 * 1000 * 1000;
+        if (fileInfo.size > MAX_FILE_SIZE) {
+          const MAXIMUM_FILE_SIZE_TEXT = `อนุญาติเฉพาะไฟล์ที่ขนาดไฟล์ไม่เกิน ${fData(MAX_FILE_SIZE)} เท่านั้น`;
+          showSnackbar({
+            title: "ไฟล์เกินขนาด",
+            message: MAXIMUM_FILE_SIZE_TEXT,
+            type: DropdownType.Warn,
+            alertPosition: Position.Top,
+          });
+          return;
+        }
+
         const extension = fileUri.split(".").pop();
         const fileName =
           get(asset, "fileName", `unnamed.${extension}`) ||
@@ -145,14 +166,22 @@ export default function UploadButton({
         const source: FileInput = {
           uri: copyUriFile,
           name: fileName,
-          size: fileSize,
+          size: fileInfo.size,
           type: fileType,
           trueType: fileTrueType,
         };
-        console.log("source", source);
         onFileChange(source);
       }
     }
+  }
+
+  async function getFileInfo(uri: string) {
+    const fileInfo = await fetch(uri);
+    const blob = await fileInfo.blob();
+    return {
+      size: blob.size,
+      type: blob.type,
+    };
   }
 
   async function moveFile(fileUri: string) {
@@ -192,6 +221,7 @@ export default function UploadButton({
   }
 
   function handleOpenActionSheet() {
+    console.log("handleOpenActionSheet: ", disabled);
     if (disabled) return;
     // Note: Record called "utility type"
     const defaultMenu: DefaultActions = {
@@ -271,10 +301,13 @@ export default function UploadButton({
               )}
             </View>
           ) : (
-            <TouchableOpacity onPress={handleOpenActionSheet}>
+            <TouchableOpacity
+              onPress={handleOpenActionSheet}
+              style={[styles.wrapperImage]}
+            >
               <View
                 style={[
-                  styles.wrapperImage,
+                  // styles.wrapperImage,
                   buttonStyle,
                   error && styles.wrapperError,
                 ]}

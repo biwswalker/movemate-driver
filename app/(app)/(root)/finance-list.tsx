@@ -1,7 +1,7 @@
 import Button from "@/components/Button";
 import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import {
   Transaction,
   useGetTransactionQuery,
@@ -127,7 +127,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   footerWrapper: {
+    alignItems: "center",
     paddingTop: normalize(8),
+    paddingBottom: normalize(24),
     paddingHorizontal: normalize(24),
   },
   listContainer: {

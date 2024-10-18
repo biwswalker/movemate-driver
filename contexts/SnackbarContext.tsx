@@ -1,4 +1,4 @@
-import colors from '@/constants/colors';
+import colors from '@constants/colors';
 import React, { createContext, PropsWithChildren, useCallback, useState } from 'react';
 import { Snackbar } from 'react-native-paper';
 

@@ -552,6 +552,7 @@ query GetAvailableShipmentByTrackingNumber($tracking: String!) {
       _id
       step
       seq
+      meta
       stepName
       customerMessage
       driverMessage

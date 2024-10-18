@@ -1,7 +1,7 @@
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { SafeAreaView } from "react-native-safe-area-context";
-import React, { useEffect, useMemo, useState } from "react";
-import { Image, Platform, ScrollView, StyleSheet, View } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Image, Platform, StyleSheet, View } from "react-native";
 import TabCarousel, { TabItem } from "@components/TabCarousel";
 import Text from "@components/Text";
 import { fDateTime } from "@utils/formatTime";
@@ -16,14 +16,18 @@ import {
 } from "@graphql/generated/graphql";
 import { fCurrency } from "@utils/number";
 import useAuth from "@/hooks/useAuth";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { useIsFocused } from "@react-navigation/native";
+import { ICarouselInstance } from "react-native-reanimated-carousel";
 
 export default function HomeScreen() {
+  const tabsRef = useRef<ICarouselInstance>(null);
   const { user } = useAuth();
+  const [forceActiveMenu, setForceActiveMenu] = useState("");
   const [activeMenu, setActiveMenu] = useState("progressing");
+  const searchParam = useLocalSearchParams<{ active: string }>();
 
   const menus = useMemo<TabItem[]>(() => {
     return [
@@ -67,13 +71,36 @@ export default function HomeScreen() {
     setActiveMenu(menu);
   }
 
+  useFocusEffect(() => {
+    if (forceActiveMenu) {
+      console.log("progressingprogressingprogressing");
+      setActiveMenu(forceActiveMenu);
+      setForceActiveMenu("");
+      if (tabsRef.current) {
+        tabsRef.current.scrollTo({
+          animated: true,
+          index: 0,
+        });
+      }
+      router.replace("/shipment");
+    }
+  });
+
+  useEffect(() => {
+    if (searchParam) {
+      setForceActiveMenu(searchParam.active);
+    }
+  }, [searchParam]);
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.wrapper}>
         <View style={styles.contentWrapper}>
           {user?.status === "pending" && <PendingApproval />}
+          {user?.status === "denied" && <DeniedApproval />}
           <View style={styles.tabMenuWrapper}>
             <TabCarousel
+              ref={tabsRef}
               data={menus}
               value={activeMenu}
               onChange={handleChangeTabMenu}
@@ -171,6 +198,9 @@ const styles = StyleSheet.create({
   infoText: {
     color: colors.warning.dark,
   },
+  errorText: {
+    color: colors.error.dark,
+  },
   tabMenuWrapper: {
     position: "relative",
     height: 36,
@@ -197,6 +227,29 @@ function PendingApproval() {
         />
         <Text varient="body2" color="secondary" style={styles.infoText}>
           {`บัญชีของคุณรอการตรวจสอบจากผู้ดูแล`}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function DeniedApproval() {
+  return (
+    <View style={styles.infoTextContainer}>
+      <View
+        style={[
+          styles.infoTextWrapper,
+          { backgroundColor: hexToRgba(colors.error.main, 0.12) },
+        ]}
+      >
+        <Iconify
+          icon="iconoir:warning-circle-solid"
+          size={normalize(18)}
+          color={colors.error.dark}
+          style={styles.iconWrapper}
+        />
+        <Text varient="body2" color="secondary" style={styles.errorText}>
+          {`บัญชีของคุณไม่ผ่านการอนุมัติจากผู้ดูแล`}
         </Text>
       </View>
     </View>
@@ -264,6 +317,7 @@ const shipmentStyle = StyleSheet.create({
     backgroundColor: hexToRgba(colors.info.main, 0.32),
   },
   footerWrapper: {
+    alignItems: "center",
     paddingTop: normalize(16),
     paddingHorizontal: normalize(24),
   },
@@ -284,7 +338,11 @@ function Shipments({ status }: ShipmentsProps) {
 
   const [hasMore, setHasMore] = useState(false);
   const { data, refetch, fetchMore, loading } = useGetAvailableShipmentQuery({
-    variables: { limit: 5, skip: 0, status },
+    variables: {
+      limit: 5,
+      skip: 0,
+      status,
+    },
     notifyOnNetworkStatusChange: true,
     onError: (error) => {
       console.log("error: ", error);
@@ -296,7 +354,7 @@ function Shipments({ status }: ShipmentsProps) {
   }, [status]);
 
   useEffect(() => {
-    if(isFocused) {
+    if (isFocused) {
       refetch();
     }
   }, [isFocused]);
@@ -370,29 +428,39 @@ function Shipments({ status }: ShipmentsProps) {
             <Text varient="subtitle1" style={{ color: colors.primary.darker }}>
               {item.trackingNumber}
             </Text>
-            <Text varient="body2">
-              เริ่มงาน
-              <Text varient="body2" color="secondary">
-                {" "}
-                {fDateTime(item.bookingDateTime, "dd/MM/yyyy p")}
-              </Text>
-            </Text>
-          </View>
-          <View>
-            <Text
-              varient="caption"
+            {/* <Text
+              varient="body2"
               color="disabled"
               style={shipmentStyle.pricingLabelText}
             >
-              ราคาสุทธิ
-            </Text>
-            <Text varient="h3" style={shipmentStyle.pricingText}>
-              {fCurrency(item.payment.invoice?.totalCost || 0)}
-              {/* <Text varient="body2"> บาท</Text> */}
-            </Text>
+              ราคา
+            </Text> */}
+            <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+              <Text varient="h3">
+                {fCurrency(item.payment.invoice?.totalCost || 0)}
+              </Text>
+              <Text varient="body2" style={{ lineHeight: normalize(26) }}>
+                {" "}
+                บาท
+              </Text>
+            </View>
+            {/* <Text varient="body2" color="disabled">เริ่มงาน</Text>
+            <Text varient="body2" color="secondary">
+              {fDateTime(item.bookingDateTime, "dd/MM/yyyy p")}
+            </Text> */}
           </View>
         </View>
         <View style={shipmentStyle.detailWrapper}>
+          <View style={shipmentStyle.descriptionWrapper}>
+            <Iconify
+              icon="fluent:clock-12-regular"
+              color={colors.text.disabled}
+              size={16}
+            />
+            <Text varient="body2" color="secondary" numberOfLines={1}>
+              เริ่มงาน {fDateTime(item.bookingDateTime, "dd/MM/yyyy p")}
+            </Text>
+          </View>
           <View style={shipmentStyle.descriptionWrapper}>
             <Iconify
               icon="humbleicons:location"
@@ -518,7 +586,10 @@ function Shipments({ status }: ShipmentsProps) {
         renderItem={Item}
         keyExtractor={(item, index) => `${index}-${item._id}`}
         estimatedItemSize={normalize(224)}
-        contentContainerStyle={{ paddingBottom: normalize(156), paddingHorizontal: normalize(16) }}
+        contentContainerStyle={{
+          paddingBottom: normalize(156),
+          paddingHorizontal: normalize(16),
+        }}
         ListFooterComponent={FooterAction}
       />
     </View>

@@ -1,55 +1,37 @@
 import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
-import { get, head, replace, tail, toNumber } from "lodash";
+import { find, includes, last, map } from "lodash";
 import { EStepDefinition } from "./constants";
 import { DoneConfirmDatetime } from "./SectionConfirmDatetimeStep";
-import { DoneArrivalLocation } from "./SectionArrivalLocationStep";
-import { DonePickAndDrop } from "./SectionPickAndDropStep";
 import { DonePOD } from "./SectionPODStep";
+import { Step } from "./Main";
+import { DoneOnLocation } from "./SectionOnLocation";
 
-interface CompletedStepsProps {
+export interface CompletedStepsProps {
   shipment: Shipment;
   refetch: Function;
-  step: StepDefinition;
+  step: Step;
   index: number;
 }
 
 export default function CompletedSteps(props: CompletedStepsProps) {
-  const shipment = props.shipment;
-  const step = get(props, "step.step", "");
+  const currentStepSeq = props.shipment?.currentStepSeq;
+  const currentStep = find(props.shipment?.steps, ["seq", currentStepSeq]);
+  const isCurrentStep = includes(
+    map(props.step?.definitions, (def) => def.seq),
+    currentStepSeq
+  );
+  const stepDefinition = (
+    isCurrentStep ? currentStep : last(props.step?.definitions)
+  ) as StepDefinition;
 
-  const getDirection = (isDropoff: boolean) => {
-    if (isDropoff) {
-      const getNumberReplaced = replace(
-        props.step.driverMessage,
-        "จัดส่งสินค้าจุดที่",
-        ""
-      );
-      const findex = toNumber(getNumberReplaced) - 1;
-      const destinations = tail(shipment.destinations);
-      const destination =
-        destinations.length > 1 ? destinations[findex] : destinations[0];
-      return destination;
-    } else {
-      const destination = head(shipment.destinations);
-      return destination;
-    }
-  };
-  const isDropoff = step === EStepDefinition.ARRIVAL_DROPOFF;
-
-  // Return
-  switch (step) {
+  switch (stepDefinition.step) {
     case EStepDefinition.CONFIRM_DATETIME:
       return <DoneConfirmDatetime {...props} />;
     case EStepDefinition.ARRIVAL_PICKUP_LOCATION:
     case EStepDefinition.ARRIVAL_DROPOFF:
-      const destination = getDirection(isDropoff);
-      if (!destination) {
-        return <></>;
-      }
-      return <DoneArrivalLocation {...props} destination={destination} />;
     case EStepDefinition.PICKUP:
     case EStepDefinition.DROPOFF:
-      return <DonePickAndDrop {...props} />;
+      return <DoneOnLocation {...props} />;
     case EStepDefinition.POD:
       return <DonePOD {...props} />;
     default:

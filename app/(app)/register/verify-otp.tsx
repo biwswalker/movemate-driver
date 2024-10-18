@@ -13,19 +13,17 @@ import {
   IndividualDriverDetailInput,
   IndividualDriverRegisterMutation,
   OtpRequestMutation,
-  OtpRequst,
   useIndividualDriverRegisterMutation,
   useOtpRequestMutation,
 } from "@graphql/generated/graphql";
 import { ApolloError } from "@apollo/client";
-import { fileUpload, fileUploadAPI } from "@services/upload";
-import { YUP_VALIDATION_ERROR_TYPE } from "@constants/error";
+import { fileUploadAPI } from "@services/upload";
 import { encryption } from "@utils/crypto";
-import colors from "@/constants/colors";
-import useSnackbar from "@/hooks/useSnackbar";
-import { IndividualDriverFormValue } from "./individual";
-import { RegisterUploadsFormValue } from "./documents";
+import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
+import { useSnackbarV2 } from "@/hooks/useSnackbar";
+import { useIsFocused } from "@react-navigation/native";
+import { IndividualRegisterParam } from "./types";
 
 const styles = StyleSheet.create({
   container: {
@@ -44,7 +42,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     padding: normalize(32),
-    paddingTop: normalize(48),
+    paddingTop: normalize(16),
     alignItems: "center",
   },
   documentList: {
@@ -61,7 +59,7 @@ const styles = StyleSheet.create({
   actionContainer: {
     width: `100%`,
     gap: normalize(8),
-    marginTop: normalize(48),
+    marginTop: normalize(24),
   },
   titleWrapper: {
     marginTop: normalize(16),
@@ -76,24 +74,19 @@ const styles = StyleSheet.create({
   },
 });
 
-interface VerifyOTPParam {
-  detail: IndividualDriverFormValue;
-  documents: RegisterUploadsFormValue;
-  otp: OtpRequst;
-}
-
 export default function RegisterOTPVerifyScreen() {
+  const isFocused = useIsFocused();
   const [code, setCode] = useState("");
   const [pinReady, setPinReady] = useState(false);
 
   const searchParam = useLocalSearchParams<{ param: string }>();
-  const params = JSON.parse(searchParam.param) as VerifyOTPParam;
+  const params = JSON.parse(searchParam.param) as IndividualRegisterParam;
 
   const [otp, setOTP] = useState(params.otp);
   const [countdown, setCountdown] = useState(0);
   const [isCounting, setIsCounting] = useState(false);
 
-  const { showSnackbar } = useSnackbar();
+  const { showSnackbar, DropdownType } = useSnackbarV2();
 
   const detail = get(
     params,
@@ -105,6 +98,14 @@ export default function RegisterOTPVerifyScreen() {
   const [otpRequest, { loading: resetOTPLoading }] = useOtpRequestMutation();
   const [individualRegister, { loading: individualRegisterLoading }] =
     useIndividualDriverRegisterMutation();
+
+  useEffect(() => {
+    if (params.otp) {
+      const otpparam = params.otp;
+      setOTP(otpparam);
+      handleStartCountingdown(new Date(otpparam.countdown || ""));
+    }
+  }, []);
 
   async function reformUpload(
     file: FileInput
@@ -148,27 +149,20 @@ export default function RegisterOTPVerifyScreen() {
     const graphQLErrors = get(error, "graphQLErrors", []);
     if (error.graphQLErrors) {
       graphQLErrors.forEach((graphQLError) => {
-        const code = get(graphQLError, "extensions.code", "") || "";
         const errors = get(graphQLError, "extensions.errors", []) || [];
         const message = get(errors, "0.message", "");
-        switch (code) {
-          case YUP_VALIDATION_ERROR_TYPE:
-            showSnackbar({ message: message, varient: "warning" });
-            break;
-          default:
-            // const message = get(errors, "0.message", "");
-            showSnackbar({
-              message: message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
-              varient: "warning",
-            });
-            break;
-        }
+        showSnackbar({
+          title: "พบข้อผิดพลาด",
+          message: message || error.message || "กรุณาลองใหม่",
+          type: DropdownType.Warn,
+        });
       });
     } else {
       console.log("error: ", error);
       showSnackbar({
+        title: "พบข้อผิดพลาด",
         message: error.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
-        varient: "warning",
+        type: DropdownType.Warn,
       });
     }
   }
@@ -180,7 +174,13 @@ export default function RegisterOTPVerifyScreen() {
 
   async function handleConfirmPhoneNumber() {
     if (documents) {
-      console.log('documents', JSON.stringify(documents))
+      if (!otp) {
+        return showSnackbar({
+          title: "ข้อมูลไม่ครบถ้วน",
+          message: "ไม่พบข้อมูล OTP กรุณาส่งและยืนยัน OTP ใหม่อีกครั้ง",
+        });
+      }
+      console.log("documents", JSON.stringify(documents));
       const encryptedPassword = encryption(detail.password || "");
 
       const frontOfVehicle = (await reformUpload(
@@ -232,7 +232,7 @@ export default function RegisterOTPVerifyScreen() {
             },
             otp: {
               otp: code,
-              phoneNumber: otp.phoneNumber,
+              phoneNumber: otp?.phoneNumber || "",
               ref: otp.ref,
             },
           },
@@ -249,7 +249,11 @@ export default function RegisterOTPVerifyScreen() {
   }
 
   function onErrorRequestOTP(error: ApolloError) {
-    showSnackbar({ message: error.message, varient: "warning" });
+    showSnackbar({
+      title: "พบข้อผิดพลาด",
+      message: error.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+      type: DropdownType.Warn,
+    });
   }
 
   useEffect(() => {
@@ -278,21 +282,32 @@ export default function RegisterOTPVerifyScreen() {
   }
 
   function handleStartCountingdown(target: Date) {
+    console.log("start handleStartCountingdown...", target);
     const endTime = target.getTime();
     const currentTime = Date.now();
     const countdownTime = Math.floor((endTime - currentTime) / 1000);
-
+    console.log("countdonw detail...", endTime, currentTime, countdownTime);
+    
     if (countdownTime > 0) {
-      setCountdown(countdownTime);
-      setIsCounting(true);
+      console.log("countdownTime more...", countdownTime);
+      setTimeout(() => {
+        setCountdown(countdownTime);
+        setIsCounting(true);
+      }, 56)
     }
   }
+
+  console.log("counter...", isCounting, countdown);
+
 
   function handleResentCode() {
     onRequestOTP();
   }
 
-  function handleOnEdit() {}
+  function handleOnEdit() {
+    const param = JSON.stringify(Object.assign(params, { otp: undefined }));
+    router.replace({ pathname: "/register/individual", params: { param } });
+  }
 
   return (
     <KeyboardAwareScrollView style={styles.container}>

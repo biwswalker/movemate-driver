@@ -26,11 +26,14 @@ import {
   useGetDriverPoliciesInfoQuery,
 } from "@graphql/generated/graphql";
 import { isEmpty } from "lodash";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import useSnackbar, { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { ActivityIndicator } from "react-native-paper";
-import { DropdownAlertPosition, DropdownAlertType } from "react-native-dropdownalert";
+import {
+  DropdownAlertPosition,
+  DropdownAlertType,
+} from "react-native-dropdownalert";
 
 const styles = StyleSheet.create({
   superContainer: {
@@ -102,7 +105,7 @@ export default function PrivacyPolicy() {
         message: error.message,
         title: "ข้อผิดพลาด",
         type: DropdownAlertType.Error,
-        alertPosition: DropdownAlertPosition.Top
+        alertPosition: DropdownAlertPosition.Top,
       });
     },
   });
@@ -125,7 +128,9 @@ export default function PrivacyPolicy() {
       router.navigate({
         pathname: "/register/individual",
         params: {
-          param: JSON.stringify({ driverType, version: policy.version }),
+          param: JSON.stringify({
+            type: { driverType, version: policy.version },
+          }),
         },
       });
     }

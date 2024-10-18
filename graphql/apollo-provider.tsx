@@ -65,9 +65,7 @@ function createWSLink(access_token: string) {
     createClient({
       url: process.env.EXPO_PUBLIC_WS_URL,
       connectionParams: {
-        ...(access_token
-          ? { authorization: `Bearer ${access_token}` }
-          : {}),
+        ...(access_token ? { authorization: `Bearer ${access_token}` } : {}),
       },
     })
   );

@@ -12,14 +12,13 @@ import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
 import AccountHeader from "@components/AccountHeader";
 import { fNumber } from "@utils/number";
-import { get } from "lodash";
 import { format } from "date-fns";
 import { th } from "date-fns/locale/th";
 import {
   Transaction,
   useGetTransactionQuery,
 } from "@graphql/generated/graphql";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -51,7 +50,7 @@ export default function Financial() {
   function handleOnPressFinancial() {
     router.push("/profile-detail");
   }
-  
+
   function handleOnViewTransaction() {
     router.push("/finance-list");
   }
@@ -62,6 +61,7 @@ export default function Financial() {
         <AccountHeader style={styles.accountContainer} />
         <View style={styles.contentWrapper}>
           {user?.status === "pending" && <PendingApproval />}
+          {user?.status === "denied" && <DeniedApproval />}
         </View>
         <View style={styles.content}>
           {data?.calculateTransaction && (
@@ -117,40 +117,47 @@ export default function Financial() {
               <Text varient="subtitle1">ตั้งค่าบัญชี</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.transactionWrapper}>
-            <View style={styles.transactionTitleWrapper}>
-              <Text varient="subtitle1" style={{ color: colors.primary.dark }}>
-                รายกาารเงินล่าสุด
-              </Text>
-              <TouchableOpacity onPress={handleOnViewTransaction}>
-                <Text varient="body2" color="secondary">
-                  ดูทั้งหมด
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <FlatList
-            data={transactions}
-            renderItem={FinancialItem}
-            keyExtractor={(item) => item._id}
-            scrollEnabled
-            ListEmptyComponent={
-              <View style={styles.emptyTransaction}>
-                <Text
-                  varient="body1"
-                  color="secondary"
-                  style={{ textAlign: "center" }}
-                >
-                  ไม่พบรายการการเงิน
-                </Text>
+          {user?.status !== "denied" && (
+            <>
+              <View style={styles.transactionWrapper}>
+                <View style={styles.transactionTitleWrapper}>
+                  <Text
+                    varient="subtitle1"
+                    style={{ color: colors.primary.dark }}
+                  >
+                    รายกาารเงินล่าสุด
+                  </Text>
+                  <TouchableOpacity onPress={handleOnViewTransaction}>
+                    <Text varient="body2" color="secondary">
+                      ดูทั้งหมด
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            }
-            contentContainerStyle={{
-              paddingBottom: normalize(64),
-              paddingTop: normalize(8),
-              paddingHorizontal: normalize(15),
-            }}
-          />
+              <FlatList
+                data={transactions}
+                renderItem={FinancialItem}
+                keyExtractor={(item) => item._id}
+                scrollEnabled
+                ListEmptyComponent={
+                  <View style={styles.emptyTransaction}>
+                    <Text
+                      varient="body1"
+                      color="secondary"
+                      style={{ textAlign: "center" }}
+                    >
+                      ไม่พบรายการการเงิน
+                    </Text>
+                  </View>
+                }
+                contentContainerStyle={{
+                  paddingBottom: normalize(72),
+                  paddingTop: normalize(8),
+                  paddingHorizontal: normalize(15),
+                }}
+              />
+            </>
+          )}
         </View>
       </SafeAreaView>
     </View>
@@ -169,6 +176,29 @@ function PendingApproval() {
         />
         <Text varient="body2" color="secondary" style={styles.infoText}>
           {`บัญชีของคุณรอการตรวจสอบจากผู้ดูแล`}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function DeniedApproval() {
+  return (
+    <View style={styles.infoTextContainer}>
+      <View
+        style={[
+          styles.infoTextWrapper,
+          { backgroundColor: hexToRgba(colors.error.main, 0.12) },
+        ]}
+      >
+        <Iconify
+          icon="iconoir:warning-circle-solid"
+          size={normalize(18)}
+          color={colors.error.dark}
+          style={styles.iconWrapper}
+        />
+        <Text varient="body2" color="secondary" style={styles.errorText}>
+          {`บัญชีของคุณไม่ผ่านการอนุมัติจากผู้ดูแล`}
         </Text>
       </View>
     </View>
@@ -257,6 +287,9 @@ const styles = StyleSheet.create({
   },
   infoText: {
     color: colors.warning.dark,
+  },
+  errorText: {
+    color: colors.error.dark,
   },
   content: {
     flex: 1,

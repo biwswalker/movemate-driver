@@ -148,13 +148,15 @@ export default function Button({
     ],
   });
 
-  const textColor = colorVarient
-    ? ["outlined", "text"].includes(varient)
-      ? colorVarient.main
-      : varient === "soft"
-        ? colorVarient.dark
-        : colorVarient.contrastText
-    : colors.text.primary;
+  const textColor = disabled
+    ? colors.text.secondary
+    : colorVarient
+      ? ["outlined", "text"].includes(varient)
+        ? colorVarient.main
+        : varient === "soft"
+          ? colorVarient.dark
+          : colorVarient.contrastText
+      : colors.text.primary;
 
   const buttonStyle = {
     ...baseButtonVarient,

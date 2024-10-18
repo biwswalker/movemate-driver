@@ -1,7 +1,7 @@
 import Button from "@/components/Button";
 import Iconify from "@/components/Iconify";
 import Text from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { normalize } from "@/utils/normalizeSize";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";

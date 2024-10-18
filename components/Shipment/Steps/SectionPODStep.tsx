@@ -1,8 +1,17 @@
 import { ProgressingStepsProps } from "./ProgressingStep";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { normalize } from "@/utils/normalizeSize";
 import Text from "@/components/Text";
-import { filter, get, isUndefined, map, pick, pullAt } from "lodash";
+import {
+  filter,
+  get,
+  head,
+  includes,
+  isUndefined,
+  map,
+  pick,
+  pullAt,
+} from "lodash";
 import { ApolloError } from "@apollo/client";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { DropdownAlertType } from "react-native-dropdownalert";
@@ -17,6 +26,8 @@ import UploadButton from "@/components/UploadButton";
 import { imagePath } from "@/utils/file";
 import SelectDropdown from "@/components/SelectDropdown";
 import TextInput from "@/components/TextInput";
+import { censorText } from "@/utils/string";
+import Animated from "react-native-reanimated";
 
 const SENDER_PROVIDER = [
   { value: "ไปรษณีย์ไทย", label: "ไปรษณีย์ไทย" },
@@ -42,6 +53,8 @@ export function ProgressPOD({
   const [files, setFiles] = useState<(FileInput | undefined)[]>([undefined]);
   const [provider, setProvider] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
+
+  const definition = head(step.definitions);
 
   function handleConfirmComplete() {
     refetch();
@@ -82,6 +95,22 @@ export function ProgressPOD({
 
   async function handleConfirm() {
     const usedFiles = files.filter((file) => !isUndefined(file));
+    if (!provider) {
+      const message = "กรุณาเลือกผู้ให้บริการ";
+      showSnackbar({
+        message,
+        title: "ข้อมูลไม่ครบ",
+        type: DropdownAlertType.Warn,
+      });
+    }
+    if (!trackingNumber) {
+      const message = "กรุณากรอกหมายเลขติดตาม";
+      showSnackbar({
+        message,
+        title: "ข้อมูลไม่ครบ",
+        type: DropdownAlertType.Warn,
+      });
+    }
     if (usedFiles.length > 1) {
       const images = await Promise.all(
         map(usedFiles, (file) => reformUpload(file))
@@ -102,7 +131,7 @@ export function ProgressPOD({
       const message = "ไม่สามารถยืนยันขึ้นสินค้าได้ กรุณาแนบรูปขึ้นต่ำ 2 รูป";
       showSnackbar({
         message,
-        title: "พบข้อผิดพลาด",
+        title: "ข้อมูลไม่ครบ",
         type: DropdownAlertType.Warn,
       });
     }
@@ -126,12 +155,12 @@ export function ProgressPOD({
   }
 
   return (
-    <ScrollView style={progressStyles.wrapper}>
+    <Animated.ScrollView style={styles.wrapper}>
       {/* Direction detail */}
       <Text varient="body2" color="secondary">
-        ยืนยันโดยรูปถ่าย
+        รูปภาพหลักฐานการส่ง
       </Text>
-      <View style={progressStyles.contactWrapper}>
+      <View style={styles.contactWrapper}>
         {map(files, (file, index) => {
           return (
             <UploadButton
@@ -148,11 +177,12 @@ export function ProgressPOD({
       </View>
       <View>
         <SelectDropdown
-          label="อำเภอ*"
+          label="บริษัทขนส่ง"
           options={SENDER_PROVIDER}
           labelField="label"
           valueField="value"
           value={provider}
+          dropdownPosition="top"
           onChanged={(provider) => {
             setProvider(provider.value);
           }}
@@ -165,65 +195,80 @@ export function ProgressPOD({
           }}
         />
       </View>
-      <View style={progressStyles.actionsWrapper}>
+      <View style={styles.actionsWrapper}>
         <Button
           size="large"
-          title={`ยืนยัน${step.driverMessage}`}
+          varient="soft"
+          title={`ยืนยัน${definition?.driverMessage}`}
           fullWidth
           loading={loading}
           onPress={handleConfirm}
         />
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
   );
 }
 
 export function DonePOD({ step, shipment }: ProgressingStepsProps) {
+  const definition = head(step.definitions);
   const podDetail = shipment.podDetail;
+  const isHiddenInfo = includes(
+    ["dilivered", "cancelled", "refund"],
+    shipment?.status
+  );
   return (
-    <View style={progressStyles.wrapper}>
-      <Text varient="body2" color="secondary">
-        ยืนยันโดยรูปถ่าย
+    <View style={styles.wrapper}>
+      <Text varient="body2" color="disabled">
+        รูปภาพหลักฐานการส่ง
       </Text>
-      <View style={progressStyles.contactWrapper}>
-        {map(step.images, (file, index) => {
+      <View style={styles.contactWrapper}>
+        {map(definition?.images || [], (file, index) => {
           return (
-            <UploadButton
-              key={`${file?._id}-${index}`}
-              file={imagePath(file.filename)}
-              disabled
-              isImagePreview
-              containerStyle={{ maxWidth: normalize(88) }}
+            <Image
+              key={`image-${file._id}-${index}`}
+              style={[styles.imageStyle]}
+              source={{ uri: imagePath(file.filename) }}
             />
           );
         })}
       </View>
       {podDetail && (
-        <View>
-          <Text varient="body2" color="secondary">
+        <View style={styles.addressContent}>
+          <Text varient="body2" color="disabled">
+            ที่อยู่
+          </Text>
+          <Text varient="body2">
             {podDetail.address} แขวง/ตำบล {podDetail.subDistrict} เขต/อำเภอ{" "}
             {podDetail.district} จังหวัด {podDetail.province}{" "}
             {podDetail.postcode}
           </Text>
-          <Text varient="body2" color="secondary">
-            {podDetail.phoneNumber}
+          <Text varient="body2" color="disabled" style={styles.title}>
+            หมายเลขติดต่อ
           </Text>
-          <Text varient="body2" color="secondary">
-            {podDetail.remark}
+          <Text varient="body2">
+            {isHiddenInfo
+              ? censorText(podDetail.phoneNumber)
+              : podDetail.phoneNumber}
           </Text>
-          <Text varient="body2" color="secondary">
-            หมายเลขติดตาม {podDetail.trackingNumber}
+          <Text varient="body2" color="disabled" style={styles.title}>
+            ผู้ให้บริการ
           </Text>
-          <Text varient="body2" color="secondary">
-            {podDetail.provider}
+          <Text varient="body2">{podDetail.provider}</Text>
+          <Text varient="body2" color="disabled" style={styles.title}>
+            หมายเลขติดตาม
           </Text>
+          <Text varient="body2">{podDetail.trackingNumber}</Text>
+          <Text varient="body2" color="disabled" style={styles.title}>
+            หมายเหตุ
+          </Text>
+          <Text varient="body2">{podDetail.remark}</Text>
         </View>
       )}
     </View>
   );
 }
 
-const progressStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: normalize(24),
     paddingVertical: normalize(16),
@@ -233,9 +278,22 @@ const progressStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     gap: normalize(8),
-    paddingTop: normalize(2),
+    paddingTop: normalize(8),
+    height: normalize(88),
   },
   actionsWrapper: {
     paddingTop: normalize(24),
+  },
+  imageStyle: {
+    aspectRatio: 1,
+    flex: 1,
+    maxWidth: normalize(88),
+    resizeMode: "cover",
+  },
+  addressContent: {
+    paddingTop: normalize(16),
+  },
+  title: {
+    paddingTop: normalize(8),
   },
 });

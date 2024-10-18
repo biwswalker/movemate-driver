@@ -10,6 +10,7 @@ interface IndividualDriverFormValueType {
   phoneNumber: string;
   lineId: string;
   password: string;
+  confirmPassword: string;
   // Address
   address: string;
   province: string;

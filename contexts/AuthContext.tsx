@@ -12,7 +12,7 @@ import { encryption } from "@/utils/crypto";
 import { ApolloError } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { get, isEqual, isNumber } from "lodash";
+import { get, isEqual } from "lodash";
 import {
   createContext,
   PropsWithChildren,
@@ -78,7 +78,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setLoading(true);
     await checkFirstLaunch();
     await me({
-      onCompleted: ({ me: meData, requireBeforeSignin, unreadCount = 0 }) => {
+      onCompleted: ({
+        me: meData,
+        requireBeforeSignin,
+        unreadCount: { notification = 0 },
+      }) => {
         if (meData) {
           setUser(meData as User);
           setAuthenticated(true);
@@ -87,7 +91,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           setRequireAcceptedPolicy(requireBeforeSignin.requireAcceptedPolicy);
           setRequirePasswordChange(requireBeforeSignin.requirePasswordChange);
         }
-        setNotificationCount(unreadCount);
+        setNotificationCount(notification);
         setIsInitialized(true);
         setLoading(false);
       },
@@ -125,8 +129,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
           data.requireBeforeSignin.requirePasswordChange
         );
       }
-      if (isNumber(data.unreadCount)) {
-        setNotificationCount(data.unreadCount);
+      if (data.unreadCount) {
+        setNotificationCount(data.unreadCount.notification);
       }
     }
   }, [data]);
@@ -184,7 +188,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   async function removeFCM() {
     await removeFCMToken();
-    await refetchMe()
+    await refetchMe();
   }
 
   const handleAuthError = (error: ApolloError) => {

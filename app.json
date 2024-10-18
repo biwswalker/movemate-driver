@@ -22,7 +22,12 @@
       },
       "googleServicesFile": "./google-services.json",
       "package": "com.movemateth.driver",
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "_TODO_API_"
+        }
+      }
     },
     "web": {
       "bundler": "metro",

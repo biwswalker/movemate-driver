@@ -2,7 +2,7 @@ import { get, isEmpty, map } from "lodash";
 import React, { useEffect } from "react";
 import { LatLng, Polyline } from "react-native-maps";
 import { useMaps } from "./Maps";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 
 interface DirectionsProps {
   directions: google.maps.DirectionsResult;

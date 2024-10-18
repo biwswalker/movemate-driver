@@ -23,7 +23,7 @@ import {
   SettingDriverPolicies,
   useGetDriverPoliciesInfoQuery,
 } from "@graphql/generated/graphql";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { router } from "expo-router";
 import useSnackbar from "@/hooks/useSnackbar";
 import { ActivityIndicator } from "react-native-paper";

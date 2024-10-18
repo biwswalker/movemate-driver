@@ -167,6 +167,7 @@ subscription ListenAvailableShipment {
       _id
       step
       seq
+      meta
       stepName
       customerMessage
       driverMessage

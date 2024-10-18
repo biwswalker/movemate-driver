@@ -1,18 +1,28 @@
 import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
-import { get } from "lodash";
+import { find, get, includes, last, map } from "lodash";
 import { EStepDefinition } from "./constants";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Step } from "./Main";
 
-interface CancelledStepsProps {
+export interface CancelledStepsProps {
   shipment: Shipment;
   refetch: Function;
-  step: StepDefinition;
+  step: Step;
   index: number;
 }
 
 export default function CancelledSteps(props: CancelledStepsProps) {
-  const step = get(props, "step.step", "");
-  switch (step) {
+  const currentStepSeq = props.shipment?.currentStepSeq;
+  const currentStep = find(props.shipment?.steps, ["seq", currentStepSeq]);
+  const isCurrentStep = includes(
+    map(props.step?.definitions, (def) => def.seq),
+    currentStepSeq
+  );
+  const stepDefinition = (
+    isCurrentStep ? currentStep : last(props.step?.definitions)
+  ) as StepDefinition;
+
+  switch (stepDefinition.step) {
     case EStepDefinition.CONFIRM_DATETIME:
       return <ConfirmDatetime {...props} />;
     case EStepDefinition.ARRIVAL_PICKUP_LOCATION:

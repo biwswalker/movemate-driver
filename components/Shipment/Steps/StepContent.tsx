@@ -1,21 +1,35 @@
 import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
 import { EStepStatus } from "./constants";
 import IdleSteps from "./IdleStep";
-import { get } from "lodash";
+import { find, get, includes, last, map } from "lodash";
 import ProgressingSteps from "./ProgressingStep";
 import CompletedSteps from "./CompletedStep";
 import CancelledSteps from "./CancelledStep";
 import { View } from "react-native";
+import { Step } from "./Main";
 
 interface StepContentProps {
   shipment: Shipment;
-  step: StepDefinition;
   refetch: Function;
   index: number;
+  step: Step;
 }
 
 export default function StepContent(props: StepContentProps) {
-  const status = get(props, "step.stepStatus", "");
+  const currentStep = find(props.shipment?.steps, [
+    "seq",
+    props.shipment?.currentStepSeq,
+  ]);
+  const isCurrentStep = includes(
+    map(props.step?.definitions, (def) => def.seq),
+    props.shipment?.currentStepSeq
+  );
+  const latestStep = last(props.step?.definitions);
+  const stepDefinition = (
+    isCurrentStep ? currentStep : latestStep
+  ) as StepDefinition;
+
+  const status = get(stepDefinition, "stepStatus", "");
 
   return (
     <View>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Text from "@components/Text";
 import NavigationBar from "@components/NavigationBar";
 import { StyleSheet, View } from "react-native";
@@ -10,7 +10,6 @@ import UploadButton from "@components/UploadButton";
 import Button from "@components/Button";
 import {
   OtpRequestMutation,
-  useGetVehicleTypeByIdLazyQuery,
   useGetVehicleTypeByIdQuery,
   useOtpRequestMutation,
 } from "@graphql/generated/graphql";
@@ -18,10 +17,9 @@ import { ApolloError } from "@apollo/client";
 import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
 import { BANKPROVIDER } from "@constants/values";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
-import { IndividualDriverFormValue } from "./individual";
-import { RegisterUploadsFormValue } from "./documents";
+import { IndividualRegisterParam } from "./types";
 
 const styles = StyleSheet.create({
   container: {
@@ -73,16 +71,11 @@ const styles = StyleSheet.create({
   },
 });
 
-interface PreviewParam {
-  detail: IndividualDriverFormValue;
-  documents: RegisterUploadsFormValue;
-}
-
 export default function RegisterIndividualPreviewScreen() {
   const [error, setError] = useState("");
 
   const searchParam = useLocalSearchParams<{ param: string }>();
-  const params = JSON.parse(searchParam.param) as PreviewParam;
+  const params = JSON.parse(searchParam.param) as IndividualRegisterParam;
   const detail = get(params, "detail", undefined);
   const documents = get(params, "documents", undefined);
 
@@ -92,10 +85,11 @@ export default function RegisterIndividualPreviewScreen() {
   });
 
   function onSuccessRequestOTP(data: OtpRequestMutation) {
-    const param = JSON.stringify({
-      ...params,
-      otp: data.otpRequest,
-    });
+    const param = JSON.stringify(
+      Object.assign(params, {
+        otp: data.otpRequest,
+      })
+    );
     router.push({ pathname: "/register/verify-otp", params: { param } });
   }
 

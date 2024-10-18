@@ -11,7 +11,7 @@ import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
 import { imagePath } from "@utils/file";
 import { ScrollView } from "react-native-gesture-handler";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";

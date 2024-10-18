@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Text from "@components/Text";
 import RHFUploadButton from "@components/HookForm/RHFUploadButton";
 import FormProvider from "@components/HookForm/FormProvider";
@@ -12,9 +12,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { isEmpty } from "lodash";
 import { fData } from "@utils/number";
-import { IndividualDriverFormValue } from "./individual";
 import { router, useLocalSearchParams } from "expo-router";
 import { normalize } from "@/utils/normalizeSize";
+import { IndividualRegisterParam, RegisterUploadsFormValue } from "./types";
 
 const styles = StyleSheet.create({
   container: {
@@ -38,47 +38,19 @@ const styles = StyleSheet.create({
     gap: normalize(12),
   },
   sectionTitleWrapper: {
-    paddingTop: normalize(48),
+    paddingTop: normalize(24),
   },
   submitStyle: {
     paddingTop: normalize(32),
   },
 });
 
-export class RegisterUploadsFormValue implements RegisterUploadsFormValueType {
-  constructor(data: RegisterUploadsFormValueType) {
-    this.frontOfVehicle = data.frontOfVehicle;
-    this.backOfVehicle = data.backOfVehicle;
-    this.leftOfVehicle = data.leftOfVehicle;
-    this.rigthOfVehicle = data.rigthOfVehicle;
-    this.copyVehicleRegistration = data.copyVehicleRegistration;
-    this.copyIDCard = data.copyIDCard;
-    this.copyDrivingLicense = data.copyDrivingLicense;
-    this.copyBookBank = data.copyBookBank;
-    this.copyHouseRegistration = data.copyHouseRegistration;
-    this.insurancePolicy = data.insurancePolicy;
-    this.criminalRecordCheckCert = data.criminalRecordCheckCert;
-  }
-
-  frontOfVehicle: FileInput;
-  backOfVehicle: FileInput;
-  leftOfVehicle: FileInput;
-  rigthOfVehicle: FileInput;
-  copyVehicleRegistration: FileInput;
-  copyIDCard: FileInput;
-  copyDrivingLicense: FileInput;
-  copyBookBank: FileInput;
-  copyHouseRegistration: FileInput;
-  insurancePolicy: FileInput;
-  criminalRecordCheckCert: FileInput;
-}
-
-export const MAX_FILE_SIZE = 2 * 1000 * 1000;
+export const MAX_FILE_SIZE = 10 * 1000 * 1000;
 const MAXIMUM_FILE_SIZE_TEXT = `ขนาดไฟล์ไม่เกิน ${fData(MAX_FILE_SIZE)}`;
 
 export default function RegisterUploadsScreen() {
   const searchParam = useLocalSearchParams<{ param: string }>();
-  const params = JSON.parse(searchParam.param) as IndividualDriverFormValue;
+  const params = JSON.parse(searchParam.param) as IndividualRegisterParam;
 
   const RegisterUploadSchema = Yup.object().shape({
     frontOfVehicle: Yup.mixed()
@@ -131,42 +103,44 @@ export default function RegisterUploadsScreen() {
     criminalRecordCheckCert: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
   });
 
-  const defaultValues = {
-    frontOfVehicle: undefined,
-    backOfVehicle: undefined,
-    leftOfVehicle: undefined,
-    rigthOfVehicle: undefined,
-    copyVehicleRegistration: undefined,
-    copyIDCard: undefined,
-    copyDrivingLicense: undefined,
-    copyBookBank: undefined,
-    copyHouseRegistration: undefined,
-    insurancePolicy: undefined,
-    criminalRecordCheckCert: undefined,
-  };
+  const defaultValues = useMemo(() => {
+    const documents = params?.documents;
+    return {
+      frontOfVehicle: documents?.frontOfVehicle || undefined,
+      backOfVehicle: documents?.backOfVehicle || undefined,
+      leftOfVehicle: documents?.leftOfVehicle || undefined,
+      rigthOfVehicle: documents?.rigthOfVehicle || undefined,
+      copyVehicleRegistration: documents?.copyVehicleRegistration || undefined,
+      copyIDCard: documents?.copyIDCard || undefined,
+      copyDrivingLicense: documents?.copyDrivingLicense || undefined,
+      copyBookBank: documents?.copyBookBank || undefined,
+      copyHouseRegistration: documents?.copyHouseRegistration || undefined,
+      insurancePolicy: documents?.insurancePolicy || undefined,
+      criminalRecordCheckCert: documents?.criminalRecordCheckCert || undefined,
+    };
+  }, [params.documents]);
 
   const methods = useForm<RegisterUploadsFormValue>({
     resolver: yupResolver(RegisterUploadSchema) as any,
     defaultValues,
   });
 
-  const {
-    handleSubmit,
-    formState: { errors },
-  } = methods;
+  const { handleSubmit, watch } = methods;
 
   async function onSubmit(values: RegisterUploadsFormValue) {
     try {
       if (params && values) {
         const documents = new RegisterUploadsFormValue(values);
-        const param = JSON.stringify({ detail: params, documents });
-        console.log('---param---', param)
+        const param = JSON.stringify(Object.assign(params, { documents }));
+        console.log("---param---", param);
         router.push({ pathname: "/register/preview", params: { param } });
       }
     } catch (error) {
-      console.log('errors: ', error);
+      console.log("errors: ", error);
     }
   }
+
+  const values = watch();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -188,47 +162,68 @@ export default function RegisterUploadsScreen() {
             </View>
             <View style={styles.rowWrapper}>
               <RHFUploadButton
+                file={values.frontOfVehicle}
                 name="frontOfVehicle"
                 label="ด้านหน้ารถ"
                 isImagePreview
+                actionMenus={["CAMERA", "GALLERY"]}
               />
               <RHFUploadButton
+                file={values.backOfVehicle}
                 name="backOfVehicle"
                 label="ด้านหลังรถ"
                 isImagePreview
+                actionMenus={["CAMERA", "GALLERY"]}
               />
             </View>
             <View style={styles.rowWrapper}>
               <RHFUploadButton
+                file={values.leftOfVehicle}
                 name="leftOfVehicle"
                 label="ด้านข้าง ซ้ายรถ"
                 isImagePreview
+                actionMenus={["CAMERA", "GALLERY"]}
               />
               <RHFUploadButton
+                file={values.rigthOfVehicle}
                 name="rigthOfVehicle"
                 label="ด้านข้าง ขวารถ"
                 isImagePreview
+                actionMenus={["CAMERA", "GALLERY"]}
               />
             </View>
             <RHFUploadButton
+              file={values.copyVehicleRegistration}
               name="copyVehicleRegistration"
               label="สำเนาทะเบียนรถ (บังคับ)"
             />
             <RHFUploadButton
+              file={values.copyIDCard}
               name="copyIDCard"
               label="สำเนาบัตรประชาชน (บังคับ)"
             />
             <RHFUploadButton
+              file={values.copyDrivingLicense}
               name="copyDrivingLicense"
               label="สำเนาใบขับขี่ (บังคับ)"
             />
-            <RHFUploadButton name="copyBookBank" label="สำเนาหน้าบัญชีธนาคาร" />
             <RHFUploadButton
+              file={values.copyBookBank}
+              name="copyBookBank"
+              label="สำเนาหน้าบัญชีธนาคาร"
+            />
+            <RHFUploadButton
+              file={values.copyHouseRegistration}
               name="copyHouseRegistration"
               label="สำเนาทะเบียนบ้าน"
             />
-            <RHFUploadButton name="insurancePolicy" label="กรมธรรม์ประกันรถ" />
             <RHFUploadButton
+              file={values.insurancePolicy}
+              name="insurancePolicy"
+              label="กรมธรรม์ประกันรถ"
+            />
+            <RHFUploadButton
+              file={values.criminalRecordCheckCert}
               name="criminalRecordCheckCert"
               label="หนังสือรับรองตรวจประวัติอาชญากรรม"
             />

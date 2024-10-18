@@ -1,7 +1,7 @@
 import Iconify from "@/components/Iconify";
 import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import {
   Shipment,
   useGetAvailableShipmentByTrackingNumberQuery,
@@ -25,7 +25,11 @@ import {
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function ShipmentDetail() {
+/**
+ * @deprecated using shipment-overview instead
+ * @returns 
+ */
+export default function _Deprecated_ShipmentDetail() {
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
 
   const { data } = useGetAvailableShipmentByTrackingNumberQuery({

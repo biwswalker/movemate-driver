@@ -1,9 +1,9 @@
 import { Destination, Shipment } from "@/graphql/generated/graphql";
 import { StyleSheet, View } from "react-native";
 import Text from "../Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import Iconify from "../Iconify";
-import { isEmpty, map } from "lodash";
+import { includes, isEmpty, map } from "lodash";
 import { normalize } from "@/utils/normalizeSize";
 import hexToRgba from "hex-to-rgba";
 import Maps from "../Maps/Maps";
@@ -34,12 +34,16 @@ export default function MapsComponent({ shipment }: IMapsProps) {
     return undefined;
   }, [shipment.directionId]);
 
-  if (destinations && direction) {
+  // if (destinations && direction) {
+  //   return <ShipmentMaps destinations={destinations} direction={direction} />;
+  // }
+  if (
+    includes(["idle", "progressing"], shipment?.status) &&
+    destinations &&
+    direction
+  ) {
     return <ShipmentMaps destinations={destinations} direction={direction} />;
   }
-  // if (includes(["idle", "progressing"], shipment.status) && destinations) {
-  //   return <ShipmentMaps destinations={destinations} />;
-  // }
   return <MapsDone />;
 }
 

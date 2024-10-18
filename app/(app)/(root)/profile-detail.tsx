@@ -4,7 +4,7 @@ import RHFSelectDropdown from "@/components/HookForm/RHFSelectDropdown";
 import RHFTextInput from "@/components/HookForm/RHFTextInput";
 import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { YUP_VALIDATION_ERROR_TYPE } from "@/constants/error";
 import { BANKPROVIDER, TITLE_NAME_OPTIONS } from "@/constants/values";
 import {
@@ -22,7 +22,7 @@ import Yup from "@/utils/yup";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFocusEffect } from "expo-router";
-import { find, forEach, get, isEqual } from "lodash";
+import { find, forEach, get, isEqual, map } from "lodash";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
@@ -30,7 +30,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 type FormValues = Omit<
   IndividualDriverFormValueType,
-  "password" | "policyVersion" | "driverType"
+  "password" | "confirmPassword" | "policyVersion" | "driverType"
 >;
 
 export default function ProfileDetail() {
@@ -48,9 +48,15 @@ export default function ProfileDetail() {
   const [getSubDistrict, { data: subDistrict, loading: subDistrictLoading }] =
     useGetSubDistrictLazyQuery();
 
+  const isApproved =
+    user?.status === "active" && user.validationStatus === "approve";
+
   const vehicleTypes = useMemo<VehicleType[]>(() => {
     if (vehicleData?.getVehicleTypeAvailable) {
-      return vehicleData.getVehicleTypeAvailable as VehicleType[];
+      return map(vehicleData.getVehicleTypeAvailable, (vehi) => ({
+        ...vehi,
+        name: `${vehi.name}${vehi.isConfigured ? "" : " (ยังไม่ให้บริการ)"}`,
+      })) as VehicleType[];
     }
     return [];
   }, [vehicleData]);
@@ -206,6 +212,7 @@ export default function ProfileDetail() {
         <View style={styles.content}>
           <FormProvider methods={methods} containerStyle={styles.inputWrapper}>
             <RHFSelectDropdown
+              disabled={!isApproved}
               name="title"
               label="คำนำหน้าชื่อ*"
               options={TITLE_NAME_OPTIONS}
@@ -214,11 +221,24 @@ export default function ProfileDetail() {
               valueField="value"
             />
             {values.title === "อื่นๆ" && (
-              <RHFTextInput name="otherTitle" label="ระบุคำนำหน้าชื่อ*" />
+              <RHFTextInput
+                disabled={!isApproved}
+                name="otherTitle"
+                label="ระบุคำนำหน้าชื่อ*"
+              />
             )}
-            <RHFTextInput name="firstname" label="ชื่อ*" />
-            <RHFTextInput name="lastname" label="นามสกุล*" />
             <RHFTextInput
+              disabled={!isApproved}
+              name="firstname"
+              label="ชื่อ*"
+            />
+            <RHFTextInput
+              disabled={!isApproved}
+              name="lastname"
+              label="นามสกุล*"
+            />
+            <RHFTextInput
+              disabled={!isApproved}
               name="taxId"
               label="เลขบัตรประจำตัวประชาชน*"
               helperText="กรอกเป็นตัวเลข 13 ตัวเท่านั้น"
@@ -229,6 +249,7 @@ export default function ProfileDetail() {
               </Text>
             </View>
             <RHFTextInput
+              disabled={!isApproved}
               name="phoneNumber"
               label="เบอร์โทรศัพท์*"
               helperText={
@@ -237,15 +258,24 @@ export default function ProfileDetail() {
                   : "กรอกเป็นตัวเลขไม่เกิน 10 ตัวเท่านั้น"
               }
             />
-            <RHFTextInput name="lineId" label="ไลน์ไอดี" />
+            <RHFTextInput
+              disabled={!isApproved}
+              name="lineId"
+              label="ไลน์ไอดี"
+            />
 
             <View style={styles.formSubtitle}>
               <Text varient="caption" color="disabled">
                 ข้อมูลที่อยู่ปัจจุบัน
               </Text>
             </View>
-            <RHFTextInput name="address" label="ที่อยู่*" />
+            <RHFTextInput
+              disabled={!isApproved}
+              name="address"
+              label="ที่อยู่*"
+            />
             <RHFSelectDropdown
+              disabled={!isApproved}
               name="province"
               label="จังหวัด*"
               options={prvinces?.getProvince || []}
@@ -267,7 +297,7 @@ export default function ProfileDetail() {
               labelField="nameTh"
               valueField="nameTh"
               value={values.district}
-              disabled={!values.province}
+              disabled={!values.province || !isApproved}
               onChanged={(district) => {
                 getSubDistrict({
                   variables: { districtName: district.nameTh },
@@ -281,7 +311,7 @@ export default function ProfileDetail() {
               name="subDistrict"
               label="ตำบล*"
               options={subDistrict?.getSubDistrict || []}
-              disabled={!values.district}
+              disabled={!values.district || !isApproved}
               value={values.subDistrict}
               labelField="nameTh"
               valueField="nameTh"
@@ -294,7 +324,12 @@ export default function ProfileDetail() {
                 setValue("postcode", `${subDistrictData?.zipCode}` || "");
               }}
             />
-            <RHFTextInput name="postcode" label="รหัสไปรษณีย์*" readOnly />
+            <RHFTextInput
+              disabled={!isApproved}
+              name="postcode"
+              label="รหัสไปรษณีย์*"
+              readOnly
+            />
             <View style={styles.formSubtitle}>
               <Text varient="caption" color="disabled">
                 บัญชีธนาคาร
@@ -303,14 +338,27 @@ export default function ProfileDetail() {
             <RHFSelectDropdown
               name="bank"
               label="ธนาคาร*"
+              disabled={!isApproved}
               options={BANKPROVIDER}
               value={values.bank}
               labelField="label"
               valueField="value"
             />
-            <RHFTextInput name="bankBranch" label="สาขา*" />
-            <RHFTextInput name="bankName" label="ชื่อบัญชี*" />
-            <RHFTextInput name="bankNumber" label="เลขที่บัญชี*" />
+            <RHFTextInput
+              disabled={!isApproved}
+              name="bankBranch"
+              label="สาขา*"
+            />
+            <RHFTextInput
+              disabled={!isApproved}
+              name="bankName"
+              label="ชื่อบัญชี*"
+            />
+            <RHFTextInput
+              disabled={!isApproved}
+              name="bankNumber"
+              label="เลขที่บัญชี*"
+            />
 
             <View style={styles.formSubtitle}>
               <Text varient="caption" color="disabled">
@@ -318,6 +366,7 @@ export default function ProfileDetail() {
               </Text>
             </View>
             <RHFSelectDropdown
+              disabled={!isApproved}
               dropdownPosition="top"
               name="serviceVehicleType"
               label="ประเภทรถที่ให้บริการ*"
@@ -332,6 +381,7 @@ export default function ProfileDetail() {
                 title="บันทึกการเปลี่ยนแปลง"
                 size="large"
                 onPress={handleSubmit(onSubmit)}
+                disabled={!isApproved}
                 // loading={verifyLoading}
               />
             </View>

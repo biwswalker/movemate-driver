@@ -1,4 +1,4 @@
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { ReactNode, type ComponentProps } from "react";
 import { Animated, StyleSheet, TouchableOpacity } from "react-native";

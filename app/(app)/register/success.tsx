@@ -8,8 +8,7 @@ import { Iconify } from "react-native-iconify";
 import { normalize } from "@utils/normalizeSize";
 import { router, useLocalSearchParams } from "expo-router";
 import { RegisterPayload } from "@/graphql/generated/graphql";
-import colors from "@/constants/colors";
-
+import colors from "@constants/colors";
 
 const styles = StyleSheet.create({
   container: {
@@ -69,11 +68,11 @@ export default function RegisterSuccessScreen() {
   const subtitle3 = ` \nโปรดตรวจสอบข้อความของท่าน`;
 
   function handleSignin() {
-    router.replace("/login")
+    router.replace("/login");
   }
 
   function handleGoToLanding() {
-    router.replace("/landing")
+    router.replace("/landing");
   }
 
   return (
@@ -84,7 +83,7 @@ export default function RegisterSuccessScreen() {
           source={require("@assets/images/registered_success.png")}
         />
         <Text varient="h3" style={[styles.titleText, styles.textCenter]}>
-          การลงทะเบียนสำเร็จ
+          ขอบคุณที่ร่วมสมัคร
         </Text>
         <Text varient="caption" color="secondary" style={styles.textCenter}>
           {subtitle1}

@@ -1,5 +1,5 @@
 import { ProgressingStepsProps } from "./ProgressingStep";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { normalize } from "@/utils/normalizeSize";
 import Text from "@/components/Text";
 import { filter, get, isUndefined, map, pick, pullAt } from "lodash";
@@ -9,18 +9,26 @@ import { DropdownAlertType } from "react-native-dropdownalert";
 import {
   useNextShipmentStepMutation,
   FileInput as FileInputGraph,
+  StepDefinition,
 } from "@/graphql/generated/graphql";
 import Button from "@/components/Button";
 import { useState } from "react";
 import { fileUploadAPI } from "@/services/upload";
 import UploadButton from "@/components/UploadButton";
 import { imagePath } from "@/utils/file";
+import { EStepDefinition } from "./constants";
+
+interface ProgressPickAndDropProps extends ProgressingStepsProps {
+  definition: StepDefinition | undefined;
+}
 
 export function ProgressPickAndDrop({
   shipment,
   refetch,
   step,
-}: ProgressingStepsProps) {
+  definition,
+}: ProgressPickAndDropProps) {
+  const [isLoading, setLoading] = useState(false);
   const { showSnackbar } = useSnackbarV2();
   const [nextShipmentStep, { loading }] = useNextShipmentStepMutation();
   const [files, setFiles] = useState<(FileInput | undefined)[]>([undefined]);
@@ -30,6 +38,7 @@ export function ProgressPickAndDrop({
   }
 
   function handleConfirmError(error: ApolloError) {
+    setLoading(false)
     const message = error.message || "พบข้อผิดพลาด";
     showSnackbar({
       message,
@@ -68,10 +77,7 @@ export function ProgressPickAndDrop({
       const images = await Promise.all(
         map(usedFiles, (file) => reformUpload(file))
       );
-      console.log(
-        "requerrrr",
-        JSON.stringify(images.filter((file) => !isUndefined(file)))
-      );
+      setLoading(true)
       nextShipmentStep({
         variables: {
           data: {
@@ -110,12 +116,16 @@ export function ProgressPickAndDrop({
   }
 
   return (
-    <ScrollView style={progressStyles.wrapper}>
+    <View style={styles.wrapper}>
       {/* Direction detail */}
       <Text varient="body2" color="secondary">
-        ยืนยันโดยรูปถ่าย
+        {definition?.step === EStepDefinition.PICKUP
+          ? "รูปภาพตอนขึ้นสินค้า"
+          : definition?.step === EStepDefinition.DROPOFF
+            ? "รูปภาพตอนลงสินค้า"
+            : ""}
       </Text>
-      <View style={progressStyles.contactWrapper}>
+      <View style={styles.contactWrapper}>
         {map(files, (file, index) => {
           return (
             <UploadButton
@@ -125,49 +135,52 @@ export function ProgressPickAndDrop({
               onFileChange={(file) => handleFileChange(file, index)}
               onRemove={() => handleFileRemove(index)}
               isImagePreview
-              containerStyle={{ maxWidth: normalize(88) }}
+              containerStyle={{
+                maxWidth: normalize(88),
+              }}
             />
           );
         })}
       </View>
-      <View style={progressStyles.actionsWrapper}>
+      <View style={styles.actionsWrapper}>
         <Button
           size="large"
-          title={`ยืนยัน${step.driverMessage}`}
+          varient="soft"
+          title={`ยืนยัน${definition?.driverMessage}`}
           fullWidth
           disabled={files.length < 1}
-          loading={loading}
+          loading={isLoading}
           onPress={handleConfirm}
         />
-      </View>
-    </ScrollView>
-  );
-}
-
-export function DonePickAndDrop({ step }: ProgressingStepsProps) {
-  return (
-    <View style={progressStyles.wrapper}>
-      <Text varient="body2" color="secondary">
-        ยืนยันโดยรูปถ่าย
-      </Text>
-      <View style={progressStyles.contactWrapper}>
-        {map(step.images, (file, index) => {
-          return (
-            <UploadButton
-              key={`${file?._id}-${index}`}
-              file={imagePath(file.filename)}
-              disabled
-              isImagePreview
-              containerStyle={{ maxWidth: normalize(88) }}
-            />
-          );
-        })}
       </View>
     </View>
   );
 }
 
-const progressStyles = StyleSheet.create({
+export function DonePickAndDrop({ definition }: ProgressPickAndDropProps) {
+  return (
+    <View style={styles.wrapper}>
+      <Text varient="body2" color="secondary">
+        {definition?.step === EStepDefinition.PICKUP
+          ? "รูปภาพตอนขึ้นสินค้า"
+          : definition?.step === EStepDefinition.DROPOFF
+            ? "รูปภาพตอนลงสินค้า"
+            : ""}
+      </Text>
+      <View style={styles.contactWrapper}>
+        {map(definition?.images, (file, index) => (
+          <Image
+            key={`image-${file._id}-${index}`}
+            style={[styles.imageStyle]}
+            source={{ uri: imagePath(file.filename) }}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: normalize(24),
     paddingVertical: normalize(16),
@@ -177,9 +190,16 @@ const progressStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     gap: normalize(8),
-    paddingTop: normalize(2),
+    paddingTop: normalize(8),
+    height: normalize(88),
   },
   actionsWrapper: {
     paddingTop: normalize(24),
+  },
+  imageStyle: {
+    aspectRatio: 1,
+    flex: 1,
+    maxWidth: normalize(88),
+    resizeMode: "cover",
   },
 });

@@ -56,12 +56,11 @@ export default function NavigationBar({
   TitleComponent,
   containerStyle = {},
 }: NavigationBarProps) {
-
   function handleBack(event: GestureResponderEvent) {
     if (typeof onBack === "function") {
       onBack(event);
     } else {
-      router.back()
+      router.back();
     }
   }
 
@@ -69,9 +68,7 @@ export default function NavigationBar({
     <View style={[styles.container, containerStyle]}>
       <View style={styles.actionWrapperLeft}>
         <ButtonIcon onPress={handleBack} varient="outlined" color="inherit">
-          {({ color }) => (
-            <Iconify icon="mi:chevron-left" color={color} />
-          )}
+          {({ color }) => <Iconify icon="mi:chevron-left" color={color} />}
         </ButtonIcon>
       </View>
       <View style={styles.wrapper}>

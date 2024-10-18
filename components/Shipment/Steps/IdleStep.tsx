@@ -1,17 +1,30 @@
 import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
-import { get } from "lodash";
+import { find, includes, last, map } from "lodash";
 import { EStepDefinition } from "./constants";
+import { Step } from "./Main";
 
 interface IdleStepsProps {
   shipment: Shipment;
   refetch: Function;
-  step: StepDefinition;
+  step: Step;
   index: number;
 }
 
 export default function IdleSteps(props: IdleStepsProps) {
-  const step = get(props, "step.step", "");
-  switch (step) {
+  const currentStep = find(props.shipment?.steps, [
+    "seq",
+    props.shipment?.currentStepSeq,
+  ]);
+  const isCurrentStep = includes(
+    map(props.step?.definitions, (def) => def.seq),
+    props.shipment?.currentStepSeq
+  );
+  const latestStep = last(props.step?.definitions);
+  const stepDefinition = (
+    isCurrentStep ? currentStep : latestStep
+  ) as StepDefinition;
+
+  switch (stepDefinition.stepStatus) {
     case EStepDefinition.CONFIRM_DATETIME:
       return <ConfirmDatetime {...props} />;
     case EStepDefinition.ARRIVAL_PICKUP_LOCATION:

@@ -168,5 +168,7 @@ query Me {
     requireAcceptedPolicy
     requirePasswordChange
   }
-  unreadCount
+  unreadCount {
+    notification
+  }
 }

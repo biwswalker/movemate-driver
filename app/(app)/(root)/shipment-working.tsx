@@ -1,46 +1,45 @@
-import Button from "@/components/Button";
-import ButtonIcon from "@/components/ButtonIcon";
-import Iconify from "@/components/Iconify";
 import Text from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import {
   Shipment,
-  StepDefinition,
   useGetAvailableShipmentByTrackingNumberQuery,
-  useMarkAsFinishMutation,
 } from "@/graphql/generated/graphql";
-import useSnackbar from "@/hooks/useSnackbar";
 import { normalize } from "@/utils/normalizeSize";
-import { ApolloError } from "@apollo/client";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { filter, get, isEmpty } from "lodash";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  BackHandler,
+  Dimensions,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
-import Accordion from "react-native-collapsible/Accordion";
-import StepHeader from "@/components/Shipment/Steps/StepHeader";
-import StepContent from "@/components/Shipment/Steps/StepContent";
-import * as Haptics from "expo-haptics";
-import MapsComponent from "@/components/Shipment/Maps";
+import NavigationBar from "@/components/NavigationBar";
+import Overview from "@/components/Shipment/WorkDetail/Overview";
+import Detail from "@/components/Shipment/WorkDetail/Detail";
+import { MainStep } from "@/components/Shipment/Steps/Main";
+import FinishShipment from "@/components/Shipment/Steps/FinishStep";
+import SheetBackdrop from "@/components/Sheets/SheetBackdrop";
+import SheetHandle from "@/components/Sheets/SheetHandle";
 
 export default function ShipmentDetail() {
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
-  const isPresented = router.canGoBack();
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const { data, refetch } = useGetAvailableShipmentByTrackingNumberQuery({
     variables: { tracking: searchParam.trackingNumber },
   });
 
-  const snapPoints = useMemo(() => ["25%", "85%"], []);
+  const snapPoints = useMemo(() => ["15%", "90%"], []); // "85%"
   const shipment = useMemo<Shipment | undefined>(
     () => data?.getAvailableShipmentByTrackingNumber as Shipment,
     [data]
   );
-  const rawDirection = get(shipment, "directionId.rawData", "");
-  const directions = rawDirection ? JSON.parse(rawDirection) : undefined;
 
   const currentStepSeq = get(shipment, "currentStepSeq", 0);
   const currentStepDefinition = get(
@@ -52,6 +51,18 @@ export default function ShipmentDetail() {
     currentStepDefinition?.step === "FINISH" &&
     currentStepDefinition.stepStatus === "progressing" &&
     shipment?.status === "progressing";
+
+  useEffect(() => {
+    const backAction = () => {
+      handleOnClose();
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+    return () => backHandler.remove();
+  }, []);
 
   // Bottom Sheet
   const handleSheetChange = useCallback((index: number) => {
@@ -65,8 +76,8 @@ export default function ShipmentDetail() {
   //   bottomSheetRef.current?.close();
   // }, []);
 
-  function handleCloseModal() {
-    if (isPresented) {
+  function handleOnClose() {
+    if (router.canDismiss()) {
       router.dismiss();
     }
   }
@@ -83,12 +94,12 @@ export default function ShipmentDetail() {
     });
   }
 
-  function handleViewDetail() {
-    router.push({
-      pathname: "/shipment-detail",
-      params: { trackingNumber: shipment?.trackingNumber || "" },
-    });
-  }
+  // function handleViewDetail() {
+  //   router.push({
+  //     pathname: "/shipment-detail",
+  //     params: { trackingNumber: shipment?.trackingNumber || "" },
+  //   });
+  // }
 
   const stepItems = filter(
     shipment?.steps,
@@ -97,180 +108,69 @@ export default function ShipmentDetail() {
 
   return (
     <View style={styles.container}>
-      <View style={[StyleSheet.absoluteFillObject]}>
-        {shipment && <MapsComponent shipment={shipment} />}
-      </View>
-      <View style={styles.backButtonWrapper}>
-        <ButtonIcon
-          onPress={handleCloseModal}
-          varient="outlined"
-          color="inherit"
-        >
-          {({ color }) => (
-            <Iconify icon="mi:chevron-left" size={24} color={color} />
+      <SafeAreaView style={styles.wrapper}>
+        <NavigationBar
+          onBack={handleOnClose}
+          containerStyle={styles.navigator}
+          TitleComponent={
+            <View>
+              <Text varient="body2" color="secondary" style={styles.textCenter}>
+                หมายเลขงานขนส่ง
+              </Text>
+              <Text varient="h4" style={styles.textCenter}>
+                {searchParam?.trackingNumber || ""}
+              </Text>
+            </View>
+          }
+        />
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {shipment && (
+            <>
+              <Overview shipment={shipment} />
+              <Detail shipment={shipment} />
+            </>
           )}
-        </ButtonIcon>
-      </View>
+        </ScrollView>
+      </SafeAreaView>
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
+        style={styles.sheetContainer}
+        topInset={StatusBar.currentHeight}
         snapPoints={snapPoints}
         onChange={handleSheetChange}
+        handleComponent={SheetHandle}
+        backdropComponent={SheetBackdrop}
       >
-        <BottomSheetView style={{ flex: 1 }}>
-          <View
-            style={{
-              flex: 1,
-              gap: 8,
-            }}
-          >
-            <View style={{ paddingHorizontal: 16 }}>
-              <Text varient="body2" color="secondary">
-                หมายเลขงานขนส่ง
-              </Text>
-              <Text varient="h3">{shipment?.trackingNumber}</Text>
-            </View>
-            <View style={[styles.detailActionWrapper]}>
-              <Button
-                title="ดูรายละเอียดงานขนส่ง"
-                varient="soft"
-                onPress={handleViewDetail}
-              />
-            </View>
-            {shipment && (
-              <ScrollView>
-                <ShipmentStep
-                  steps={stepItems}
-                  shipment={shipment}
-                  refetch={handleRefetch}
-                />
-              </ScrollView>
-            )}
-            {isConfirmFinishShipment && (
-              <FinishShipment
-                shipmentId={shipment._id}
-                onFinishComplete={handleOnShipmentComplete}
-              />
-            )}
+        <BottomSheetView
+          style={{
+            flex: 1,
+            gap: 8,
+          }}
+        >
+          <View style={{ paddingHorizontal: normalize(16) }}>
+            <Text varient="body2" color="secondary">
+              รายละเอียด
+            </Text>
+            <Text varient="h4">ขั้นตอนงานขนส่ง</Text>
           </View>
+          {shipment && (
+            <ScrollView style={{ paddingBottom: normalize(32) }}>
+              <MainStep
+                steps={stepItems}
+                shipment={shipment}
+                refetch={handleRefetch}
+              />
+              {isConfirmFinishShipment && (
+                <FinishShipment
+                  shipmentId={shipment._id}
+                  onFinishComplete={handleOnShipmentComplete}
+                />
+              )}
+            </ScrollView>
+          )}
         </BottomSheetView>
       </BottomSheet>
-    </View>
-  );
-}
-
-interface IShipmentStep {
-  steps: StepDefinition[];
-  shipment: Shipment;
-  refetch: Function;
-}
-
-function ShipmentStep({ steps, shipment, refetch }: IShipmentStep) {
-  const [activeSections, setActiveSections] = useState<number[]>([]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      // console.log("setActiveSections", shipment.currentStepSeq - 3);
-      setActiveSections([shipment.currentStepSeq - 3]);
-    }, 10);
-  }, [shipment.currentStepSeq]);
-
-  function _renderHeader(
-    content: StepDefinition,
-    index: number,
-    isActive: boolean,
-    sections: StepDefinition[]
-  ) {
-    return <StepHeader step={content} index={index} />;
-  }
-
-  function _renderContent(
-    content: StepDefinition,
-    index: number,
-    isActive: boolean,
-    sections: StepDefinition[]
-  ) {
-    return (
-      <StepContent
-        step={content}
-        index={index}
-        shipment={shipment}
-        refetch={refetch}
-      />
-    );
-  }
-
-  function handleChangeSection(indexs: number[]) {
-    setActiveSections(indexs);
-  }
-
-  return (
-    <Accordion<StepDefinition>
-      sections={steps}
-      activeSections={activeSections}
-      renderHeader={_renderHeader}
-      renderContent={_renderContent}
-      onChange={handleChangeSection}
-      containerStyle={{ backgroundColor: colors.background.paper }}
-      touchableProps={{ activeOpacity: colors.action.hoverOpacity }}
-      underlayColor={colors.action.hover}
-    />
-  );
-}
-
-interface FinishShipmentProps {
-  shipmentId: string;
-  onFinishComplete: Function;
-}
-
-function FinishShipment({ shipmentId, onFinishComplete }: FinishShipmentProps) {
-  const insets = useSafeAreaInsets();
-  const { showSnackbar } = useSnackbar();
-  const [loading, setLoading] = useState(false);
-  const [markAsFinish] = useMarkAsFinishMutation();
-
-  function onFinishError(error: ApolloError) {
-    setLoading(false);
-    const message = error.message || "ไม่สามารถจบงานได้";
-    showSnackbar({ message: message, varient: "warning" });
-  }
-
-  function onFinish() {
-    onFinishComplete();
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setLoading(false);
-  }
-
-  function handleOnPressFinish() {
-    setLoading(true);
-    markAsFinish({
-      variables: { shipmentId },
-      onCompleted: onFinish,
-      onError: onFinishError,
-    });
-  }
-
-  return (
-    <View style={[styles.finishWrapper, { paddingBottom: insets.bottom }]}>
-      <View style={styles.actionsWrapper}>
-        <Button
-          size="large"
-          varient="soft"
-          color="success"
-          title="กดค้างเพื่อแจ้งเสร็จงาน"
-          fullWidth
-          style={[{ borderRadius: normalize(24) }]}
-          delayLongPress={1000}
-          onLongPress={handleOnPressFinish}
-          loading={loading}
-          StartIcon={
-            <Iconify
-              icon="fluent-emoji-high-contrast:party-popper"
-              color={colors.success.dark}
-            />
-          }
-        />
-      </View>
     </View>
   );
 }
@@ -278,7 +178,16 @@ function FinishShipment({ shipmentId, onFinishComplete }: FinishShipmentProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.action.hover,
+    backgroundColor: colors.background.default,
+  },
+  wrapper: {
+    flex: 1,
+  },
+  navigator: {
+    paddingVertical: normalize(12),
+  },
+  textCenter: {
+    textAlign: "center",
   },
   mapContainer: {},
   backButtonWrapper: {
@@ -300,14 +209,25 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     alignSelf: "stretch",
   },
-  actionsWrapper: {
-    flex: 1,
-    paddingBottom: normalize(8),
+  scrollContainer: {
+    paddingBottom: Dimensions.get("window").height * 0.15,
   },
-  finishWrapper: {
-    flexDirection: "row",
-    paddingHorizontal: normalize(16),
-    paddingTop: normalize(16),
-    backgroundColor: colors.common.white,
+  sheetContainer: {
+    borderWidth: 1,
+    borderRadius: normalize(16),
+    borderColor: colors.divider,
+    ...(Platform.OS === "ios"
+      ? {
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 9,
+          },
+          shadowOpacity: 0.48,
+          shadowRadius: 11.95,
+        }
+      : {
+          elevation: 18,
+        }),
   },
 });

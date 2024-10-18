@@ -1,6 +1,6 @@
 import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import { useChangeDrivingStatusMutation } from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
 import { usePushNotifications } from "@/hooks/usePushNotification";
@@ -93,6 +93,7 @@ export default function ProfileSetting() {
             ) : (
               <Switch
                 value={isNotification}
+                disabled={user?.status === 'denied'}
                 onValueChange={onToggleNotificationSwitch}
               />
             )}
@@ -111,7 +112,7 @@ export default function ProfileSetting() {
             ) : (
               <Switch
                 value={isShipment}
-                disabled={!includes(["idle", "busy"], user?.drivingStatus)}
+                disabled={!includes(["idle", "busy"], user?.drivingStatus) || user?.status === 'denied'}
                 onValueChange={onToggleShipmentSwitch}
               />
             )}

@@ -2,7 +2,7 @@ import Button from "@/components/Button";
 import Iconify from "@/components/Iconify";
 import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import {
   Shipment,
   useGetAvailableShipmentQuery,

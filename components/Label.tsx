@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import Text from "./Text";
 import hexToRgba from "hex-to-rgba";
 import { normalize } from "@/utils/normalizeSize";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 
 const styles = StyleSheet.create({
   container: {

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import Text from './Text';
-import { normBaseW } from '@utils/normalizeSize';
-import colors from '@/constants/colors';
+import { normalize, normBaseW } from '@utils/normalizeSize';
+import colors from '@constants/colors';
 
 
 const styles = StyleSheet.create({
@@ -20,12 +20,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    gap: 8,
+    gap: normalize(8),
   },
   otpInput: {
     borderRadius: 4,
-    minWidth: normBaseW(48),
-    height: normBaseW(70),
+    minWidth: normalize(40),
+    height: normalize(56),
     backgroundColor: colors.background.neutral,
     textAlign: 'center',
     alignItems: 'center',

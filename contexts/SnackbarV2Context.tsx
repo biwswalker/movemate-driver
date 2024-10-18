@@ -1,5 +1,5 @@
 import { getFontVarient } from "@/components/Text";
-import colors from "@/constants/colors";
+import colors from "@constants/colors";
 import React, {
   createContext,
   Fragment,
@@ -30,6 +30,8 @@ interface SnackbarProps {
 
 interface SnackbarContextProps {
   showSnackbar: (options: SnackbarProps) => void;
+  DropdownType: typeof DropdownAlertType;
+  Position: typeof DropdownAlertPosition;
 }
 
 export const SnackbarV2Context = createContext<SnackbarContextProps | null>(
@@ -75,14 +77,24 @@ export function SnackbarV2Provider({ children }: PropsWithChildren) {
   const OverlayComponent = Platform.OS === "ios" ? FullWindowOverlay : Fragment;
 
   return (
-    <SnackbarV2Context.Provider value={{ showSnackbar }}>
+    <SnackbarV2Context.Provider
+      value={{
+        showSnackbar,
+        DropdownType: DropdownAlertType,
+        Position: DropdownAlertPosition,
+      }}
+    >
       {children}
       {processing && (
         <OverlayComponent>
           <DropdownAlert
             onDismissPressDisabled
             updateStatusBar={Platform.OS === "ios"}
-            safeViewStyle={Platform.OS === "android" ? { paddingTop: insets.top, flexDirection: 'row' } : undefined}
+            safeViewStyle={
+              Platform.OS === "android"
+                ? { paddingTop: insets.top, flexDirection: "row" }
+                : undefined
+            }
             titleTextStyle={{
               ...getFontVarient("overline"),
               color: colors.common.white,

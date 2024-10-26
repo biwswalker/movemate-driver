@@ -111,7 +111,7 @@ export default function PrivacyPolicy() {
   });
 
   const policy = useMemo<SettingDriverPolicies | undefined>(
-    () => data?.getDriverPoliciesInfo,
+    () => data?.getDriverPoliciesInfo || undefined,
     [data]
   );
 

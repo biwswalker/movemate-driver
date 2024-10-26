@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "generate:graphql": "graphql-codegen --config graphql/codegen.ts && prettier graphql/generated --write",
+    "codegen": "graphql-codegen --config graphql/codegen.ts && prettier graphql/generated --write",
     "postinstall": "patch-package"
   },
   "jest": {

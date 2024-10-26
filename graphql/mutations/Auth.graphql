@@ -31,13 +31,16 @@ mutation Login($username: String!) {
         createdAt
         updatedAt
       }
-      individualDriver {
+      driverDetail {
         _id
+        driverType
         title
         otherTitle
         firstname
         lastname
-        taxId
+        businessName
+        businessBranch
+        taxNumber
         phoneNumber
         lineId
         address
@@ -51,7 +54,7 @@ mutation Login($username: String!) {
         bankNumber
         fullname
         balance
-        serviceVehicleType {
+        serviceVehicleTypes {
           _id
           type
           isPublic

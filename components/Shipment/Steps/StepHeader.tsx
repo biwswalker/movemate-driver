@@ -1,11 +1,14 @@
 import Text from "@/components/Text";
 import colors from "@constants/colors";
-import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import {
+  EStepStatus,
+  Shipment,
+  StepDefinition,
+} from "@/graphql/generated/graphql";
 import { normalize } from "@/utils/normalizeSize";
 import hexToRgba from "hex-to-rgba";
 import { Fragment } from "react";
 import { StyleSheet, View } from "react-native";
-import { EStepStatus } from "./constants";
 import Iconify from "@/components/Iconify";
 import { Step } from "./Main";
 import { find, includes, last, map } from "lodash";
@@ -101,7 +104,7 @@ export default function StepHeader({
           <View>
             <Text varient="caption" color={colorSet.stepNumberColor}>
               ขั้นตอนที่ {index + 1}
-              {stepDefinition.stepStatus === "progressing" && (
+              {stepDefinition.stepStatus === EStepStatus.PROGRESSING && (
                 <Text varient="caption" style={{ color: colors.warning.main }}>
                   {" "}
                   กำลังดำเนินการ

@@ -28,13 +28,16 @@ query Me {
       createdAt
       updatedAt
     }
-    individualDriver {
+    driverDetail {
       _id
+      driverType
       title
       otherTitle
       firstname
       lastname
-      taxId
+      businessName
+      businessBranch
+      taxNumber
       phoneNumber
       lineId
       address
@@ -139,7 +142,7 @@ query Me {
           updatedAt
         }
       }
-      serviceVehicleType {
+      serviceVehicleTypes {
         _id
         type
         isPublic

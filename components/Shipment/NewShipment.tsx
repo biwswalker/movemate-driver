@@ -42,7 +42,7 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
   ({ onPress }, ref) => {
     const isFocused = useIsFocused();
     const { user } = useAuth();
-    const { data, restart, loading } = useListenAvailableShipmentSubscription({
+    const { data, restart } = useListenAvailableShipmentSubscription({
       onError: (errr) => {
         console.log("Listen error: ", JSON.stringify(errr));
       },
@@ -235,30 +235,30 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
               >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nโปรดเปิดการรับงาน`}</Text>
             </View>
           );
-        } else if (user?.drivingStatus === "working") {
-          return (
-            <View style={shipmentStyle.footerWrapper}>
-              <Iconify
-                icon="solar:box-bold-duotone"
-                size={normalize(112)}
-                color={colors.text.disabled}
-              />
-              <Text
-                varient="subtitle1"
-                style={[
-                  shipmentStyle.textCenter,
-                  { color: colors.primary.darker, paddingTop: normalize(8) },
-                ]}
-              >
-                ท่านกำลังดำเนินการขนส่งอยู่
-              </Text>
-              <Text
-                style={[shipmentStyle.textCenter, { paddingTop: 4 }]}
-                varient="caption"
-                color="secondary"
-              >{`เมื่อท่านดำเนินการขนส่งเสร็จสิ้นแล้ว\nท่านจะสามารถรับงานต่อไปได้`}</Text>
-            </View>
-          );
+          // } else if (user?.drivingStatus === "working") {
+          //   return (
+          //     <View style={shipmentStyle.footerWrapper}>
+          //       <Iconify
+          //         icon="solar:box-bold-duotone"
+          //         size={normalize(112)}
+          //         color={colors.text.disabled}
+          //       />
+          //       <Text
+          //         varient="subtitle1"
+          //         style={[
+          //           shipmentStyle.textCenter,
+          //           { color: colors.primary.darker, paddingTop: normalize(8) },
+          //         ]}
+          //       >
+          //         ท่านกำลังดำเนินการขนส่งอยู่
+          //       </Text>
+          //       <Text
+          //         style={[shipmentStyle.textCenter, { paddingTop: 4 }]}
+          //         varient="caption"
+          //         color="secondary"
+          //       >{`เมื่อท่านดำเนินการขนส่งเสร็จสิ้นแล้ว\nท่านจะสามารถรับงานต่อไปได้`}</Text>
+          //     </View>
+          //   );
         } else {
           return (
             <View style={shipmentStyle.footerWrapper}>

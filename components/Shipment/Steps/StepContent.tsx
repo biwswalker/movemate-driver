@@ -1,5 +1,4 @@
-import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
-import { EStepStatus } from "./constants";
+import { EStepStatus, Shipment, StepDefinition } from "@/graphql/generated/graphql";
 import IdleSteps from "./IdleStep";
 import { find, get, includes, last, map } from "lodash";
 import ProgressingSteps from "./ProgressingStep";

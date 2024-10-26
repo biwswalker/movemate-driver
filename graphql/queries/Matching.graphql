@@ -1,5 +1,5 @@
 query GetAvailableShipment(
-  $status: String!
+  $status: EShipmentMatchingCriteria!
   $limit: Int
   $sortField: [String!]
   $sortAscending: Boolean
@@ -111,13 +111,16 @@ query GetAvailableShipment(
       acceptPolicyTime
       createdAt
       updatedAt
-      individualDriver {
+      driverDetail {
         _id
+        driverType
         title
         otherTitle
         firstname
         lastname
-        taxId
+        businessName
+        businessBranch
+        taxNumber
         phoneNumber
         lineId
         address
@@ -672,13 +675,16 @@ query GetAvailableShipmentByTrackingNumber($tracking: String!) {
       acceptPolicyTime
       createdAt
       updatedAt
-      individualDriver {
+      driverDetail {
         _id
+        driverType
         title
         otherTitle
         firstname
         lastname
-        taxId
+        businessName
+        businessBranch
+        taxNumber
         phoneNumber
         lineId
         address

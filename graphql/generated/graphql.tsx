@@ -292,7 +292,7 @@ export type BusinessCustomer = {
   contactNumber: Scalars["String"]["output"];
   creditPayment?: Maybe<BusinessCustomerCreditPayment>;
   district: Scalars["String"]["output"];
-  paymentMethod: Scalars["String"]["output"];
+  paymentMethod: EPaymentMethod;
   postcode: Scalars["String"]["output"];
   province: Scalars["String"]["output"];
   subDistrict: Scalars["String"]["output"];
@@ -430,7 +430,7 @@ export type CutomerBusinessInput = {
   district: Scalars["String"]["input"];
   isVerifiedEmail?: InputMaybe<Scalars["Boolean"]["input"]>;
   isVerifiedPhoneNumber?: InputMaybe<Scalars["Boolean"]["input"]>;
-  paymentMethod: Scalars["String"]["input"];
+  paymentMethod: EPaymentMethod;
   postcode: Scalars["String"]["input"];
   profileImage?: InputMaybe<FileInput>;
   province: Scalars["String"]["input"];
@@ -530,10 +530,41 @@ export type District = {
   provinceId: Scalars["Float"]["output"];
 };
 
+export type DriverDetail = {
+  __typename?: "DriverDetail";
+  _id: Scalars["ID"]["output"];
+  address: Scalars["String"]["output"];
+  balance: Scalars["Float"]["output"];
+  bank: Scalars["String"]["output"];
+  bankBranch: Scalars["String"]["output"];
+  bankName: Scalars["String"]["output"];
+  bankNumber: Scalars["String"]["output"];
+  businessBranch?: Maybe<Scalars["String"]["output"]>;
+  businessName?: Maybe<Scalars["String"]["output"]>;
+  district: Scalars["String"]["output"];
+  documents: DriverDocument;
+  driverType: Array<EDriverType>;
+  employees?: Maybe<Array<User>>;
+  firstname?: Maybe<Scalars["String"]["output"]>;
+  fullname?: Maybe<Scalars["String"]["output"]>;
+  lastname?: Maybe<Scalars["String"]["output"]>;
+  lineId: Scalars["String"]["output"];
+  otherTitle: Scalars["String"]["output"];
+  phoneNumber: Scalars["String"]["output"];
+  postcode: Scalars["String"]["output"];
+  province: Scalars["String"]["output"];
+  serviceVehicleTypes: Array<VehicleType>;
+  subDistrict: Scalars["String"]["output"];
+  taxNumber: Scalars["String"]["output"];
+  title: Scalars["String"]["output"];
+};
+
 export type DriverDocument = {
   __typename?: "DriverDocument";
   _id: Scalars["ID"]["output"];
   backOfVehicle?: Maybe<File>;
+  businessRegistrationCertificate?: Maybe<File>;
+  certificateValueAddedTaxRegistration?: Maybe<File>;
   copyBookBank?: Maybe<File>;
   copyDrivingLicense?: Maybe<File>;
   copyHouseRegistration?: Maybe<File>;
@@ -548,6 +579,8 @@ export type DriverDocument = {
 
 export type DriverDocumentInput = {
   backOfVehicle: FileInput;
+  businessRegistrationCertificate?: InputMaybe<FileInput>;
+  certificateValueAddedTaxRegistration?: InputMaybe<FileInput>;
   copyBookBank?: InputMaybe<FileInput>;
   copyDrivingLicense: FileInput;
   copyHouseRegistration?: InputMaybe<FileInput>;
@@ -560,10 +593,103 @@ export type DriverDocumentInput = {
   rigthOfVehicle: FileInput;
 };
 
+/** Admin acceptance status */
+export enum EAdminAcceptanceStatus {
+  ACCEPTED = "ACCEPTED",
+  CANCELLED = "CANCELLED",
+  PENDING = "PENDING",
+  REACH = "REACH",
+  REJECTED = "REJECTED",
+}
+
+/** Driver acceptance status */
+export enum EDriverAcceptanceStatus {
+  ACCEPTED = "ACCEPTED",
+  IDLE = "IDLE",
+  PENDING = "PENDING",
+  UNINTERESTED = "UNINTERESTED",
+}
+
+/** Driver type */
+export enum EDriverType {
+  BUSINESS = "BUSINESS",
+  BUSINESS_DRIVER = "BUSINESS_DRIVER",
+  INDIVIDUAL_DRIVER = "INDIVIDUAL_DRIVER",
+}
+
 /** Payment method */
 export enum EPaymentMethod {
-  Cash = "CASH",
-  Credit = "CREDIT",
+  CASH = "CASH",
+  CREDIT = "CREDIT",
+}
+
+/** Payment status */
+export enum EPaymentStatus {
+  BILLED = "BILLED",
+  CANCELLED = "CANCELLED",
+  INVOICE = "INVOICE",
+  PAID = "PAID",
+  REFUND = "REFUND",
+  REFUNDED = "REFUNDED",
+  WAITING_CONFIRM_PAYMENT = "WAITING_CONFIRM_PAYMENT",
+}
+
+/** Shipment matching status criteria */
+export enum EShipmentMatchingCriteria {
+  CANCELLED = "CANCELLED",
+  DELIVERED = "DELIVERED",
+  NEW = "NEW",
+  PROGRESSING = "PROGRESSING",
+}
+
+/** Shiping status */
+export enum EShipmentStatus {
+  CANCELLED = "CANCELLED",
+  DELIVERED = "DELIVERED",
+  IDLE = "IDLE",
+  PROGRESSING = "PROGRESSING",
+  REFUND = "REFUND",
+}
+
+/** Shipment status criteria */
+export enum EShipmentStatusCriteria {
+  ALL = "ALL",
+  CANCELLED = "CANCELLED",
+  DELIVERED = "DELIVERED",
+  IDLE = "IDLE",
+  PAYMENT_VERIFY = "PAYMENT_VERIFY",
+  PROGRESSING = "PROGRESSING",
+  REFUND = "REFUND",
+  WAITING_DRIVER = "WAITING_DRIVER",
+}
+
+/** Step definition */
+export enum EStepDefinition {
+  ARRIVAL_DROPOFF = "ARRIVAL_DROPOFF",
+  ARRIVAL_PICKUP_LOCATION = "ARRIVAL_PICKUP_LOCATION",
+  CASH_VERIFY = "CASH_VERIFY",
+  CONFIRM_DATETIME = "CONFIRM_DATETIME",
+  CREATED = "CREATED",
+  CUSTOMER_CANCELLED = "CUSTOMER_CANCELLED",
+  DRIVER_ACCEPTED = "DRIVER_ACCEPTED",
+  DROPOFF = "DROPOFF",
+  FINISH = "FINISH",
+  OTHER = "OTHER",
+  PICKUP = "PICKUP",
+  POD = "POD",
+  REFUND = "REFUND",
+  REJECTED_PAYMENT = "REJECTED_PAYMENT",
+  SYSTEM_CANCELLED = "SYSTEM_CANCELLED",
+  UNINTERESTED_DRIVER = "UNINTERESTED_DRIVER",
+}
+
+/** Step status */
+export enum EStepStatus {
+  CANCELLED = "CANCELLED",
+  DONE = "DONE",
+  EXPIRE = "EXPIRE",
+  IDLE = "IDLE",
+  PROGRESSING = "PROGRESSING",
 }
 
 export type Event = {
@@ -592,17 +718,18 @@ export type FavoriteDriverPayload = {
   acceptPolicyVersion?: Maybe<Scalars["Int"]["output"]>;
   acceptedWork: Scalars["Float"]["output"];
   adminDetail?: Maybe<Admin>;
+  agents?: Maybe<Array<User>>;
   businessDetail?: Maybe<BusinessCustomer>;
   cancelledWork: Scalars["Float"]["output"];
   contactNumber?: Maybe<Scalars["String"]["output"]>;
   createdAt: Scalars["DateTimeISO"]["output"];
+  driverDetail?: Maybe<DriverDetail>;
   drivingStatus?: Maybe<Scalars["String"]["output"]>;
   email?: Maybe<Scalars["String"]["output"]>;
   favoriteDrivers?: Maybe<Array<Scalars["String"]["output"]>>;
   fcmToken?: Maybe<Scalars["String"]["output"]>;
   fullname?: Maybe<Scalars["String"]["output"]>;
   individualDetail?: Maybe<IndividualCustomer>;
-  individualDriver?: Maybe<IndividualDriver>;
   isVerifiedEmail: Scalars["Boolean"]["output"];
   isVerifiedPhoneNumber: Scalars["Boolean"]["output"];
   lastestOTP?: Maybe<Scalars["String"]["output"]>;
@@ -665,31 +792,6 @@ export type IndividualCustomer = {
   userNumber: Scalars["String"]["output"];
 };
 
-export type IndividualDriver = {
-  __typename?: "IndividualDriver";
-  _id: Scalars["ID"]["output"];
-  address: Scalars["String"]["output"];
-  balance: Scalars["Float"]["output"];
-  bank: Scalars["String"]["output"];
-  bankBranch: Scalars["String"]["output"];
-  bankName: Scalars["String"]["output"];
-  bankNumber: Scalars["String"]["output"];
-  district: Scalars["String"]["output"];
-  documents: DriverDocument;
-  firstname: Scalars["String"]["output"];
-  fullname?: Maybe<Scalars["String"]["output"]>;
-  lastname: Scalars["String"]["output"];
-  lineId: Scalars["String"]["output"];
-  otherTitle: Scalars["String"]["output"];
-  phoneNumber: Scalars["String"]["output"];
-  postcode: Scalars["String"]["output"];
-  province: Scalars["String"]["output"];
-  serviceVehicleType: VehicleType;
-  subDistrict: Scalars["String"]["output"];
-  taxId: Scalars["String"]["output"];
-  title: Scalars["String"]["output"];
-};
-
 export type IndividualDriverDetailInput = {
   address: Scalars["String"]["input"];
   bank: Scalars["String"]["input"];
@@ -697,7 +799,7 @@ export type IndividualDriverDetailInput = {
   bankName: Scalars["String"]["input"];
   bankNumber: Scalars["String"]["input"];
   district: Scalars["String"]["input"];
-  driverType: Scalars["String"]["input"];
+  driverType: Array<EDriverType>;
   firstname: Scalars["String"]["input"];
   lastname: Scalars["String"]["input"];
   lineId: Scalars["String"]["input"];
@@ -707,9 +809,9 @@ export type IndividualDriverDetailInput = {
   policyVersion: Scalars["Int"]["input"];
   postcode: Scalars["String"]["input"];
   province: Scalars["String"]["input"];
-  serviceVehicleType: Scalars["String"]["input"];
+  serviceVehicleTypes: Array<Scalars["String"]["input"]>;
   subDistrict: Scalars["String"]["input"];
-  taxId: Scalars["String"]["input"];
+  taxNumber: Scalars["String"]["input"];
   title: Scalars["String"]["input"];
 };
 
@@ -721,7 +823,7 @@ export type IndividualDriverDetailVerifyPayload = {
   bankName: Scalars["String"]["output"];
   bankNumber: Scalars["String"]["output"];
   district: Scalars["String"]["output"];
-  driverType: Scalars["String"]["output"];
+  driverType: Array<EDriverType>;
   firstname: Scalars["String"]["output"];
   lastname: Scalars["String"]["output"];
   lineId: Scalars["String"]["output"];
@@ -731,9 +833,9 @@ export type IndividualDriverDetailVerifyPayload = {
   policyVersion: Scalars["Int"]["output"];
   postcode: Scalars["String"]["output"];
   province: Scalars["String"]["output"];
-  serviceVehicleType: Scalars["String"]["output"];
+  serviceVehicleTypes: Array<Scalars["String"]["output"]>;
   subDistrict: Scalars["String"]["output"];
-  taxId: Scalars["String"]["output"];
+  taxNumber: Scalars["String"]["output"];
   title: Scalars["String"]["output"];
 };
 
@@ -1307,11 +1409,11 @@ export type Payment = {
   creditDetail?: Maybe<InvoiceDetail>;
   history?: Maybe<Array<UpdateHistory>>;
   invoice?: Maybe<SubtotalCalculatedPayload>;
-  paymentMethod: Scalars["String"]["output"];
+  paymentMethod: EPaymentMethod;
   paymentNumber: Scalars["String"]["output"];
   rejectionOtherReason?: Maybe<Scalars["String"]["output"]>;
   rejectionReason?: Maybe<Scalars["String"]["output"]>;
-  status: Scalars["String"]["output"];
+  status: EPaymentStatus;
   updatedAt: Scalars["DateTimeISO"]["output"];
 };
 
@@ -1541,11 +1643,11 @@ export type QueryAllshipmentIdsArgs = {
   driverId?: InputMaybe<Scalars["String"]["input"]>;
   driverName?: InputMaybe<Scalars["String"]["input"]>;
   endWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  paymentMethod?: InputMaybe<Scalars["String"]["input"]>;
+  paymentMethod?: InputMaybe<EPaymentMethod>;
   paymentNumber?: InputMaybe<Scalars["String"]["input"]>;
-  paymentStatus?: InputMaybe<Scalars["String"]["input"]>;
+  paymentStatus?: InputMaybe<EPaymentStatus>;
   startWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EShipmentStatusCriteria>;
   trackingNumber?: InputMaybe<Scalars["String"]["input"]>;
   vehicleTypeId?: InputMaybe<Scalars["String"]["input"]>;
 };
@@ -1635,7 +1737,7 @@ export type QueryGetAvailableShipmentArgs = {
   skip?: InputMaybe<Scalars["Int"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
-  status: Scalars["String"]["input"];
+  status: EShipmentMatchingCriteria;
 };
 
 export type QueryGetAvailableShipmentByTrackingNumberArgs = {
@@ -1824,13 +1926,13 @@ export type QueryShipmentListArgs = {
   endWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   page?: InputMaybe<Scalars["Int"]["input"]>;
-  paymentMethod?: InputMaybe<Scalars["String"]["input"]>;
+  paymentMethod?: InputMaybe<EPaymentMethod>;
   paymentNumber?: InputMaybe<Scalars["String"]["input"]>;
-  paymentStatus?: InputMaybe<Scalars["String"]["input"]>;
+  paymentStatus?: InputMaybe<EPaymentStatus>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
   startWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EShipmentStatusCriteria>;
   trackingNumber?: InputMaybe<Scalars["String"]["input"]>;
   vehicleTypeId?: InputMaybe<Scalars["String"]["input"]>;
 };
@@ -1846,14 +1948,14 @@ export type QueryShipmentsArgs = {
   driverName?: InputMaybe<Scalars["String"]["input"]>;
   endWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
-  paymentMethod?: InputMaybe<Scalars["String"]["input"]>;
+  paymentMethod?: InputMaybe<EPaymentMethod>;
   paymentNumber?: InputMaybe<Scalars["String"]["input"]>;
-  paymentStatus?: InputMaybe<Scalars["String"]["input"]>;
+  paymentStatus?: InputMaybe<EPaymentStatus>;
   skip?: InputMaybe<Scalars["Int"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
   startWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EShipmentStatusCriteria>;
   trackingNumber?: InputMaybe<Scalars["String"]["input"]>;
   vehicleTypeId?: InputMaybe<Scalars["String"]["input"]>;
 };
@@ -1873,17 +1975,17 @@ export type QueryStatusCountArgs = {
   driverId?: InputMaybe<Scalars["String"]["input"]>;
   driverName?: InputMaybe<Scalars["String"]["input"]>;
   endWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  paymentMethod?: InputMaybe<Scalars["String"]["input"]>;
+  paymentMethod?: InputMaybe<EPaymentMethod>;
   paymentNumber?: InputMaybe<Scalars["String"]["input"]>;
-  paymentStatus?: InputMaybe<Scalars["String"]["input"]>;
+  paymentStatus?: InputMaybe<EPaymentStatus>;
   startWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EShipmentStatusCriteria>;
   trackingNumber?: InputMaybe<Scalars["String"]["input"]>;
   vehicleTypeId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryTotalAvailableShipmentArgs = {
-  status: Scalars["String"]["input"];
+  status: EShipmentMatchingCriteria;
 };
 
 export type QueryTotalMonthBillingArgs = {
@@ -1900,11 +2002,11 @@ export type QueryTotalShipmentArgs = {
   driverId?: InputMaybe<Scalars["String"]["input"]>;
   driverName?: InputMaybe<Scalars["String"]["input"]>;
   endWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  paymentMethod?: InputMaybe<Scalars["String"]["input"]>;
+  paymentMethod?: InputMaybe<EPaymentMethod>;
   paymentNumber?: InputMaybe<Scalars["String"]["input"]>;
-  paymentStatus?: InputMaybe<Scalars["String"]["input"]>;
+  paymentStatus?: InputMaybe<EPaymentStatus>;
   startWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EShipmentStatusCriteria>;
   trackingNumber?: InputMaybe<Scalars["String"]["input"]>;
   vehicleTypeId?: InputMaybe<Scalars["String"]["input"]>;
 };
@@ -1964,7 +2066,7 @@ export type RegisterBusinessInput = {
   district: Scalars["String"]["input"];
   paymentCashDetail?: InputMaybe<CashPaymentInput>;
   paymentCreditDetail?: InputMaybe<CreditPaymentInput>;
-  paymentMethod: Scalars["String"]["input"];
+  paymentMethod: EPaymentMethod;
   postcode: Scalars["String"]["input"];
   province: Scalars["String"]["input"];
   subDistrict: Scalars["String"]["input"];
@@ -2004,7 +2106,7 @@ export type RegisterOtpInput = {
 
 export type RegisterPayload = {
   __typename?: "RegisterPayload";
-  driverType: Scalars["String"]["output"];
+  driverType: Array<EDriverType>;
   phoneNumber: Scalars["String"]["output"];
 };
 
@@ -2193,7 +2295,8 @@ export type Shipment = {
   _id: Scalars["ID"]["output"];
   additionalImages?: Maybe<Array<File>>;
   additionalServices: Array<ShipmentAdditionalServicePrice>;
-  adminAcceptanceStatus: Scalars["String"]["output"];
+  adminAcceptanceStatus: EAdminAcceptanceStatus;
+  agentDriver?: Maybe<User>;
   bookingDateTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
   cancellationDetail?: Maybe<Scalars["String"]["output"]>;
   cancellationReason?: Maybe<Scalars["String"]["output"]>;
@@ -2210,7 +2313,7 @@ export type Shipment = {
   distance: Scalars["Float"]["output"];
   distances: Array<ShipmentDistancePricing>;
   driver?: Maybe<User>;
-  driverAcceptanceStatus: Scalars["String"]["output"];
+  driverAcceptanceStatus: EDriverAcceptanceStatus;
   history?: Maybe<Array<UpdateHistory>>;
   isBookingWithDate: Scalars["Boolean"]["output"];
   isNotificationPause: Scalars["Boolean"]["output"];
@@ -2222,9 +2325,8 @@ export type Shipment = {
   refund?: Maybe<Refund>;
   remark?: Maybe<Scalars["String"]["output"]>;
   requestedDriver?: Maybe<User>;
-  requestedDriverOnly?: Maybe<Scalars["Boolean"]["output"]>;
   returnDistance: Scalars["Float"]["output"];
-  status: Scalars["String"]["output"];
+  status: EShipmentStatus;
   steps: Array<StepDefinition>;
   trackingNumber: Scalars["String"]["output"];
   updatedAt: Scalars["DateTimeISO"]["output"];
@@ -2267,7 +2369,7 @@ export type ShipmentInput = {
   isRoundedReturn: Scalars["Boolean"]["input"];
   locations: Array<DestinationInput>;
   paymentDetail?: InputMaybe<PaymentDetailInput>;
-  paymentMethod: Scalars["String"]["input"];
+  paymentMethod: EPaymentMethod;
   podDetail?: InputMaybe<PodAddressInput>;
   refId?: InputMaybe<Scalars["String"]["input"]>;
   remark?: InputMaybe<Scalars["String"]["input"]>;
@@ -2314,9 +2416,9 @@ export type StepDefinition = {
   images: Array<File>;
   meta?: Maybe<Scalars["Int"]["output"]>;
   seq: Scalars["Int"]["output"];
-  step: Scalars["String"]["output"];
+  step: EStepDefinition;
   stepName: Scalars["String"]["output"];
-  stepStatus: Scalars["String"]["output"];
+  stepStatus: EStepStatus;
   updatedAt?: Maybe<Scalars["DateTimeISO"]["output"]>;
 };
 
@@ -2421,16 +2523,17 @@ export type User = {
   acceptPolicyTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
   acceptPolicyVersion?: Maybe<Scalars["Int"]["output"]>;
   adminDetail?: Maybe<Admin>;
+  agents?: Maybe<Array<User>>;
   businessDetail?: Maybe<BusinessCustomer>;
   contactNumber?: Maybe<Scalars["String"]["output"]>;
   createdAt: Scalars["DateTimeISO"]["output"];
+  driverDetail?: Maybe<DriverDetail>;
   drivingStatus?: Maybe<Scalars["String"]["output"]>;
   email?: Maybe<Scalars["String"]["output"]>;
   favoriteDrivers?: Maybe<Array<Scalars["String"]["output"]>>;
   fcmToken?: Maybe<Scalars["String"]["output"]>;
   fullname?: Maybe<Scalars["String"]["output"]>;
   individualDetail?: Maybe<IndividualCustomer>;
-  individualDriver?: Maybe<IndividualDriver>;
   isVerifiedEmail: Scalars["Boolean"]["output"];
   isVerifiedPhoneNumber: Scalars["Boolean"]["output"];
   lastestOTP?: Maybe<Scalars["String"]["output"]>;
@@ -2610,14 +2713,17 @@ export type LoginMutation = {
         createdAt: any;
         updatedAt: any;
       } | null;
-      individualDriver?: {
-        __typename?: "IndividualDriver";
+      driverDetail?: {
+        __typename?: "DriverDetail";
         _id: string;
+        driverType: Array<EDriverType>;
         title: string;
         otherTitle: string;
-        firstname: string;
-        lastname: string;
-        taxId: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
         phoneNumber: string;
         lineId: string;
         address: string;
@@ -2631,7 +2737,7 @@ export type LoginMutation = {
         bankNumber: string;
         fullname?: string | null;
         balance: number;
-        serviceVehicleType: {
+        serviceVehicleTypes: Array<{
           __typename?: "VehicleType";
           _id: string;
           type: string;
@@ -2654,7 +2760,7 @@ export type LoginMutation = {
             createdAt: any;
             updatedAt: any;
           };
-        };
+        }>;
       } | null;
     };
   };
@@ -2692,7 +2798,7 @@ export type IndividualDriverRegisterMutation = {
   individualDriverRegister: {
     __typename?: "RegisterPayload";
     phoneNumber: string;
-    driverType: string;
+    driverType: Array<EDriverType>;
   };
 };
 
@@ -2705,12 +2811,12 @@ export type VerifyIndiividualDriverDataMutation = {
   verifyIndiividualDriverData: {
     __typename?: "IndividualDriverDetailVerifyPayload";
     policyVersion: number;
-    driverType: string;
+    driverType: Array<EDriverType>;
     title: string;
     otherTitle?: string | null;
     firstname: string;
     lastname: string;
-    taxId: string;
+    taxNumber: string;
     phoneNumber: string;
     lineId: string;
     password: string;
@@ -2723,7 +2829,7 @@ export type VerifyIndiividualDriverDataMutation = {
     bankBranch: string;
     bankName: string;
     bankNumber: string;
-    serviceVehicleType: string;
+    serviceVehicleTypes: Array<string>;
   };
 };
 
@@ -2863,7 +2969,7 @@ export type GetSubDistrictQuery = {
 };
 
 export type GetAvailableShipmentQueryVariables = Exact<{
-  status: Scalars["String"]["input"];
+  status: EShipmentMatchingCriteria;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   sortField?: InputMaybe<
     Array<Scalars["String"]["input"]> | Scalars["String"]["input"]
@@ -2879,9 +2985,9 @@ export type GetAvailableShipmentQuery = {
     __typename?: "Shipment";
     _id: string;
     trackingNumber: string;
-    status: string;
-    adminAcceptanceStatus: string;
-    driverAcceptanceStatus: string;
+    status: EShipmentStatus;
+    adminAcceptanceStatus: EAdminAcceptanceStatus;
+    driverAcceptanceStatus: EDriverAcceptanceStatus;
     displayDistance: number;
     displayTime: number;
     distance: number;
@@ -2952,7 +3058,7 @@ export type GetAvailableShipmentQuery = {
         postcode: string;
         contactNumber: string;
         businessEmail: string;
-        paymentMethod: string;
+        paymentMethod: EPaymentMethod;
         acceptedEDocumentDate?: any | null;
         acceptedPoliciesVersion?: number | null;
         acceptedPoliciesDate?: any | null;
@@ -2981,14 +3087,17 @@ export type GetAvailableShipmentQuery = {
       acceptPolicyTime?: any | null;
       createdAt: any;
       updatedAt: any;
-      individualDriver?: {
-        __typename?: "IndividualDriver";
+      driverDetail?: {
+        __typename?: "DriverDetail";
         _id: string;
+        driverType: Array<EDriverType>;
         title: string;
         otherTitle: string;
-        firstname: string;
-        lastname: string;
-        taxId: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
         phoneNumber: string;
         lineId: string;
         address: string;
@@ -3053,12 +3162,12 @@ export type GetAvailableShipmentQuery = {
     steps: Array<{
       __typename?: "StepDefinition";
       _id: string;
-      step: string;
+      step: EStepDefinition;
       seq: number;
       stepName: string;
       customerMessage: string;
       driverMessage: string;
-      stepStatus: string;
+      stepStatus: EStepStatus;
       createdAt: any;
       updatedAt?: any | null;
       images: Array<{
@@ -3080,8 +3189,8 @@ export type GetAvailableShipmentQuery = {
     payment: {
       __typename?: "Payment";
       _id: string;
-      status: string;
-      paymentMethod: string;
+      status: EPaymentStatus;
+      paymentMethod: EPaymentMethod;
       createdAt: any;
       updatedAt: any;
       calculation?: {
@@ -3113,9 +3222,9 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
     __typename?: "Shipment";
     _id: string;
     trackingNumber: string;
-    status: string;
-    adminAcceptanceStatus: string;
-    driverAcceptanceStatus: string;
+    status: EShipmentStatus;
+    adminAcceptanceStatus: EAdminAcceptanceStatus;
+    driverAcceptanceStatus: EDriverAcceptanceStatus;
     displayDistance: number;
     displayTime: number;
     distance: number;
@@ -3197,7 +3306,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         postcode: string;
         contactNumber: string;
         businessEmail: string;
-        paymentMethod: string;
+        paymentMethod: EPaymentMethod;
         acceptedEDocumentDate?: any | null;
         acceptedPoliciesVersion?: number | null;
         acceptedPoliciesDate?: any | null;
@@ -3464,13 +3573,13 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
     steps: Array<{
       __typename?: "StepDefinition";
       _id: string;
-      step: string;
+      step: EStepDefinition;
       seq: number;
       meta?: number | null;
       stepName: string;
       customerMessage: string;
       driverMessage: string;
-      stepStatus: string;
+      stepStatus: EStepStatus;
       createdAt: any;
       updatedAt?: any | null;
       images: Array<{
@@ -3486,9 +3595,9 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
     payment: {
       __typename?: "Payment";
       _id: string;
-      status: string;
+      status: EPaymentStatus;
       paymentNumber: string;
-      paymentMethod: string;
+      paymentMethod: EPaymentMethod;
       rejectionOtherReason?: string | null;
       rejectionReason?: string | null;
       createdAt: any;
@@ -3599,14 +3708,17 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       acceptPolicyTime?: any | null;
       createdAt: any;
       updatedAt: any;
-      individualDriver?: {
-        __typename?: "IndividualDriver";
+      driverDetail?: {
+        __typename?: "DriverDetail";
         _id: string;
+        driverType: Array<EDriverType>;
         title: string;
         otherTitle: string;
-        firstname: string;
-        lastname: string;
-        taxId: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
         phoneNumber: string;
         lineId: string;
         address: string;
@@ -3735,14 +3847,17 @@ export type MeQuery = {
       createdAt: any;
       updatedAt: any;
     } | null;
-    individualDriver?: {
-      __typename?: "IndividualDriver";
+    driverDetail?: {
+      __typename?: "DriverDetail";
       _id: string;
+      driverType: Array<EDriverType>;
       title: string;
       otherTitle: string;
-      firstname: string;
-      lastname: string;
-      taxId: string;
+      firstname?: string | null;
+      lastname?: string | null;
+      businessName?: string | null;
+      businessBranch?: string | null;
+      taxNumber: string;
       phoneNumber: string;
       lineId: string;
       address: string;
@@ -3859,7 +3974,7 @@ export type MeQuery = {
           updatedAt: any;
         } | null;
       };
-      serviceVehicleType: {
+      serviceVehicleTypes: Array<{
         __typename?: "VehicleType";
         _id: string;
         type: string;
@@ -3883,7 +3998,7 @@ export type MeQuery = {
           createdAt: any;
           updatedAt: any;
         };
-      };
+      }>;
     } | null;
   };
   requireBeforeSignin: {
@@ -3971,9 +4086,9 @@ export type ListenAvailableShipmentSubscription = {
     __typename?: "Shipment";
     _id: string;
     trackingNumber: string;
-    status: string;
-    adminAcceptanceStatus: string;
-    driverAcceptanceStatus: string;
+    status: EShipmentStatus;
+    adminAcceptanceStatus: EAdminAcceptanceStatus;
+    driverAcceptanceStatus: EDriverAcceptanceStatus;
     displayDistance: number;
     displayTime: number;
     distance: number;
@@ -4044,7 +4159,7 @@ export type ListenAvailableShipmentSubscription = {
         postcode: string;
         contactNumber: string;
         businessEmail: string;
-        paymentMethod: string;
+        paymentMethod: EPaymentMethod;
         acceptedEDocumentDate?: any | null;
         acceptedPoliciesVersion?: number | null;
         acceptedPoliciesDate?: any | null;
@@ -4073,14 +4188,17 @@ export type ListenAvailableShipmentSubscription = {
       acceptPolicyTime?: any | null;
       createdAt: any;
       updatedAt: any;
-      individualDriver?: {
-        __typename?: "IndividualDriver";
+      driverDetail?: {
+        __typename?: "DriverDetail";
         _id: string;
+        driverType: Array<EDriverType>;
         title: string;
         otherTitle: string;
-        firstname: string;
-        lastname: string;
-        taxId: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
         phoneNumber: string;
         lineId: string;
         address: string;
@@ -4145,13 +4263,13 @@ export type ListenAvailableShipmentSubscription = {
     steps: Array<{
       __typename?: "StepDefinition";
       _id: string;
-      step: string;
+      step: EStepDefinition;
       seq: number;
       meta?: number | null;
       stepName: string;
       customerMessage: string;
       driverMessage: string;
-      stepStatus: string;
+      stepStatus: EStepStatus;
       createdAt: any;
       updatedAt?: any | null;
       images: Array<{
@@ -4173,8 +4291,8 @@ export type ListenAvailableShipmentSubscription = {
     payment: {
       __typename?: "Payment";
       _id: string;
-      status: string;
-      paymentMethod: string;
+      status: EPaymentStatus;
+      paymentMethod: EPaymentMethod;
       createdAt: any;
       updatedAt: any;
       calculation?: {
@@ -4239,13 +4357,16 @@ export const LoginDocument = gql`
           createdAt
           updatedAt
         }
-        individualDriver {
+        driverDetail {
           _id
+          driverType
           title
           otherTitle
           firstname
           lastname
-          taxId
+          businessName
+          businessBranch
+          taxNumber
           phoneNumber
           lineId
           address
@@ -4259,7 +4380,7 @@ export const LoginDocument = gql`
           bankNumber
           fullname
           balance
-          serviceVehicleType {
+          serviceVehicleTypes {
             _id
             type
             isPublic
@@ -4570,7 +4691,7 @@ export const VerifyIndiividualDriverDataDocument = gql`
       otherTitle
       firstname
       lastname
-      taxId
+      taxNumber
       phoneNumber
       lineId
       password
@@ -4583,7 +4704,7 @@ export const VerifyIndiividualDriverDataDocument = gql`
       bankBranch
       bankName
       bankNumber
-      serviceVehicleType
+      serviceVehicleTypes
     }
   }
 `;
@@ -5273,7 +5394,7 @@ export type GetSubDistrictQueryResult = Apollo.QueryResult<
 >;
 export const GetAvailableShipmentDocument = gql`
   query GetAvailableShipment(
-    $status: String!
+    $status: EShipmentMatchingCriteria!
     $limit: Int
     $sortField: [String!]
     $sortAscending: Boolean
@@ -5385,13 +5506,16 @@ export const GetAvailableShipmentDocument = gql`
         acceptPolicyTime
         createdAt
         updatedAt
-        individualDriver {
+        driverDetail {
           _id
+          driverType
           title
           otherTitle
           firstname
           lastname
-          taxId
+          businessName
+          businessBranch
+          taxNumber
           phoneNumber
           lineId
           address
@@ -6026,13 +6150,16 @@ export const GetAvailableShipmentByTrackingNumberDocument = gql`
         acceptPolicyTime
         createdAt
         updatedAt
-        individualDriver {
+        driverDetail {
           _id
+          driverType
           title
           otherTitle
           firstname
           lastname
-          taxId
+          businessName
+          businessBranch
+          taxNumber
           phoneNumber
           lineId
           address
@@ -6369,13 +6496,16 @@ export const MeDocument = gql`
         createdAt
         updatedAt
       }
-      individualDriver {
+      driverDetail {
         _id
+        driverType
         title
         otherTitle
         firstname
         lastname
-        taxId
+        businessName
+        businessBranch
+        taxNumber
         phoneNumber
         lineId
         address
@@ -6480,7 +6610,7 @@ export const MeDocument = gql`
             updatedAt
           }
         }
-        serviceVehicleType {
+        serviceVehicleTypes {
           _id
           type
           isPublic
@@ -6862,13 +6992,16 @@ export const ListenAvailableShipmentDocument = gql`
         acceptPolicyTime
         createdAt
         updatedAt
-        individualDriver {
+        driverDetail {
           _id
+          driverType
           title
           otherTitle
           firstname
           lastname
-          taxId
+          businessName
+          businessBranch
+          taxNumber
           phoneNumber
           lineId
           address

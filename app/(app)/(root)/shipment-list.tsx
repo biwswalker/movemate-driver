@@ -4,6 +4,7 @@ import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
 import colors from "@constants/colors";
 import {
+  EShipmentMatchingCriteria,
   Shipment,
   useGetAvailableShipmentQuery,
 } from "@/graphql/generated/graphql";
@@ -22,7 +23,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ShipmentList() {
   const [hasMore, setHasMore] = useState(false);
   const { data, loading, fetchMore } = useGetAvailableShipmentQuery({
-    variables: { limit: 5, skip: 0, status: "new" },
+    variables: { limit: 5, skip: 0, status: EShipmentMatchingCriteria.NEW },
     onError: (error) => {
       console.log("error: ", error);
     },

@@ -1,4 +1,8 @@
-import { Destination, Shipment } from "@/graphql/generated/graphql";
+import {
+  Destination,
+  EShipmentStatus,
+  Shipment,
+} from "@/graphql/generated/graphql";
 import { StyleSheet, View } from "react-native";
 import Text from "../Text";
 import colors from "@constants/colors";
@@ -38,7 +42,10 @@ export default function MapsComponent({ shipment }: IMapsProps) {
   //   return <ShipmentMaps destinations={destinations} direction={direction} />;
   // }
   if (
-    includes(["idle", "progressing"], shipment?.status) &&
+    includes(
+      [EShipmentStatus.IDLE, EShipmentStatus.PROGRESSING],
+      shipment?.status
+    ) &&
     destinations &&
     direction
   ) {

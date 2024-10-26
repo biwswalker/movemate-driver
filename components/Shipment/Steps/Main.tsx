@@ -1,5 +1,5 @@
 import colors from "@constants/colors";
-import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
 import {
   filter,
   find,
@@ -13,7 +13,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Accordion from "react-native-collapsible/Accordion";
 import StepHeader from "@/components/Shipment/Steps/StepHeader";
 import StepContent from "@/components/Shipment/Steps/StepContent";
-import { EStepDefinition } from "./constants";
 
 export interface Step {
   seq: number;

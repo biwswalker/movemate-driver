@@ -2,8 +2,7 @@ import { ProgressingStepsProps } from "./ProgressingStep";
 import { StyleSheet, View } from "react-native";
 import { normalize } from "@/utils/normalizeSize";
 import { find, head, includes, last, map, tail } from "lodash";
-import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
-import { EStepDefinition } from "./constants";
+import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
 import { Step } from "./Main";
 import { ActivityIndicator } from "react-native-paper";
 import {

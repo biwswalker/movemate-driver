@@ -1,6 +1,5 @@
-import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
 import { find, includes, last, map } from "lodash";
-import { EStepDefinition } from "./constants";
 import { ProgressConfirmDatetime } from "./SectionConfirmDatetimeStep";
 import { ProgressPOD } from "./SectionPODStep";
 import { Refund } from "./SectionRefundStep";

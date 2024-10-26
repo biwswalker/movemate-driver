@@ -97,7 +97,7 @@ export default function ProfilePolicy() {
   });
 
   const policy = useMemo<SettingDriverPolicies | undefined>(
-    () => data?.getDriverPoliciesInfo,
+    () => data?.getDriverPoliciesInfo || undefined,
     [data]
   );
 

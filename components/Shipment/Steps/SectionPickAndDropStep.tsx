@@ -10,13 +10,13 @@ import {
   useNextShipmentStepMutation,
   FileInput as FileInputGraph,
   StepDefinition,
+  EStepDefinition,
 } from "@/graphql/generated/graphql";
 import Button from "@/components/Button";
 import { useState } from "react";
 import { fileUploadAPI } from "@/services/upload";
 import UploadButton from "@/components/UploadButton";
 import { imagePath } from "@/utils/file";
-import { EStepDefinition } from "./constants";
 
 interface ProgressPickAndDropProps extends ProgressingStepsProps {
   definition: StepDefinition | undefined;

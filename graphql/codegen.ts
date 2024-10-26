@@ -4,9 +4,9 @@ const config: CodegenConfig = {
   overwrite: true,
   schema: "http://localhost:5500/graphql",
   documents: [
-    "graphql/queries/**/*.graphql", 
+    "graphql/queries/**/*.graphql",
     "graphql/mutations/**/*.graphql",
-    'graphql/subscriptions/**/*.graphql',
+    "graphql/subscriptions/**/*.graphql",
   ],
   generates: {
     "graphql/generated/graphql.tsx": {
@@ -19,8 +19,12 @@ const config: CodegenConfig = {
         skipTypename: false,
         withHook: true,
         withHOC: false,
-        withComponent: false
-      }
+        withComponent: false,
+        enumsAsTypes: false,
+        namingConvention: {
+          enumValues: "keep",
+        },
+      },
     },
   },
 };

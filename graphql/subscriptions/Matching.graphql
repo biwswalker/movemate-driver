@@ -99,13 +99,16 @@ subscription ListenAvailableShipment {
       acceptPolicyTime
       createdAt
       updatedAt
-      individualDriver {
+      driverDetail {
         _id
+        driverType
         title
         otherTitle
         firstname
         lastname
-        taxId
+        businessName
+        businessBranch
+        taxNumber
         phoneNumber
         lineId
         address

@@ -1,5 +1,5 @@
 import { isEqual } from "lodash";
-import React, { forwardRef, ReactNode, RefObject } from "react";
+import React, { forwardRef, ReactNode, Ref, RefObject } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 import Button from "./Button";
@@ -22,15 +22,26 @@ export interface TabItem {
   value: string;
 }
 
-export interface TabCarousel {
-  value: string;
+export interface TabCarousel<T = string> {
+  value: T;
   data: TabItem[];
-  onChange?: (value: string) => void;
+  onChange?: (value: T) => void;
   width: number;
   height: number;
 }
 
-const TabCarousel = forwardRef<ICarouselInstance, TabCarousel>((props, ref) => {
+type PropsWithStandardRef<T = string> = TabCarousel<T> & {
+  ref?: Ref<ICarouselInstance>;
+};
+
+export const TabCarouselFinal: <T = string>(
+  props: PropsWithStandardRef<T>
+) => ReactNode = forwardRef<ICarouselInstance, TabCarousel<any>>(TabCarousel);
+
+function TabCarousel<T = string>(
+  props: TabCarousel,
+  ref: Ref<ICarouselInstance>
+) {
   const { data, value, onChange = () => {}, width, height } = props;
 
   return (
@@ -73,6 +84,6 @@ const TabCarousel = forwardRef<ICarouselInstance, TabCarousel>((props, ref) => {
       }}
     />
   );
-});
+}
 
-export default TabCarousel;
+export default TabCarouselFinal;

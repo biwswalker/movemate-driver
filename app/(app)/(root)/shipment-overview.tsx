@@ -3,6 +3,7 @@ import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
 import colors from "@constants/colors";
 import {
+  EShipmentMatchingCriteria,
   Shipment,
   useAcceptShipmentMutation,
   useGetAvailableShipmentByTrackingNumberQuery,
@@ -188,7 +189,7 @@ function ConfirmDialog({ open, setOpen, shipment }: IConfirmDialogProps) {
   function handleAcceptComplete() {
     setOpen(false);
     router.dismiss();
-    router.push("/shipment?active=progressing");
+    router.push(`/shipment?active=${EShipmentMatchingCriteria.PROGRESSING}`);
   }
 
   function handleAcceptShipmentError(error: ApolloError) {

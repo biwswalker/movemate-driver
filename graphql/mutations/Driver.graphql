@@ -13,7 +13,7 @@ mutation VerifyIndiividualDriverData($data: IndividualDriverDetailInput!) {
     otherTitle
     firstname
     lastname
-    taxId
+    taxNumber
     phoneNumber
     lineId
     password
@@ -26,7 +26,7 @@ mutation VerifyIndiividualDriverData($data: IndividualDriverDetailInput!) {
     bankBranch
     bankName
     bankNumber
-    serviceVehicleType
+    serviceVehicleTypes
   }
 }
 

@@ -1,6 +1,5 @@
-import { Shipment, StepDefinition } from "@/graphql/generated/graphql";
-import { find, get, includes, last, map } from "lodash";
-import { EStepDefinition } from "./constants";
+import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import { find, includes, last, map } from "lodash";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Step } from "./Main";
 

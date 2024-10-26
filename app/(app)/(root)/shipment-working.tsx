@@ -1,6 +1,9 @@
 import Text from "@/components/Text";
 import colors from "@constants/colors";
 import {
+  EShipmentStatus,
+  EStepDefinition,
+  EStepStatus,
   Shipment,
   useGetAvailableShipmentByTrackingNumberQuery,
 } from "@/graphql/generated/graphql";
@@ -48,9 +51,9 @@ export default function ShipmentDetail() {
     undefined
   );
   const isConfirmFinishShipment =
-    currentStepDefinition?.step === "FINISH" &&
-    currentStepDefinition.stepStatus === "progressing" &&
-    shipment?.status === "progressing";
+    currentStepDefinition?.step === EStepDefinition.FINISH &&
+    currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
+    shipment?.status === EShipmentStatus.PROGRESSING;
 
   useEffect(() => {
     const backAction = () => {

@@ -11,6 +11,8 @@ import Iconify from "@components/Iconify";
 import { find, head, isEmpty, map, tail } from "lodash";
 import hexToRgba from "hex-to-rgba";
 import {
+  EShipmentMatchingCriteria,
+  EShipmentStatus,
   Shipment,
   useGetAvailableShipmentQuery,
 } from "@graphql/generated/graphql";
@@ -25,15 +27,19 @@ import { ICarouselInstance } from "react-native-reanimated-carousel";
 export default function HomeScreen() {
   const tabsRef = useRef<ICarouselInstance>(null);
   const { user } = useAuth();
-  const [forceActiveMenu, setForceActiveMenu] = useState("");
-  const [activeMenu, setActiveMenu] = useState("progressing");
+  const [forceActiveMenu, setForceActiveMenu] = useState<
+    EShipmentMatchingCriteria | ""
+  >("");
+  const [activeMenu, setActiveMenu] = useState<EShipmentMatchingCriteria>(
+    EShipmentMatchingCriteria.PROGRESSING
+  );
   const searchParam = useLocalSearchParams<{ active: string }>();
 
   const menus = useMemo<TabItem[]>(() => {
     return [
       {
         label: "งานปัจจุบัน",
-        value: "progressing",
+        value: EShipmentMatchingCriteria.PROGRESSING,
         Icon: (isActive: boolean) => (
           <Iconify
             icon="bi:stars"
@@ -44,7 +50,7 @@ export default function HomeScreen() {
       },
       {
         label: "เสร็จสิ้นแล้ว",
-        value: "dilivered",
+        value: EShipmentMatchingCriteria.DELIVERED,
         Icon: (isActive: boolean) => (
           <Iconify
             icon="ic:round-verified"
@@ -55,7 +61,7 @@ export default function HomeScreen() {
       },
       {
         label: "ยกเลิก",
-        value: "cancelled",
+        value: EShipmentMatchingCriteria.CANCELLED,
         Icon: (isActive: boolean) => (
           <Iconify
             icon="pajamas:status-cancelled"
@@ -67,13 +73,12 @@ export default function HomeScreen() {
     ];
   }, []);
 
-  function handleChangeTabMenu(menu: string) {
+  function handleChangeTabMenu(menu: EShipmentMatchingCriteria) {
     setActiveMenu(menu);
   }
 
   useFocusEffect(() => {
     if (forceActiveMenu) {
-      console.log("progressingprogressingprogressing");
       setActiveMenu(forceActiveMenu);
       setForceActiveMenu("");
       if (tabsRef.current) {
@@ -88,7 +93,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (searchParam) {
-      setForceActiveMenu(searchParam.active);
+      setForceActiveMenu(searchParam.active as EShipmentMatchingCriteria);
     }
   }, [searchParam]);
 
@@ -99,7 +104,7 @@ export default function HomeScreen() {
           {user?.status === "pending" && <PendingApproval />}
           {user?.status === "denied" && <DeniedApproval />}
           <View style={styles.tabMenuWrapper}>
-            <TabCarousel
+            <TabCarousel<EShipmentMatchingCriteria>
               ref={tabsRef}
               data={menus}
               value={activeMenu}
@@ -132,7 +137,7 @@ export default function HomeScreen() {
             </View>
           </View>
           {user?.status === "active" ? (
-            <Shipments status={activeMenu as TShipmentStatus} />
+            <Shipments status={activeMenu} />
           ) : (
             <View style={shipmentStyle.footerEmptyWrapper}>
               <Image
@@ -327,10 +332,8 @@ const shipmentStyle = StyleSheet.create({
   },
 });
 
-type TShipmentStatus = "new" | "progressing" | "dilivered" | "cancelled";
-
 interface ShipmentsProps {
-  status: TShipmentStatus;
+  status: EShipmentMatchingCriteria;
 }
 
 function Shipments({ status }: ShipmentsProps) {
@@ -396,20 +399,21 @@ function Shipments({ status }: ShipmentsProps) {
     return [];
   }, [data?.getAvailableShipment]);
 
-  function Item({ item }: ListRenderItemInfo<Shipment>) {
+  function Item({ item, index }: ListRenderItemInfo<Shipment>) {
     const pickupLocation = head(item.destinations);
     const dropoffLocations = tail(item.destinations);
 
     const currentLog = find(item.steps, ["seq", item.currentStepSeq]);
 
     const statusColor =
-      item.status === "idle"
+      item.status === EShipmentStatus.IDLE
         ? colors.warning
-        : item.status === "progressing"
+        : item.status === EShipmentStatus.PROGRESSING
           ? colors.primary
-          : item.status === "dilivered"
+          : item.status === EShipmentStatus.DELIVERED
             ? colors.success
-            : item.status === "cancelled" || item.status === "refund"
+            : item.status === EShipmentStatus.CANCELLED ||
+                item.status === EShipmentStatus.REFUND
               ? colors.error
               : colors.info;
 
@@ -417,7 +421,7 @@ function Shipments({ status }: ShipmentsProps) {
       <View
         style={[
           shipmentStyle.cardWrapper,
-          item.status === "progressing" && {
+          item.status === EShipmentStatus.PROGRESSING && {
             borderWidth: 1,
             borderColor: colors.master.dark,
           },
@@ -425,9 +429,26 @@ function Shipments({ status }: ShipmentsProps) {
       >
         <View style={shipmentStyle.titleContainer}>
           <View style={shipmentStyle.titleWrapper}>
-            <Text varient="subtitle1" style={{ color: colors.primary.darker }}>
-              {item.trackingNumber}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+              <Text
+                varient="subtitle1"
+                style={{ color: colors.primary.darker }}
+              >
+                {item.trackingNumber}
+              </Text>
+              {index === 0 && (
+                <Text
+                  varient="caption"
+                  style={{
+                    color: colors.info.main,
+                    lineHeight: normalize(20),
+                    marginLeft: normalize(6),
+                  }}
+                >
+                  ดำเนินการก่อน
+                </Text>
+              )}
+            </View>
             {/* <Text
               varient="body2"
               color="disabled"

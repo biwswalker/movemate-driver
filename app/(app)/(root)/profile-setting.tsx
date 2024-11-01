@@ -1,7 +1,11 @@
 import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
 import colors from "@constants/colors";
-import { useChangeDrivingStatusMutation } from "@/graphql/generated/graphql";
+import {
+  EDriverStatus,
+  EUserStatus,
+  useChangeDrivingStatusMutation,
+} from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
 import { usePushNotifications } from "@/hooks/usePushNotification";
 import { normalize } from "@/utils/normalizeSize";
@@ -45,8 +49,8 @@ export default function ProfileSetting() {
   async function onToggleShipmentSwitch(state: boolean) {
     try {
       setIsShipmentLoding(true);
-      if (!includes(["idle", "busy"], user?.drivingStatus)) return;
-      const changeStatus = state ? "idle" : "busy";
+      if (!includes([EDriverStatus.IDLE, EDriverStatus.BUSY], user?.drivingStatus)) return;
+      const changeStatus = state ? EDriverStatus.IDLE : EDriverStatus.BUSY;
       await changeDrivingStatus({ variables: { status: changeStatus } });
       await refetchMe();
     } catch (error) {
@@ -70,7 +74,7 @@ export default function ProfileSetting() {
 
   useEffect(() => {
     if (user) {
-      setIsShipment(user.drivingStatus === "idle");
+      setIsShipment(user.drivingStatus === EDriverStatus.IDLE);
     }
   }, [user]);
 
@@ -93,7 +97,7 @@ export default function ProfileSetting() {
             ) : (
               <Switch
                 value={isNotification}
-                disabled={user?.status === 'denied'}
+                disabled={user?.status === EUserStatus.DENIED}
                 onValueChange={onToggleNotificationSwitch}
               />
             )}
@@ -112,7 +116,12 @@ export default function ProfileSetting() {
             ) : (
               <Switch
                 value={isShipment}
-                disabled={!includes(["idle", "busy"], user?.drivingStatus) || user?.status === 'denied'}
+                disabled={
+                  !includes(
+                    [EDriverStatus.IDLE, EDriverStatus.BUSY],
+                    user?.drivingStatus
+                  ) || user?.status === EUserStatus.DENIED
+                }
                 onValueChange={onToggleShipmentSwitch}
               />
             )}

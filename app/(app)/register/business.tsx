@@ -8,7 +8,7 @@ import CustomTextInput from "@components/TextInput";
 import NavigationBar from "@components/NavigationBar";
 import Text from "@components/Text";
 import { YUP_VALIDATION_ERROR_TYPE } from "@constants/error";
-import { BANKPROVIDER, TITLE_NAME_OPTIONS } from "@constants/values";
+import { BANKPROVIDER, BUSINESS_TITLE_NAME_OPTIONS } from "@constants/values";
 import {
   EDriverType,
   useGetDistrictLazyQuery,
@@ -32,11 +32,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { normalize } from "@/utils/normalizeSize";
 import { TextInput } from "react-native-paper";
 import { DropdownAlertType } from "react-native-dropdownalert";
-import {
-  DriverFormValue,
-  DriverFormValueType,
-  IndividualRegisterParam,
-} from "./types";
+import { DriverFormValue, DriverFormValueType, IndividualRegisterParam } from "./types";
 import VehicleSelectorModal, {
   VehicleSelectorRef,
 } from "@/components/Modals/vehicle-selector";
@@ -44,7 +40,7 @@ import Iconify from "@/components/Iconify";
 import { TouchableOpacity } from "@gorhom/bottom-sheet";
 import { MaterialIcons } from "@expo/vector-icons";
 
-export default function RegisterIndividualScreen() {
+export default function RegisterBusinessScreen() {
   const bottomSheetModalRef = useRef<VehicleSelectorRef>(null);
   const { showSnackbar } = useSnackbarV2();
   const searchParam = useLocalSearchParams<{ param: string }>();
@@ -72,21 +68,19 @@ export default function RegisterIndividualScreen() {
     return [];
   }, [vehicleData]);
 
-  const IndividualDriverScema = Yup.object().shape({
+  const BusinessDriverScema = Yup.object().shape({
     policyVersion: Yup.number(),
     driverType: Yup.string(),
-    title: Yup.string().required("กรุณาเลือกคำนำหน้าชื่อ"),
+    title: Yup.string().required("กรุณาเลือกคำนำหน้าบริษัท"),
     otherTitle: Yup.string().when("title", ([title], schema) =>
       isEqual(title, "อื่นๆ")
-        ? schema.required("ระบุคำนำหน้าชื่อ")
+        ? schema.required("กรุณาเลือกคำนำหน้าบริษัท")
         : schema.notRequired()
     ),
-    firstname: Yup.string()
-      .required("ระบุชื่อ")
-      .matches(/^[ก-๙\s]+$/, "ระบุเป็นภาษาไทยเท่านั้น"),
-    lastname: Yup.string()
-      .required("ระบุนามสกุล")
-      .matches(/^[ก-๙\s]+$/, "ระบุเป็นภาษาไทยเท่านั้น"),
+    businessName: Yup.string()
+      .required("ระบุชื่อบริษัท")
+      .min(6, "กรุณาระบุตัวอักษรขั้นต่ำ 6 ตัวอักษร"),
+    businessBranch: Yup.string(),
     taxNumber: Yup.string()
       .matches(/^[0-9]+$/, "เลขประจำตัวผู้เสียภาษีเป็นตัวเลขเท่านั้น")
       .min(13, "เลขประจำตัวผู้เสียภาษี 13 หลัก")
@@ -146,8 +140,8 @@ export default function RegisterIndividualScreen() {
       otherTitle: detail?.otherTitle || "",
       firstname: detail?.firstname || "",
       lastname: detail?.lastname || "",
-      businessName: "",
-      businessBranch: "",
+      businessName: detail?.businessName || "",
+      businessBranch: detail?.businessBranch || "",
       taxNumber: detail?.taxNumber || "",
       phoneNumber: detail?.phoneNumber || "",
       lineId: detail?.lineId || "",
@@ -228,7 +222,7 @@ export default function RegisterIndividualScreen() {
   };
 
   const methods = useForm<DriverFormValue>({
-    resolver: yupResolver(IndividualDriverScema) as any,
+    resolver: yupResolver(BusinessDriverScema) as any,
     defaultValues,
     mode: "onBlur",
   });
@@ -296,6 +290,10 @@ export default function RegisterIndividualScreen() {
     const formValue = new DriverFormValue(
       validatedData as DriverFormValueType
     );
+    console.log(
+      "handleVerifySuccess: ",
+      JSON.stringify(formValue, undefined, 2)
+    );
     const param = JSON.stringify(Object.assign(params, { detail: formValue }));
     router.push({ pathname: "/register/documents", params: { param } });
   }
@@ -303,6 +301,7 @@ export default function RegisterIndividualScreen() {
   async function onSubmit(values: DriverFormValue) {
     try {
       const submitData = new DriverFormValue(values);
+      console.log("onSubmit: ", JSON.stringify(submitData, undefined, 2));
       verifyData({
         variables: { data: omit(submitData, ["confirmPassword"]) },
         onCompleted: handleVerifySuccess,
@@ -332,7 +331,7 @@ export default function RegisterIndividualScreen() {
         />
         <View style={styles.contentContainer}>
           <View style={styles.headerWrapper}>
-            <Text varient="h3">ข้อมูลส่วนตัว</Text>
+            <Text varient="h3">ข้อมูลบริษัท</Text>
             <Text varient="body2" color="disabled">
               กรุญากรอกข้อมูลของท่านให้ครบถ้วน
             </Text>
@@ -340,8 +339,8 @@ export default function RegisterIndividualScreen() {
           <FormProvider methods={methods} containerStyle={styles.inputWrapper}>
             <RHFSelectDropdown
               name="title"
-              label="คำนำหน้าชื่อ*"
-              options={TITLE_NAME_OPTIONS}
+              label="คำนำหน้าบริษัท*"
+              options={BUSINESS_TITLE_NAME_OPTIONS}
               value={values.title}
               labelField="label"
               valueField="value"
@@ -349,11 +348,11 @@ export default function RegisterIndividualScreen() {
             {values.title === "อื่นๆ" && (
               <RHFTextInput name="otherTitle" label="ระบุคำนำหน้าชื่อ*" />
             )}
-            <RHFTextInput name="firstname" label="ชื่อ*" />
-            <RHFTextInput name="lastname" label="นามสกุล*" />
+            <RHFTextInput name="businessName" label="ชื่อบริษัท*" />
+            <RHFTextInput name="businessBranch" label="สาขา" />
             <RHFTextInput
               name="taxNumber"
-              label="เลขบัตรประจำตัวประชาชน*"
+              label="เลขประจำตัวผู้เสียภาษี*"
               helperText="กรอกเป็นตัวเลข 13 ตัวเท่านั้น"
             />
             <View style={styles.formSubtitle}>
@@ -402,7 +401,7 @@ export default function RegisterIndividualScreen() {
 
             <View style={styles.formSubtitle}>
               <Text varient="caption" color="disabled">
-                ข้อมูลที่อยู่ปัจจุบัน
+                ข้อมูลที่อยู่บริษัท
               </Text>
             </View>
             <RHFTextInput name="address" label="ที่อยู่*" />
@@ -480,7 +479,7 @@ export default function RegisterIndividualScreen() {
                 เลือกประเภทรถที่ให้บริการ
               </Text>
               <CustomTextInput
-                // multiline
+                multiline
                 onPress={handleSelectedVehicle}
                 value={reduce(
                   values.serviceVehicleTypes,
@@ -524,6 +523,7 @@ export default function RegisterIndividualScreen() {
         </View>
       </SafeAreaView>
       <VehicleSelectorModal
+        multiple
         ref={bottomSheetModalRef}
         onSelected={handleOnSelectedVehicleModal}
         value={values.serviceVehicleTypes}

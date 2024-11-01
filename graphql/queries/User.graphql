@@ -175,3 +175,150 @@ query Me {
     notification
   }
 }
+
+query Employees($parentId: String) {
+  users(parentId: $parentId) {
+    totalDocs
+    limit
+    totalPages
+    page
+    pagingCounter
+    hasPrevPage
+    hasNextPage
+    prevPage
+    nextPage
+    offset
+    docs {
+      _id
+      fullname
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      contactNumber
+      validationStatus
+      profileImage {
+        _id
+        fileId
+        filename
+      }
+      driverDetail {
+        _id
+        driverType
+        title
+        otherTitle
+        firstname
+        lastname
+        taxNumber
+        phoneNumber
+        lineId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        fullname
+        serviceVehicleTypes {
+          _id
+          type
+          isPublic
+          isLarger
+          name
+          width
+          length
+          height
+          maxCapacity
+          details
+          createdAt
+          updatedAt
+          image {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    }
+  }
+}
+
+query LookupDriver($phonenumber: String!) {
+  lookupDriverByPhonenumber(phonenumber: $phonenumber) {
+    _id
+    fullname
+    contactNumber
+    userNumber
+    userRole
+    userType
+    username
+    remark
+    status
+    validationStatus
+    drivingStatus
+    profileImage {
+      _id
+      fileId
+      filename
+    }
+    driverDetail {
+      _id
+      driverType
+      title
+      otherTitle
+      firstname
+      lastname
+      taxNumber
+      phoneNumber
+      lineId
+      address
+      province
+      district
+      subDistrict
+      postcode
+      fullname
+    }
+  }
+}
+
+query GetUser($id: String) {
+  getUser(_id: $id) {
+    _id
+    fullname
+    contactNumber
+    userNumber
+    userRole
+    userType
+    username
+    remark
+    status
+    validationStatus
+    drivingStatus
+    profileImage {
+      _id
+      fileId
+      filename
+    }
+    driverDetail {
+      _id
+      driverType
+      title
+      otherTitle
+      firstname
+      lastname
+      taxNumber
+      phoneNumber
+      lineId
+      address
+      province
+      district
+      subDistrict
+      postcode
+      fullname
+    }
+  }
+}

@@ -15,6 +15,7 @@ import { fNumber } from "@utils/number";
 import { format } from "date-fns";
 import { th } from "date-fns/locale/th";
 import {
+  EUserStatus,
   Transaction,
   useGetTransactionQuery,
 } from "@graphql/generated/graphql";
@@ -60,8 +61,8 @@ export default function Financial() {
       <SafeAreaView style={styles.wrapper}>
         <AccountHeader style={styles.accountContainer} />
         <View style={styles.contentWrapper}>
-          {user?.status === "pending" && <PendingApproval />}
-          {user?.status === "denied" && <DeniedApproval />}
+          {user?.status === EUserStatus.PENDING && <PendingApproval />}
+          {user?.status === EUserStatus.DENIED && <DeniedApproval />}
         </View>
         <View style={styles.content}>
           {data?.calculateTransaction && (
@@ -117,7 +118,7 @@ export default function Financial() {
               <Text varient="subtitle1">ตั้งค่าบัญชี</Text>
             </TouchableOpacity>
           </View>
-          {user?.status !== "denied" && (
+          {user?.status !== EUserStatus.DENIED && (
             <>
               <View style={styles.transactionWrapper}>
                 <View style={styles.transactionTitleWrapper}>

@@ -1,6 +1,5 @@
-export const BUSINESS_TITLE_NAME_OPTIONS = ['บจก.', 'หจก.', 'บมจ.']
-
 export const TITLE_NAME_OPTIONS = [{ value: 'นางสาว', label: 'นางสาว' }, { value: 'นาง', label: 'นาง' }, { value: 'นาย', label: 'นาย' }, { value: 'อื่นๆ', label: 'อื่นๆ' }]
+export const BUSINESS_TITLE_NAME_OPTIONS = [{ value: 'บจก.', label: 'บจก.' }, { value: 'หจก.', label: 'หจก.' }, { value: 'บมจ.', label: 'บมจ.' }]
 export const BANKPROVIDER = [
   { value: 'BBL', label: 'ธนาคารกรุงเทพ' },
   { value: 'KBANK', label: 'ธนาคารกสิกรไทย' },

@@ -1,86 +1,35 @@
-import React, { useMemo } from "react";
-import Text from "@components/Text";
-import RHFUploadButton from "@components/HookForm/RHFUploadButton";
-import FormProvider from "@components/HookForm/FormProvider";
-import NavigationBar from "@components/NavigationBar";
-import Button from "@components/Button";
-import Yup from "@utils/yup";
-import { StyleSheet, View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
-import { isEmpty } from "lodash";
-import { fData } from "@utils/number";
+import { fData } from "@/utils/number";
 import { router, useLocalSearchParams } from "expo-router";
+import { EmployeeRegisterParam, RegisterUploadsFormValue } from "./types";
+import Yup from "@/utils/yup";
+import { isEmpty } from "lodash";
+import { useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { SafeAreaView } from "react-native-safe-area-context";
+import NavigationBar from "@/components/NavigationBar";
+import { ScrollView } from "react-native-gesture-handler";
+import { StyleSheet, View } from "react-native";
+import Text from "@/components/Text";
+import FormProvider from "@/components/HookForm/FormProvider";
+import RHFUploadButton from "@/components/HookForm/RHFUploadButton";
+import Button from "@/components/Button";
 import { normalize } from "@/utils/normalizeSize";
-import { IndividualRegisterParam, RegisterUploadsFormValue } from "./types";
-import { EDriverType } from "@/graphql/generated/graphql";
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  wrapper: {
-    flex: 1,
-  },
-  headerWrapper: {
-    paddingHorizontal: normalize(16),
-  },
-  rowWrapper: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  sectionContainer: {
-    paddingBottom: normalize(32),
-    paddingHorizontal: normalize(16),
-  },
-  documentList: {
-    gap: normalize(12),
-    paddingTop: normalize(24),
-  },
-  submitStyle: {
-    paddingTop: normalize(32),
-  },
-});
 
 export const MAX_FILE_SIZE = 10 * 1000 * 1000;
 const MAXIMUM_FILE_SIZE_TEXT = `ขนาดไฟล์ไม่เกิน ${fData(MAX_FILE_SIZE)}`;
 
 export default function RegisterUploadsScreen() {
   const searchParam = useLocalSearchParams<{ param: string }>();
-  const params = JSON.parse(searchParam.param) as IndividualRegisterParam;
-
-  const isBusinessRegistration =
-    params.type?.driverType === EDriverType.BUSINESS;
+  const params = JSON.parse(searchParam.param || "{}") as EmployeeRegisterParam;
 
   // TODO: Add with handle business customer registration
   const RegisterUploadSchema = Yup.object().shape({
-    frontOfVehicle: Yup.mixed()
-      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .test("require-file", "อัพโหลดรูปด้านหน้ารถ", (value) =>
-        isBusinessRegistration ? true : !isEmpty(value)
-      ),
-    backOfVehicle: Yup.mixed()
-      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .test("require-file", "อัพโหลดรูปด้านหลังรถ", (value) =>
-        isBusinessRegistration ? true : !isEmpty(value)
-      ),
-    leftOfVehicle: Yup.mixed()
-      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .test("require-file", "อัพโหลดรูปด้านข้างซ้ายรถ", (value) =>
-        isBusinessRegistration ? true : !isEmpty(value)
-      ),
-    rigthOfVehicle: Yup.mixed()
-      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .test("require-file", "อัพโหลดรูปด้านข้างขวารถ", (value) =>
-        isBusinessRegistration ? true : !isEmpty(value)
-      ),
-    copyVehicleRegistration: Yup.mixed()
-      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .test("require-file", "อัพโหลดเอกสารสำเนาทะเบียนรถ", (value) =>
-        isBusinessRegistration ? true : !isEmpty(value)
-      ),
+    frontOfVehicle: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
+    backOfVehicle: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
+    leftOfVehicle: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
+    rigthOfVehicle: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
+    copyVehicleRegistration: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     copyIDCard: Yup.mixed()
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
       .test(
@@ -90,22 +39,11 @@ export default function RegisterUploadsScreen() {
       ),
     copyDrivingLicense: Yup.mixed()
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .test("require-file", "อัพโหลดสำเนาใบขับขี่", (value) =>
-        isBusinessRegistration ? true : !isEmpty(value)
-      ),
+      .test("require-file", "อัพโหลดสำเนาใบขับขี่", (value) => !isEmpty(value)),
     copyBookBank: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     copyHouseRegistration: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     insurancePolicy: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     criminalRecordCheckCert: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
-
-    businessRegistrationCertificate: Yup.mixed()
-      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .test("require-file", "อัพโหลดหนังสือรับรองบริษัท", (value) =>
-        isBusinessRegistration ? !isEmpty(value) : true
-      ),
-    certificateValueAddedTaxRegistration: Yup.mixed().maxFileSize(
-      MAXIMUM_FILE_SIZE_TEXT
-    ),
   });
 
   const defaultValues = useMemo(() => {
@@ -122,10 +60,6 @@ export default function RegisterUploadsScreen() {
       copyHouseRegistration: documents?.copyHouseRegistration || undefined,
       insurancePolicy: documents?.insurancePolicy || undefined,
       criminalRecordCheckCert: documents?.criminalRecordCheckCert || undefined,
-      businessRegistrationCertificate:
-        documents?.businessRegistrationCertificate || undefined,
-      certificateValueAddedTaxRegistration:
-        documents?.certificateValueAddedTaxRegistration || undefined,
     };
   }, [params.documents]);
 
@@ -141,7 +75,7 @@ export default function RegisterUploadsScreen() {
       if (params && values) {
         const documents = new RegisterUploadsFormValue(values);
         const param = JSON.stringify(Object.assign(params, { documents }));
-        router.push({ pathname: "/register/preview", params: { param } });
+        router.push({ pathname: "/employee/preview", params: { param } });
       }
     } catch (error) {
       console.log("errors: ", error);
@@ -152,39 +86,30 @@ export default function RegisterUploadsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <NavigationBar />
+      <NavigationBar title="เอกสารประกอบการสมัคร" />
       <ScrollView style={styles.wrapper}>
-        <View style={styles.headerWrapper}>
+        {/* <View style={styles.headerWrapper}>
           <Text varient="h3">เอกสารประกอบการสมัคร</Text>
           <Text varient="body2" color="disabled">
             โปรดแนบเอกสารประกอบการสมัครให้ครบถ้วน
           </Text>
-        </View>
+        </View> */}
         <FormProvider
           methods={methods}
           containerStyle={styles.sectionContainer}
         >
           <View style={styles.documentList}>
-            {isBusinessRegistration && (
-              <>
-                <RHFUploadButton
-                  file={values.businessRegistrationCertificate}
-                  name="businessRegistrationCertificate"
-                  label="หนังสือรับรองบริษัท (บังคับ)"
-                />
-                <RHFUploadButton
-                  file={values.copyIDCard}
-                  name="copyIDCard"
-                  label="สำเนาบัตรประชาชน (บังคับ)"
-                />
-                <RHFUploadButton
-                  file={values.certificateValueAddedTaxRegistration}
-                  name="certificateValueAddedTaxRegistration"
-                  label="ภพ 20"
-                />
-              </>
-            )}
-            <View>
+            <RHFUploadButton
+              file={values.copyIDCard}
+              name="copyIDCard"
+              label={`สำเนาบัตรประชาชน (บังคับ)`}
+            />
+            <RHFUploadButton
+              file={values.copyDrivingLicense}
+              name="copyDrivingLicense"
+              label={`สำเนาใบขับขี่ (บังคับ)`}
+            />
+            {/* <View>
               <Text>
                 รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
               </Text>
@@ -226,35 +151,21 @@ export default function RegisterUploadsScreen() {
               name="copyVehicleRegistration"
               label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
             />
-            {!isBusinessRegistration && (
-              <>
-                <RHFUploadButton
-                  file={values.copyIDCard}
-                  name="copyIDCard"
-                  label={`สำเนาบัตรประชาชน${isBusinessRegistration ? "" : " (บังคับ)"}`}
-                />
-                <RHFUploadButton
-                  file={values.copyDrivingLicense}
-                  name="copyDrivingLicense"
-                  label={`สำเนาใบขับขี่${isBusinessRegistration ? "" : " (บังคับ)"}`}
-                />
-              </>
-            )}
             <RHFUploadButton
               file={values.copyBookBank}
               name="copyBookBank"
               label="สำเนาหน้าบัญชีธนาคาร"
-            />
+            /> */}
             <RHFUploadButton
               file={values.copyHouseRegistration}
               name="copyHouseRegistration"
               label="สำเนาทะเบียนบ้าน"
             />
-            <RHFUploadButton
+            {/* <RHFUploadButton
               file={values.insurancePolicy}
               name="insurancePolicy"
               label="กรมธรรม์ประกันรถ"
-            />
+            /> */}
             <RHFUploadButton
               file={values.criminalRecordCheckCert}
               name="criminalRecordCheckCert"
@@ -274,3 +185,26 @@ export default function RegisterUploadsScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  wrapper: {
+    flex: 1,
+  },
+  headerWrapper: {
+    paddingHorizontal: normalize(16),
+  },
+  sectionContainer: {
+    paddingBottom: normalize(32),
+    paddingHorizontal: normalize(16),
+  },
+  documentList: {
+    gap: normalize(12),
+    paddingTop: normalize(24),
+  },
+  submitStyle: {
+    paddingTop: normalize(32),
+  },
+});

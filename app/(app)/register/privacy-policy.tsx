@@ -22,12 +22,13 @@ import RenderHtml, {
 import { normalize } from "@utils/normalizeSize";
 import Checkbox from "@components/Checkbox";
 import {
+  EDriverType,
   SettingDriverPolicies,
   useGetDriverPoliciesInfoQuery,
 } from "@graphql/generated/graphql";
 import { isEmpty } from "lodash";
 import colors from "@constants/colors";
-import { router, useLocalSearchParams } from "expo-router";
+import { Href, router, useLocalSearchParams } from "expo-router";
 import useSnackbar, { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { ActivityIndicator } from "react-native-paper";
 import {
@@ -96,7 +97,7 @@ export default function PrivacyPolicy() {
   const insets = useSafeAreaInsets();
   const isPresented = router.canGoBack();
   const { width } = useWindowDimensions();
-  const { driverType } = useLocalSearchParams<{ driverType: string }>();
+  const { driverType } = useLocalSearchParams<{ driverType: EDriverType }>();
 
   const { data, loading } = useGetDriverPoliciesInfoQuery({
     onError: (error: Error) => {
@@ -125,8 +126,12 @@ export default function PrivacyPolicy() {
     if (policy) {
       console.log("onAcceptPolicy: ", policy.version);
       router.dismiss();
+      const registerRoutes: Href<string> =
+        driverType === EDriverType.BUSINESS
+          ? "/register/business"
+          : "/register/individual";
       router.navigate({
-        pathname: "/register/individual",
+        pathname: registerRoutes,
         params: {
           param: JSON.stringify({
             type: { driverType, version: policy.version },

@@ -8,7 +8,9 @@ import colors from "@constants/colors";
 import { YUP_VALIDATION_ERROR_TYPE } from "@/constants/error";
 import { BANKPROVIDER, TITLE_NAME_OPTIONS } from "@/constants/values";
 import {
-  IndividualDriver,
+  DriverDetail,
+  EUserStatus,
+  EUserValidationStatus,
   useGetDistrictLazyQuery,
   useGetProvinceQuery,
   useGetSubDistrictLazyQuery,
@@ -27,9 +29,10 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { DriverFormValueType } from "../register/types";
 
 type FormValues = Omit<
-  IndividualDriverFormValueType,
+  DriverFormValueType,
   "password" | "confirmPassword" | "policyVersion" | "driverType"
 >;
 
@@ -49,7 +52,7 @@ export default function ProfileDetail() {
     useGetSubDistrictLazyQuery();
 
   const isApproved =
-    user?.status === "active" && user.validationStatus === "approve";
+    user?.status === EUserStatus.ACTIVE && user.validationStatus === EUserValidationStatus.APPROVE;
 
   const vehicleTypes = useMemo<VehicleType[]>(() => {
     if (vehicleData?.getVehicleTypeAvailable) {
@@ -61,13 +64,13 @@ export default function ProfileDetail() {
     return [];
   }, [vehicleData]);
 
-  const individualDriver = useMemo<IndividualDriver | undefined>(() => {
-    return user?.individualDriver as IndividualDriver;
+  const driverDetail = useMemo<DriverDetail | undefined>(() => {
+    return user?.driverDetail as DriverDetail;
   }, [user]);
 
   useEffect(() => {
-    if (user?.individualDriver) {
-      const driver = user.individualDriver;
+    if (user?.driverDetail) {
+      const driver = user.driverDetail;
       if (driver.province) {
         getDistrict({ variables: { provinceThName: driver.province } });
       }
@@ -75,7 +78,7 @@ export default function ProfileDetail() {
         getSubDistrict({ variables: { districtName: driver.district } });
       }
     }
-  }, [user?.individualDriver]);
+  }, [user?.driverDetail]);
 
   const IndividualScema = Yup.object().shape({
     policyVersion: Yup.number(),
@@ -123,26 +126,31 @@ export default function ProfileDetail() {
   });
 
   const defaultValues: FormValues = {
-    title: individualDriver?.title || "",
-    otherTitle: individualDriver?.otherTitle || "",
-    firstname: individualDriver?.firstname || "",
-    lastname: individualDriver?.lastname || "",
-    taxId: individualDriver?.taxId || "",
-    phoneNumber: individualDriver?.phoneNumber || "",
-    lineId: individualDriver?.lineId || "",
+    title: driverDetail?.title || "",
+    otherTitle: driverDetail?.otherTitle || "",
+    firstname: driverDetail?.firstname || "",
+    lastname: driverDetail?.lastname || "",
+    businessName: driverDetail?.businessName || "",
+    businessBranch: driverDetail?.businessBranch || "",
+    taxNumber: driverDetail?.taxNumber || "",
+    phoneNumber: driverDetail?.phoneNumber || "",
+    lineId: driverDetail?.lineId || "",
     // Address
-    address: individualDriver?.address || "",
-    province: individualDriver?.province || "",
-    district: individualDriver?.district || "",
-    subDistrict: individualDriver?.subDistrict || "",
-    postcode: individualDriver?.postcode || "",
+    address: driverDetail?.address || "",
+    province: driverDetail?.province || "",
+    district: driverDetail?.district || "",
+    subDistrict: driverDetail?.subDistrict || "",
+    postcode: driverDetail?.postcode || "",
     // Bank
-    bank: individualDriver?.bank || "",
-    bankBranch: individualDriver?.bankBranch || "",
-    bankName: individualDriver?.bankName || "",
-    bankNumber: individualDriver?.bankNumber || "",
+    bank: driverDetail?.bank || "",
+    bankBranch: driverDetail?.bankBranch || "",
+    bankName: driverDetail?.bankName || "",
+    bankNumber: driverDetail?.bankNumber || "",
     // Vehicle type
-    serviceVehicleType: individualDriver?.serviceVehicleType._id || "",
+    serviceVehicleTypes: map(
+      driverDetail?.serviceVehicleTypes,
+      (service) => service._id
+    ),
   };
 
   const methods = useForm<FormValues>({
@@ -360,7 +368,7 @@ export default function ProfileDetail() {
               label="เลขที่บัญชี*"
             />
 
-            <View style={styles.formSubtitle}>
+            {/* <View style={styles.formSubtitle}>
               <Text varient="caption" color="disabled">
                 เลือกประเภทรถที่ให้บริการ
               </Text>
@@ -374,7 +382,7 @@ export default function ProfileDetail() {
               value={values.serviceVehicleType}
               labelField="name"
               valueField="_id"
-            />
+            /> */}
             <View style={styles.actionWrapper}>
               <Button
                 fullWidth

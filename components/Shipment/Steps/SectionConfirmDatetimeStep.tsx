@@ -15,7 +15,10 @@ import {
 import { get, head, includes } from "lodash";
 import * as Linking from "expo-linking";
 import Button from "@/components/Button";
-import { useConfirmShipmentDatetimeMutation } from "@/graphql/generated/graphql";
+import {
+  EShipmentStatus,
+  useConfirmShipmentDatetimeMutation,
+} from "@/graphql/generated/graphql";
 import DateTimePicker, {
   DateTimePickerAndroid,
   DateTimePickerEvent,
@@ -395,7 +398,11 @@ export function DoneConfirmDatetime({ shipment }: ProgressingStepsProps) {
   const datetime = new Date(shipment?.bookingDateTime || "");
   const pickupDestination = head(shipment.destinations);
   const isHiddenInfo = includes(
-    ["dilivered", "cancelled", "refund"],
+    [
+      EShipmentStatus.DELIVERED,
+      EShipmentStatus.CANCELLED,
+      EShipmentStatus.REFUND,
+    ],
     shipment?.status
   );
   return (

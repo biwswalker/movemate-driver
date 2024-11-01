@@ -16,9 +16,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { EDriverType } from "@/graphql/generated/graphql";
 
 export default function RegisterStarted() {
-  function handleSelectedDriverType(driverType: string) {
+  function handleSelectedDriverType(driverType: EDriverType) {
     router.setParams({ driverType });
     router.push({
       pathname: "/register/privacy-policy",
@@ -43,7 +44,7 @@ export default function RegisterStarted() {
 }
 
 interface RegisterTypeCardProps {
-  onSelectDriverType: (driverType: string) => void;
+  onSelectDriverType: (driverType: EDriverType) => void;
 }
 
 function RegisterTypeCard({ onSelectDriverType }: RegisterTypeCardProps) {
@@ -96,14 +97,14 @@ function RegisterTypeCard({ onSelectDriverType }: RegisterTypeCardProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handlePressDriverType(type: string) {
+  function handlePressDriverType(type: EDriverType) {
     onSelectDriverType(type);
   }
 
   return (
     <View style={styles.contentWrapper}>
       <View style={styles.cardContainer}>
-        <TouchableOpacity onPress={() => handlePressDriverType("individual")}>
+        <TouchableOpacity onPress={() => handlePressDriverType(EDriverType.INDIVIDUAL_DRIVER)}>
           <View style={styles.cardWrapper}>
             <Text varient="body1" color="disabled">
               ประเภท
@@ -131,7 +132,7 @@ function RegisterTypeCard({ onSelectDriverType }: RegisterTypeCardProps) {
         </Animated.View>
       </View>
       <View style={styles.cardContainer}>
-        <TouchableOpacity onPress={() => handlePressDriverType("agent")}>
+        <TouchableOpacity onPress={() => handlePressDriverType(EDriverType.BUSINESS)}>
           <View style={styles.cardWrapper}>
             <Text varient="body1" color="disabled">
               ประเภท

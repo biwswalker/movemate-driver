@@ -20,6 +20,7 @@ import Button from "@components/Button";
 import Iconify from "@components/Iconify";
 import { head, isEmpty, map, tail } from "lodash";
 import {
+  EDriverStatus,
   Shipment,
   useListenAvailableShipmentSubscription,
 } from "@graphql/generated/graphql";
@@ -211,7 +212,7 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
 
     function FooterAction() {
       if (isEmpty(shipments)) {
-        if (user?.drivingStatus === "busy") {
+        if (user?.drivingStatus === EDriverStatus.BUSY) {
           return (
             <View style={shipmentStyle.footerWrapper}>
               <Iconify

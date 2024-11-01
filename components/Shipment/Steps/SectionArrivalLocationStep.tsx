@@ -11,6 +11,7 @@ import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { DropdownAlertType } from "react-native-dropdownalert";
 import {
   Destination,
+  EShipmentStatus,
   StepDefinition,
   useNextShipmentStepMutation,
 } from "@/graphql/generated/graphql";
@@ -198,7 +199,11 @@ export function DoneArrivalLocation({
   shipment,
 }: ArrivalLocationProps) {
   const isHiddenInfo = includes(
-    ["dilivered", "cancelled", "refund"],
+    [
+      EShipmentStatus.DELIVERED,
+      EShipmentStatus.CANCELLED,
+      EShipmentStatus.REFUND,
+    ],
     shipment?.status
   );
 

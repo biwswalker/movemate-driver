@@ -1,18 +1,20 @@
-mutation IndividualDriverRegister($data: IndividualDriverRegisterInput!) {
-  individualDriverRegister(data: $data) {
+mutation DriverRegister($data: DriverRegisterInput!) {
+  driverRegister(data: $data) {
     phoneNumber
     driverType
   }
 }
 
-mutation VerifyIndiividualDriverData($data: IndividualDriverDetailInput!) {
-  verifyIndiividualDriverData(data: $data) {
+mutation VerifyDriverData($data: DriverDetailInput!) {
+  verifyDriverData(data: $data) {
     policyVersion
     driverType
     title
     otherTitle
     firstname
     lastname
+    businessName
+    businessBranch
     taxNumber
     phoneNumber
     lineId
@@ -32,4 +34,32 @@ mutation VerifyIndiividualDriverData($data: IndividualDriverDetailInput!) {
 
 mutation ChangeDrivingStatus($status: String!) {
   changeDrivingStatus(status: $status)
+}
+
+mutation AddExistingAccountEmployee($driverId: String!) {
+  addExitingEmployee(driverId: $driverId)
+}
+
+mutation EmployeeRegister($data: EmployeeRegisterInput!) {
+  employeeRegister(data: $data) {
+    phoneNumber
+    driverType
+  }
+}
+
+mutation VerifyEmployeeData($data: EmployeeDetailInput!) {
+  verifyEmployeeData(data: $data) {
+    title
+    otherTitle
+    firstname
+    lastname
+    taxNumber
+    phoneNumber
+    lineId
+    address
+    province
+    district
+    subDistrict
+    postcode
+  }
 }

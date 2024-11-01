@@ -1,7 +1,7 @@
 import React from "react";
 import Text from "@components/Text";
 import Button from "@components/Button";
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { get } from "lodash";
 import { Iconify } from "react-native-iconify";
@@ -59,22 +59,17 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function RegisterSuccessScreen() {
+export default function EmployeeRegisterSuccessScreen() {
   const searchParam = useLocalSearchParams<{ param: string }>();
   const params = JSON.parse(searchParam.param) as RegisterPayload;
-  const isBusinessRegisted = params.driverType === EDriverType.BUSINESS
+  const isBusinessRegisted = params.driverType === EDriverType.BUSINESS;
   const phoneNumber = get(params, "phoneNumber", "");
-  const subtitleBusiness = `ขอบคุณสำหรับการสมัครสมาชิกขับรถรูปแบบ\nบริษัท/นายหน้ากับ Movemate`;
   const subtitleIndividual = `ขอบคุณสำหรับการสมัครสมาชิกขับรถรูปแบบ\nส่วนบุคคลกับ Movemate`;
-  const subtitle2 = `คุณจะได้รับข้อความแจ้งสถานะการสมัครสมาชิก\nผ่านทาง SMS ภายใน 1-3 วันทำการ \nโดยเราจะส่งข้อความไปยัง\n`;
+  const subtitle2 = `คนขับจะได้รับข้อความแจ้งสถานะการสมัครสมาชิก\nผ่านทาง SMS ภายใน 1-3 วันทำการ \nโดยเราจะส่งข้อความไปยัง\n`;
   const subtitle3 = ` \nโปรดตรวจสอบข้อความของท่าน`;
 
-  function handleSignin() {
-    router.replace("/login");
-  }
-
-  function handleGoToLanding() {
-    router.replace("/landing");
+  function handleGoToList() {
+    router.navigate("/employee/employees");
   }
 
   return (
@@ -85,11 +80,11 @@ export default function RegisterSuccessScreen() {
           source={require("@assets/images/registered_success.png")}
         />
         <Text varient="h3" style={[styles.titleText, styles.textCenter]}>
-          ขอบคุณที่ร่วมสมัคร
+          เพิ่มคนขับสำเร็จ
         </Text>
-        <Text varient="caption" color="secondary" style={styles.textCenter}>
+        {/* <Text varient="caption" color="secondary" style={styles.textCenter}>
           {isBusinessRegisted ? subtitleBusiness : subtitleIndividual}
-        </Text>
+        </Text> */}
         <Text
           varient="caption"
           color="secondary"
@@ -106,8 +101,8 @@ export default function RegisterSuccessScreen() {
             fullWidth
             size="large"
             varient="soft"
-            title="กลับสู่หน้าหลัก"
-            onPress={handleGoToLanding}
+            title="กลับไปรายการคนขับ"
+            onPress={handleGoToList}
             EndIcon={
               <Iconify
                 icon="flowbite:arrow-right-outline"
@@ -116,22 +111,6 @@ export default function RegisterSuccessScreen() {
               />
             }
           />
-          <View style={[styles.rowWrapper, styles.actionTextWrapper]}>
-            <Text varient="body2" color="disabled">
-              หรือ
-            </Text>
-            <TouchableOpacity onPress={handleSignin}>
-              <Text
-                varient="subtitle2"
-                style={[styles.textButton, { color: colors.primary.main }]}
-              >
-                เข้าสู่ระบบ
-              </Text>
-            </TouchableOpacity>
-            <Text varient="body2" color="disabled">
-              ได้เลย!
-            </Text>
-          </View>
         </View>
       </View>
     </SafeAreaView>

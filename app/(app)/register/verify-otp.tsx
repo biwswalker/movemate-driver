@@ -7,14 +7,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { normalize } from "@utils/normalizeSize";
 import OTPInput from "@components/OTPInput";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { get, pick } from "lodash";
+import { get, isEmpty, omit, omitBy, pick } from "lodash";
 import {
   FileInput as FileInputGraph,
-  IndividualDriverDetailInput,
-  IndividualDriverRegisterMutation,
-  OtpRequestMutation,
-  useIndividualDriverRegisterMutation,
   useOtpRequestMutation,
+  OtpRequestMutation,
+  DriverDetailInput,
+  useDriverRegisterMutation,
+  DriverRegisterMutation,
+  EDriverType,
 } from "@graphql/generated/graphql";
 import { ApolloError } from "@apollo/client";
 import { fileUploadAPI } from "@services/upload";
@@ -22,60 +23,9 @@ import { encryption } from "@utils/crypto";
 import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
-import { useIsFocused } from "@react-navigation/native";
 import { IndividualRegisterParam } from "./types";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.common.white,
-  },
-  wrapper: {
-    flex: 1,
-  },
-  headerWrapper: {
-    paddingHorizontal: normalize(16),
-  },
-  rowWrapper: {
-    flexDirection: "row",
-    gap: normalize(8),
-  },
-  sectionContainer: {
-    padding: normalize(32),
-    paddingTop: normalize(16),
-    alignItems: "center",
-  },
-  documentList: {
-    gap: 12,
-  },
-  secureImage: {
-    width: normalize(224),
-    alignSelf: "center",
-    resizeMode: "contain",
-  },
-  textCenter: {
-    textAlign: "center",
-  },
-  actionContainer: {
-    width: `100%`,
-    gap: normalize(8),
-    marginTop: normalize(24),
-  },
-  titleWrapper: {
-    marginTop: normalize(16),
-  },
-  backEditTextsWrapper: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  editTextButton: {
-    color: colors.info.main,
-    textAlign: "justify",
-  },
-});
-
 export default function RegisterOTPVerifyScreen() {
-  const isFocused = useIsFocused();
   const [code, setCode] = useState("");
   const [pinReady, setPinReady] = useState(false);
 
@@ -88,16 +38,14 @@ export default function RegisterOTPVerifyScreen() {
 
   const { showSnackbar, DropdownType } = useSnackbarV2();
 
-  const detail = get(
-    params,
-    "detail",
-    undefined
-  ) as IndividualDriverDetailInput;
+  const detail = get(params, "detail", undefined) as DriverDetailInput;
   const documents = get(params, "documents", undefined);
+  const isBusinessRegistration =
+    params.type?.driverType === EDriverType.BUSINESS;
 
   const [otpRequest, { loading: resetOTPLoading }] = useOtpRequestMutation();
-  const [individualRegister, { loading: individualRegisterLoading }] =
-    useIndividualDriverRegisterMutation();
+  const [driverRegister, { loading: driverRegisterLoading }] =
+    useDriverRegisterMutation();
 
   useEffect(() => {
     if (params.otp) {
@@ -146,6 +94,7 @@ export default function RegisterOTPVerifyScreen() {
   }
 
   function handleErrorRegister(error: ApolloError) {
+    console.log("errr: ", JSON.stringify(error, undefined, 2));
     const graphQLErrors = get(error, "graphQLErrors", []);
     if (error.graphQLErrors) {
       graphQLErrors.forEach((graphQLError) => {
@@ -167,8 +116,8 @@ export default function RegisterOTPVerifyScreen() {
     }
   }
 
-  function registerSuccess(data: IndividualDriverRegisterMutation) {
-    const param = JSON.stringify(data.individualDriverRegister);
+  function registerSuccess(data: DriverRegisterMutation) {
+    const param = JSON.stringify(data.driverRegister);
     router.push({ pathname: "/register/success", params: { param } });
   }
 
@@ -212,11 +161,20 @@ export default function RegisterOTPVerifyScreen() {
       const criminalRecordCheckCert = await reformUpload(
         documents.criminalRecordCheckCert
       );
+      const businessRegistrationCertificate = await reformUpload(
+        documents.businessRegistrationCertificate
+      );
+      const certificateValueAddedTaxRegistration = await reformUpload(
+        documents.certificateValueAddedTaxRegistration
+      );
 
-      individualRegister({
+      driverRegister({
         variables: {
           data: {
-            detail: { ...detail, password: encryptedPassword },
+            detail: {
+              ...(omit(detail, ['confirmPassword']) as DriverDetailInput),
+              password: encryptedPassword,
+            },
             documents: {
               frontOfVehicle,
               backOfVehicle,
@@ -229,6 +187,8 @@ export default function RegisterOTPVerifyScreen() {
               copyHouseRegistration,
               insurancePolicy,
               criminalRecordCheckCert,
+              businessRegistrationCertificate,
+              certificateValueAddedTaxRegistration,
             },
             otp: {
               otp: code,
@@ -287,18 +247,17 @@ export default function RegisterOTPVerifyScreen() {
     const currentTime = Date.now();
     const countdownTime = Math.floor((endTime - currentTime) / 1000);
     console.log("countdonw detail...", endTime, currentTime, countdownTime);
-    
+
     if (countdownTime > 0) {
       console.log("countdownTime more...", countdownTime);
       setTimeout(() => {
         setCountdown(countdownTime);
         setIsCounting(true);
-      }, 56)
+      }, 56);
     }
   }
 
   console.log("counter...", isCounting, countdown);
-
 
   function handleResentCode() {
     onRequestOTP();
@@ -306,7 +265,10 @@ export default function RegisterOTPVerifyScreen() {
 
   function handleOnEdit() {
     const param = JSON.stringify(Object.assign(params, { otp: undefined }));
-    router.replace({ pathname: "/register/individual", params: { param } });
+    const pathname = isBusinessRegistration
+      ? "/register/business"
+      : "/register/individual";
+    router.replace({ pathname, params: { param } });
   }
 
   return (
@@ -376,13 +338,13 @@ export default function RegisterOTPVerifyScreen() {
                 size="large"
                 color="master"
                 disabled={!pinReady}
-                loading={individualRegisterLoading}
+                loading={driverRegisterLoading}
                 onPress={handleConfirmPhoneNumber}
               />
               <Button
                 varient="text"
                 fullWidth
-                disabled={individualRegisterLoading || isCounting}
+                disabled={driverRegisterLoading || isCounting}
                 loading={resetOTPLoading}
                 title={
                   isCounting
@@ -399,3 +361,52 @@ export default function RegisterOTPVerifyScreen() {
     </KeyboardAwareScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.common.white,
+  },
+  wrapper: {
+    flex: 1,
+  },
+  headerWrapper: {
+    paddingHorizontal: normalize(16),
+  },
+  rowWrapper: {
+    flexDirection: "row",
+    gap: normalize(8),
+  },
+  sectionContainer: {
+    padding: normalize(32),
+    paddingTop: normalize(16),
+    alignItems: "center",
+  },
+  documentList: {
+    gap: 12,
+  },
+  secureImage: {
+    width: normalize(224),
+    alignSelf: "center",
+    resizeMode: "contain",
+  },
+  textCenter: {
+    textAlign: "center",
+  },
+  actionContainer: {
+    width: `100%`,
+    gap: normalize(8),
+    marginTop: normalize(24),
+  },
+  titleWrapper: {
+    marginTop: normalize(16),
+  },
+  backEditTextsWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  editTextButton: {
+    color: colors.info.main,
+    textAlign: "justify",
+  },
+});

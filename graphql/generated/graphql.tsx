@@ -535,10 +535,10 @@ export type DriverDetail = {
   _id: Scalars["ID"]["output"];
   address: Scalars["String"]["output"];
   balance: Scalars["Float"]["output"];
-  bank: Scalars["String"]["output"];
-  bankBranch: Scalars["String"]["output"];
-  bankName: Scalars["String"]["output"];
-  bankNumber: Scalars["String"]["output"];
+  bank?: Maybe<Scalars["String"]["output"]>;
+  bankBranch?: Maybe<Scalars["String"]["output"]>;
+  bankName?: Maybe<Scalars["String"]["output"]>;
+  bankNumber?: Maybe<Scalars["String"]["output"]>;
   businessBranch?: Maybe<Scalars["String"]["output"]>;
   businessName?: Maybe<Scalars["String"]["output"]>;
   district: Scalars["String"]["output"];
@@ -553,10 +553,35 @@ export type DriverDetail = {
   phoneNumber: Scalars["String"]["output"];
   postcode: Scalars["String"]["output"];
   province: Scalars["String"]["output"];
-  serviceVehicleTypes: Array<VehicleType>;
+  serviceVehicleTypes?: Maybe<Array<VehicleType>>;
   subDistrict: Scalars["String"]["output"];
   taxNumber: Scalars["String"]["output"];
   title: Scalars["String"]["output"];
+};
+
+export type DriverDetailInput = {
+  address: Scalars["String"]["input"];
+  bank: Scalars["String"]["input"];
+  bankBranch: Scalars["String"]["input"];
+  bankName: Scalars["String"]["input"];
+  bankNumber: Scalars["String"]["input"];
+  businessBranch?: InputMaybe<Scalars["String"]["input"]>;
+  businessName?: InputMaybe<Scalars["String"]["input"]>;
+  district: Scalars["String"]["input"];
+  driverType: EDriverType;
+  firstname?: InputMaybe<Scalars["String"]["input"]>;
+  lastname?: InputMaybe<Scalars["String"]["input"]>;
+  lineId?: InputMaybe<Scalars["String"]["input"]>;
+  otherTitle?: InputMaybe<Scalars["String"]["input"]>;
+  password: Scalars["String"]["input"];
+  phoneNumber: Scalars["String"]["input"];
+  policyVersion: Scalars["Int"]["input"];
+  postcode: Scalars["String"]["input"];
+  province: Scalars["String"]["input"];
+  serviceVehicleTypes: Array<Scalars["String"]["input"]>;
+  subDistrict: Scalars["String"]["input"];
+  taxNumber: Scalars["String"]["input"];
+  title: Scalars["String"]["input"];
 };
 
 export type DriverDocument = {
@@ -578,19 +603,51 @@ export type DriverDocument = {
 };
 
 export type DriverDocumentInput = {
-  backOfVehicle: FileInput;
+  backOfVehicle?: InputMaybe<FileInput>;
   businessRegistrationCertificate?: InputMaybe<FileInput>;
   certificateValueAddedTaxRegistration?: InputMaybe<FileInput>;
   copyBookBank?: InputMaybe<FileInput>;
-  copyDrivingLicense: FileInput;
+  copyDrivingLicense?: InputMaybe<FileInput>;
   copyHouseRegistration?: InputMaybe<FileInput>;
-  copyIDCard: FileInput;
-  copyVehicleRegistration: FileInput;
+  copyIDCard?: InputMaybe<FileInput>;
+  copyVehicleRegistration?: InputMaybe<FileInput>;
   criminalRecordCheckCert?: InputMaybe<FileInput>;
-  frontOfVehicle: FileInput;
+  frontOfVehicle?: InputMaybe<FileInput>;
   insurancePolicy?: InputMaybe<FileInput>;
-  leftOfVehicle: FileInput;
-  rigthOfVehicle: FileInput;
+  leftOfVehicle?: InputMaybe<FileInput>;
+  rigthOfVehicle?: InputMaybe<FileInput>;
+};
+
+export type DriverRegisterInput = {
+  detail: DriverDetailInput;
+  documents: DriverDocumentInput;
+  otp: RegisterOtpInput;
+};
+
+export type DriverVerifiedPayload = {
+  __typename?: "DriverVerifiedPayload";
+  address: Scalars["String"]["output"];
+  bank: Scalars["String"]["output"];
+  bankBranch: Scalars["String"]["output"];
+  bankName: Scalars["String"]["output"];
+  bankNumber: Scalars["String"]["output"];
+  businessBranch?: Maybe<Scalars["String"]["output"]>;
+  businessName?: Maybe<Scalars["String"]["output"]>;
+  district: Scalars["String"]["output"];
+  driverType: EDriverType;
+  firstname?: Maybe<Scalars["String"]["output"]>;
+  lastname?: Maybe<Scalars["String"]["output"]>;
+  lineId: Scalars["String"]["output"];
+  otherTitle?: Maybe<Scalars["String"]["output"]>;
+  password: Scalars["String"]["output"];
+  phoneNumber: Scalars["String"]["output"];
+  policyVersion: Scalars["Int"]["output"];
+  postcode: Scalars["String"]["output"];
+  province: Scalars["String"]["output"];
+  serviceVehicleTypes: Array<Scalars["String"]["output"]>;
+  subDistrict: Scalars["String"]["output"];
+  taxNumber: Scalars["String"]["output"];
+  title: Scalars["String"]["output"];
 };
 
 /** Admin acceptance status */
@@ -608,6 +665,13 @@ export enum EDriverAcceptanceStatus {
   IDLE = "IDLE",
   PENDING = "PENDING",
   UNINTERESTED = "UNINTERESTED",
+}
+
+/** Driver status */
+export enum EDriverStatus {
+  BUSY = "BUSY",
+  IDLE = "IDLE",
+  WORKING = "WORKING",
 }
 
 /** Driver type */
@@ -692,6 +756,71 @@ export enum EStepStatus {
   PROGRESSING = "PROGRESSING",
 }
 
+/** User role */
+export enum EUserRole {
+  ADMIN = "ADMIN",
+  CUSTOMER = "CUSTOMER",
+  DRIVER = "DRIVER",
+}
+
+/** User status */
+export enum EUserStatus {
+  ACTIVE = "ACTIVE",
+  BANNED = "BANNED",
+  DENIED = "DENIED",
+  INACTIVE = "INACTIVE",
+  PENDING = "PENDING",
+}
+
+/** User type */
+export enum EUserType {
+  BUSINESS = "BUSINESS",
+  INDIVIDUAL = "INDIVIDUAL",
+}
+
+/** User validation status */
+export enum EUserValidationStatus {
+  APPROVE = "APPROVE",
+  DENIED = "DENIED",
+  PENDING = "PENDING",
+}
+
+export type EmployeeDetailInput = {
+  address: Scalars["String"]["input"];
+  district: Scalars["String"]["input"];
+  firstname?: InputMaybe<Scalars["String"]["input"]>;
+  lastname?: InputMaybe<Scalars["String"]["input"]>;
+  lineId?: InputMaybe<Scalars["String"]["input"]>;
+  otherTitle?: InputMaybe<Scalars["String"]["input"]>;
+  phoneNumber: Scalars["String"]["input"];
+  postcode: Scalars["String"]["input"];
+  province: Scalars["String"]["input"];
+  subDistrict: Scalars["String"]["input"];
+  taxNumber: Scalars["String"]["input"];
+  title: Scalars["String"]["input"];
+};
+
+export type EmployeeDetailPayload = {
+  __typename?: "EmployeeDetailPayload";
+  address: Scalars["String"]["output"];
+  district: Scalars["String"]["output"];
+  firstname?: Maybe<Scalars["String"]["output"]>;
+  lastname?: Maybe<Scalars["String"]["output"]>;
+  lineId?: Maybe<Scalars["String"]["output"]>;
+  otherTitle?: Maybe<Scalars["String"]["output"]>;
+  phoneNumber: Scalars["String"]["output"];
+  postcode: Scalars["String"]["output"];
+  province: Scalars["String"]["output"];
+  subDistrict: Scalars["String"]["output"];
+  taxNumber: Scalars["String"]["output"];
+  title: Scalars["String"]["output"];
+};
+
+export type EmployeeRegisterInput = {
+  detail: EmployeeDetailInput;
+  documents: DriverDocumentInput;
+};
+
 export type Event = {
   __typename?: "Event";
   _id: Scalars["ID"]["output"];
@@ -724,7 +853,7 @@ export type FavoriteDriverPayload = {
   contactNumber?: Maybe<Scalars["String"]["output"]>;
   createdAt: Scalars["DateTimeISO"]["output"];
   driverDetail?: Maybe<DriverDetail>;
-  drivingStatus?: Maybe<Scalars["String"]["output"]>;
+  drivingStatus?: Maybe<EDriverStatus>;
   email?: Maybe<Scalars["String"]["output"]>;
   favoriteDrivers?: Maybe<Array<Scalars["String"]["output"]>>;
   fcmToken?: Maybe<Scalars["String"]["output"]>;
@@ -736,17 +865,18 @@ export type FavoriteDriverPayload = {
   lastestOTPRef?: Maybe<Scalars["String"]["output"]>;
   lastestOTPTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
   notifications?: Maybe<Array<Notification>>;
+  parents?: Maybe<Array<Scalars["String"]["output"]>>;
   profileImage?: Maybe<File>;
   registration: Scalars["String"]["output"];
   remark?: Maybe<Scalars["String"]["output"]>;
-  status: Scalars["String"]["output"];
+  status: EUserStatus;
   updatedAt: Scalars["DateTimeISO"]["output"];
   upgradeRequest?: Maybe<BusinessCustomer>;
   userNumber: Scalars["String"]["output"];
-  userRole: Scalars["String"]["output"];
-  userType: Scalars["String"]["output"];
+  userRole: EUserRole;
+  userType: EUserType;
   username: Scalars["String"]["output"];
-  validationStatus: Scalars["String"]["output"];
+  validationStatus: EUserValidationStatus;
 };
 
 export type File = {
@@ -790,59 +920,6 @@ export type IndividualCustomer = {
   taxId?: Maybe<Scalars["String"]["output"]>;
   title: Scalars["String"]["output"];
   userNumber: Scalars["String"]["output"];
-};
-
-export type IndividualDriverDetailInput = {
-  address: Scalars["String"]["input"];
-  bank: Scalars["String"]["input"];
-  bankBranch: Scalars["String"]["input"];
-  bankName: Scalars["String"]["input"];
-  bankNumber: Scalars["String"]["input"];
-  district: Scalars["String"]["input"];
-  driverType: Array<EDriverType>;
-  firstname: Scalars["String"]["input"];
-  lastname: Scalars["String"]["input"];
-  lineId: Scalars["String"]["input"];
-  otherTitle?: InputMaybe<Scalars["String"]["input"]>;
-  password: Scalars["String"]["input"];
-  phoneNumber: Scalars["String"]["input"];
-  policyVersion: Scalars["Int"]["input"];
-  postcode: Scalars["String"]["input"];
-  province: Scalars["String"]["input"];
-  serviceVehicleTypes: Array<Scalars["String"]["input"]>;
-  subDistrict: Scalars["String"]["input"];
-  taxNumber: Scalars["String"]["input"];
-  title: Scalars["String"]["input"];
-};
-
-export type IndividualDriverDetailVerifyPayload = {
-  __typename?: "IndividualDriverDetailVerifyPayload";
-  address: Scalars["String"]["output"];
-  bank: Scalars["String"]["output"];
-  bankBranch: Scalars["String"]["output"];
-  bankName: Scalars["String"]["output"];
-  bankNumber: Scalars["String"]["output"];
-  district: Scalars["String"]["output"];
-  driverType: Array<EDriverType>;
-  firstname: Scalars["String"]["output"];
-  lastname: Scalars["String"]["output"];
-  lineId: Scalars["String"]["output"];
-  otherTitle?: Maybe<Scalars["String"]["output"]>;
-  password: Scalars["String"]["output"];
-  phoneNumber: Scalars["String"]["output"];
-  policyVersion: Scalars["Int"]["output"];
-  postcode: Scalars["String"]["output"];
-  province: Scalars["String"]["output"];
-  serviceVehicleTypes: Array<Scalars["String"]["output"]>;
-  subDistrict: Scalars["String"]["output"];
-  taxNumber: Scalars["String"]["output"];
-  title: Scalars["String"]["output"];
-};
-
-export type IndividualDriverRegisterInput = {
-  detail: IndividualDriverDetailInput;
-  documents: DriverDocumentInput;
-  otp: RegisterOtpInput;
 };
 
 export type InvoiceDetail = {
@@ -897,6 +974,7 @@ export type Mutation = {
   addAdditionalService: AdditionalService;
   addAdmin: User;
   addBusinessCustomer: User;
+  addExitingEmployee: Scalars["Boolean"]["output"];
   addIndividualCustomer: User;
   addPODAddress: Scalars["String"]["output"];
   addPrivilege: Scalars["Boolean"]["output"];
@@ -913,9 +991,10 @@ export type Mutation = {
   continueMatchingShipment: Scalars["Boolean"]["output"];
   createShipment: Shipment;
   driverCalcellation: Scalars["Boolean"]["output"];
+  driverRegister: RegisterPayload;
+  employeeRegister: RegisterPayload;
   file_upload: FileUploadPayload;
   forgotPassword: VerifyPayload;
-  individualDriverRegister: RegisterPayload;
   initialAdditionalService: Scalars["Boolean"]["output"];
   initialVehicleCost: Scalars["String"]["output"];
   login: AuthPayload;
@@ -966,7 +1045,8 @@ export type Mutation = {
   updateProfileImage: Scalars["Boolean"]["output"];
   updateVehicleType: VehicleType;
   upgradeAccount: Scalars["Boolean"]["output"];
-  verifyIndiividualDriverData: IndividualDriverDetailVerifyPayload;
+  verifyDriverData: DriverVerifiedPayload;
+  verifyEmployeeData: EmployeeDetailPayload;
   verifyLimiterBeforeGetDirection: LocationRequestLimitPayload;
   verifyOTP: Scalars["Boolean"]["output"];
   verifyPhoneNumberOTP: Scalars["Boolean"]["output"];
@@ -991,6 +1071,10 @@ export type MutationAddAdminArgs = {
 
 export type MutationAddBusinessCustomerArgs = {
   data: CutomerBusinessInput;
+};
+
+export type MutationAddExitingEmployeeArgs = {
+  driverId: Scalars["String"]["input"];
 };
 
 export type MutationAddIndividualCustomerArgs = {
@@ -1070,16 +1154,20 @@ export type MutationDriverCalcellationArgs = {
   shipmentId: Scalars["String"]["input"];
 };
 
+export type MutationDriverRegisterArgs = {
+  data: DriverRegisterInput;
+};
+
+export type MutationEmployeeRegisterArgs = {
+  data: EmployeeRegisterInput;
+};
+
 export type MutationFile_UploadArgs = {
   file: Scalars["Upload"]["input"];
 };
 
 export type MutationForgotPasswordArgs = {
   username: Scalars["String"]["input"];
-};
-
-export type MutationIndividualDriverRegisterArgs = {
-  data: IndividualDriverRegisterInput;
 };
 
 export type MutationInitialAdditionalServiceArgs = {
@@ -1292,8 +1380,12 @@ export type MutationUpgradeAccountArgs = {
   id: Scalars["String"]["input"];
 };
 
-export type MutationVerifyIndiividualDriverDataArgs = {
-  data: IndividualDriverDetailInput;
+export type MutationVerifyDriverDataArgs = {
+  data: DriverDetailInput;
+};
+
+export type MutationVerifyEmployeeDataArgs = {
+  data: EmployeeDetailInput;
 };
 
 export type MutationVerifyOtpArgs = {
@@ -1597,6 +1689,7 @@ export type Query = {
   isNearbyDuedate: Scalars["Boolean"]["output"];
   locationMarker: Marker;
   locationMarkerByCoords: Marker;
+  lookupDriverByPhonenumber?: Maybe<User>;
   me: User;
   monthBilling: Array<BillingCycle>;
   notification: Notification;
@@ -1661,6 +1754,7 @@ export type QueryAlluserIdsArgs = {
   lastestOTPRef?: InputMaybe<Scalars["String"]["input"]>;
   lineId?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
+  parentId?: InputMaybe<Scalars["String"]["input"]>;
   phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
   registration?: InputMaybe<Scalars["String"]["input"]>;
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
@@ -1832,6 +1926,7 @@ export type QueryGetUserArgs = {
   lastestOTPRef?: InputMaybe<Scalars["String"]["input"]>;
   lineId?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
+  parentId?: InputMaybe<Scalars["String"]["input"]>;
   phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
   registration?: InputMaybe<Scalars["String"]["input"]>;
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
@@ -1871,6 +1966,10 @@ export type QueryLocationMarkerArgs = {
 export type QueryLocationMarkerByCoordsArgs = {
   latitude: Scalars["Float"]["input"];
   longitude: Scalars["Float"]["input"];
+};
+
+export type QueryLookupDriverByPhonenumberArgs = {
+  phonenumber: Scalars["String"]["input"];
 };
 
 export type QueryMonthBillingArgs = {
@@ -2022,6 +2121,7 @@ export type QueryUsersArgs = {
   lineId?: InputMaybe<Scalars["String"]["input"]>;
   name?: InputMaybe<Scalars["String"]["input"]>;
   page?: InputMaybe<Scalars["Int"]["input"]>;
+  parentId?: InputMaybe<Scalars["String"]["input"]>;
   phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
   registration?: InputMaybe<Scalars["String"]["input"]>;
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
@@ -2106,7 +2206,7 @@ export type RegisterOtpInput = {
 
 export type RegisterPayload = {
   __typename?: "RegisterPayload";
-  driverType: Array<EDriverType>;
+  driverType: EDriverType;
   phoneNumber: Scalars["String"]["output"];
 };
 
@@ -2528,7 +2628,7 @@ export type User = {
   contactNumber?: Maybe<Scalars["String"]["output"]>;
   createdAt: Scalars["DateTimeISO"]["output"];
   driverDetail?: Maybe<DriverDetail>;
-  drivingStatus?: Maybe<Scalars["String"]["output"]>;
+  drivingStatus?: Maybe<EDriverStatus>;
   email?: Maybe<Scalars["String"]["output"]>;
   favoriteDrivers?: Maybe<Array<Scalars["String"]["output"]>>;
   fcmToken?: Maybe<Scalars["String"]["output"]>;
@@ -2540,17 +2640,18 @@ export type User = {
   lastestOTPRef?: Maybe<Scalars["String"]["output"]>;
   lastestOTPTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
   notifications?: Maybe<Array<Notification>>;
+  parents?: Maybe<Array<Scalars["String"]["output"]>>;
   profileImage?: Maybe<File>;
   registration: Scalars["String"]["output"];
   remark?: Maybe<Scalars["String"]["output"]>;
-  status: Scalars["String"]["output"];
+  status: EUserStatus;
   updatedAt: Scalars["DateTimeISO"]["output"];
   upgradeRequest?: Maybe<BusinessCustomer>;
   userNumber: Scalars["String"]["output"];
-  userRole: Scalars["String"]["output"];
-  userType: Scalars["String"]["output"];
+  userRole: EUserRole;
+  userType: EUserType;
   username: Scalars["String"]["output"];
-  validationStatus: Scalars["String"]["output"];
+  validationStatus: EUserValidationStatus;
 };
 
 export type UserPaginationAggregatePayload = {
@@ -2687,11 +2788,11 @@ export type LoginMutation = {
       __typename?: "User";
       _id: string;
       userNumber: string;
-      userType: string;
+      userType: EUserType;
       username: string;
       remark?: string | null;
-      status: string;
-      validationStatus: string;
+      status: EUserStatus;
+      validationStatus: EUserValidationStatus;
       registration: string;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
@@ -2701,7 +2802,7 @@ export type LoginMutation = {
       acceptPolicyTime?: any | null;
       createdAt: any;
       updatedAt: any;
-      userRole: string;
+      userRole: EUserRole;
       fullname?: string | null;
       lastestOTPTime?: any | null;
       profileImage?: {
@@ -2731,13 +2832,13 @@ export type LoginMutation = {
         district: string;
         subDistrict: string;
         postcode: string;
-        bank: string;
-        bankBranch: string;
-        bankName: string;
-        bankNumber: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
         fullname?: string | null;
         balance: number;
-        serviceVehicleTypes: Array<{
+        serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
           type: string;
@@ -2760,7 +2861,7 @@ export type LoginMutation = {
             createdAt: any;
             updatedAt: any;
           };
-        }>;
+        }> | null;
       } | null;
     };
   };
@@ -2789,33 +2890,35 @@ export type RemoveFcmMutationVariables = Exact<{ [key: string]: never }>;
 
 export type RemoveFcmMutation = { __typename?: "Mutation"; removeFCM: boolean };
 
-export type IndividualDriverRegisterMutationVariables = Exact<{
-  data: IndividualDriverRegisterInput;
+export type DriverRegisterMutationVariables = Exact<{
+  data: DriverRegisterInput;
 }>;
 
-export type IndividualDriverRegisterMutation = {
+export type DriverRegisterMutation = {
   __typename?: "Mutation";
-  individualDriverRegister: {
+  driverRegister: {
     __typename?: "RegisterPayload";
     phoneNumber: string;
-    driverType: Array<EDriverType>;
+    driverType: EDriverType;
   };
 };
 
-export type VerifyIndiividualDriverDataMutationVariables = Exact<{
-  data: IndividualDriverDetailInput;
+export type VerifyDriverDataMutationVariables = Exact<{
+  data: DriverDetailInput;
 }>;
 
-export type VerifyIndiividualDriverDataMutation = {
+export type VerifyDriverDataMutation = {
   __typename?: "Mutation";
-  verifyIndiividualDriverData: {
-    __typename?: "IndividualDriverDetailVerifyPayload";
+  verifyDriverData: {
+    __typename?: "DriverVerifiedPayload";
     policyVersion: number;
-    driverType: Array<EDriverType>;
+    driverType: EDriverType;
     title: string;
     otherTitle?: string | null;
-    firstname: string;
-    lastname: string;
+    firstname?: string | null;
+    lastname?: string | null;
+    businessName?: string | null;
+    businessBranch?: string | null;
     taxNumber: string;
     phoneNumber: string;
     lineId: string;
@@ -2840,6 +2943,51 @@ export type ChangeDrivingStatusMutationVariables = Exact<{
 export type ChangeDrivingStatusMutation = {
   __typename?: "Mutation";
   changeDrivingStatus: boolean;
+};
+
+export type AddExistingAccountEmployeeMutationVariables = Exact<{
+  driverId: Scalars["String"]["input"];
+}>;
+
+export type AddExistingAccountEmployeeMutation = {
+  __typename?: "Mutation";
+  addExitingEmployee: boolean;
+};
+
+export type EmployeeRegisterMutationVariables = Exact<{
+  data: EmployeeRegisterInput;
+}>;
+
+export type EmployeeRegisterMutation = {
+  __typename?: "Mutation";
+  employeeRegister: {
+    __typename?: "RegisterPayload";
+    phoneNumber: string;
+    driverType: EDriverType;
+  };
+};
+
+export type VerifyEmployeeDataMutationVariables = Exact<{
+  data: EmployeeDetailInput;
+}>;
+
+export type VerifyEmployeeDataMutation = {
+  __typename?: "Mutation";
+  verifyEmployeeData: {
+    __typename?: "EmployeeDetailPayload";
+    title: string;
+    otherTitle?: string | null;
+    firstname?: string | null;
+    lastname?: string | null;
+    taxNumber: string;
+    phoneNumber: string;
+    lineId?: string | null;
+    address: string;
+    province: string;
+    district: string;
+    subDistrict: string;
+    postcode: string;
+  };
 };
 
 export type AcceptShipmentMutationVariables = Exact<{
@@ -3007,12 +3155,12 @@ export type GetAvailableShipmentQuery = {
       __typename?: "User";
       _id: string;
       userNumber: string;
-      userRole: string;
-      userType: string;
+      userRole: EUserRole;
+      userType: EUserType;
       username: string;
       remark?: string | null;
-      status: string;
-      validationStatus: string;
+      status: EUserStatus;
+      validationStatus: EUserValidationStatus;
       registration: string;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
@@ -3071,12 +3219,12 @@ export type GetAvailableShipmentQuery = {
       __typename?: "User";
       _id: string;
       userNumber: string;
-      userRole: string;
-      userType: string;
+      userRole: EUserRole;
+      userType: EUserType;
       username: string;
       remark?: string | null;
-      status: string;
-      validationStatus: string;
+      status: EUserStatus;
+      validationStatus: EUserValidationStatus;
       registration: string;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
@@ -3105,10 +3253,10 @@ export type GetAvailableShipmentQuery = {
         district: string;
         subDistrict: string;
         postcode: string;
-        bank: string;
-        bankBranch: string;
-        bankName: string;
-        bankNumber: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
         fullname?: string | null;
       } | null;
     } | null;
@@ -3246,12 +3394,12 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       email?: string | null;
       fullname?: string | null;
       userNumber: string;
-      userRole: string;
-      userType: string;
+      userRole: EUserRole;
+      userType: EUserType;
       username: string;
       remark?: string | null;
-      status: string;
-      validationStatus: string;
+      status: EUserStatus;
+      validationStatus: EUserValidationStatus;
       registration: string;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
@@ -3402,12 +3550,12 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       email?: string | null;
       fullname?: string | null;
       userNumber: string;
-      userRole: string;
-      userType: string;
+      userRole: EUserRole;
+      userType: EUserType;
       username: string;
       remark?: string | null;
-      status: string;
-      validationStatus: string;
+      status: EUserStatus;
+      validationStatus: EUserValidationStatus;
       registration: string;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
@@ -3692,12 +3840,12 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       email?: string | null;
       fullname?: string | null;
       userNumber: string;
-      userRole: string;
-      userType: string;
+      userRole: EUserRole;
+      userType: EUserType;
       username: string;
       remark?: string | null;
-      status: string;
-      validationStatus: string;
+      status: EUserStatus;
+      validationStatus: EUserValidationStatus;
       registration: string;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
@@ -3726,10 +3874,10 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         district: string;
         subDistrict: string;
         postcode: string;
-        bank: string;
-        bankBranch: string;
-        bankName: string;
-        bankNumber: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
         fullname?: string | null;
       } | null;
       profileImage?: {
@@ -3820,12 +3968,12 @@ export type MeQuery = {
     __typename?: "User";
     _id: string;
     userNumber: string;
-    userRole: string;
-    userType: string;
+    userRole: EUserRole;
+    userType: EUserType;
     username: string;
     remark?: string | null;
-    status: string;
-    validationStatus: string;
+    status: EUserStatus;
+    validationStatus: EUserValidationStatus;
     registration: string;
     lastestOTP?: string | null;
     lastestOTPRef?: string | null;
@@ -3837,7 +3985,7 @@ export type MeQuery = {
     updatedAt: any;
     fullname?: string | null;
     fcmToken?: string | null;
-    drivingStatus?: string | null;
+    drivingStatus?: EDriverStatus | null;
     profileImage?: {
       __typename?: "File";
       _id: string;
@@ -3865,10 +4013,10 @@ export type MeQuery = {
       district: string;
       subDistrict: string;
       postcode: string;
-      bank: string;
-      bankBranch: string;
-      bankName: string;
-      bankNumber: string;
+      bank?: string | null;
+      bankBranch?: string | null;
+      bankName?: string | null;
+      bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
       documents: {
@@ -3974,7 +4122,7 @@ export type MeQuery = {
           updatedAt: any;
         } | null;
       };
-      serviceVehicleTypes: Array<{
+      serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
         type: string;
@@ -3998,7 +4146,7 @@ export type MeQuery = {
           createdAt: any;
           updatedAt: any;
         };
-      }>;
+      }> | null;
     } | null;
   };
   requireBeforeSignin: {
@@ -4007,6 +4155,180 @@ export type MeQuery = {
     requirePasswordChange: boolean;
   };
   unreadCount: { __typename?: "UnreadCountPayload"; notification: number };
+};
+
+export type EmployeesQueryVariables = Exact<{
+  parentId?: InputMaybe<Scalars["String"]["input"]>;
+}>;
+
+export type EmployeesQuery = {
+  __typename?: "Query";
+  users: {
+    __typename?: "UserPaginationAggregatePayload";
+    totalDocs: number;
+    limit: number;
+    totalPages: number;
+    page?: number | null;
+    pagingCounter: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+    prevPage?: number | null;
+    nextPage?: number | null;
+    offset?: number | null;
+    docs: Array<{
+      __typename?: "User";
+      _id: string;
+      fullname?: string | null;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      username: string;
+      remark?: string | null;
+      status: EUserStatus;
+      contactNumber?: string | null;
+      validationStatus: EUserValidationStatus;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+      } | null;
+      driverDetail?: {
+        __typename?: "DriverDetail";
+        _id: string;
+        driverType: Array<EDriverType>;
+        title: string;
+        otherTitle: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        taxNumber: string;
+        phoneNumber: string;
+        lineId: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        fullname?: string | null;
+        serviceVehicleTypes?: Array<{
+          __typename?: "VehicleType";
+          _id: string;
+          type: string;
+          isPublic?: boolean | null;
+          isLarger?: boolean | null;
+          name: string;
+          width: number;
+          length: number;
+          height: number;
+          maxCapacity: number;
+          details?: string | null;
+          createdAt: any;
+          updatedAt: any;
+          image: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+        }> | null;
+      } | null;
+    }>;
+  };
+};
+
+export type LookupDriverQueryVariables = Exact<{
+  phonenumber: Scalars["String"]["input"];
+}>;
+
+export type LookupDriverQuery = {
+  __typename?: "Query";
+  lookupDriverByPhonenumber?: {
+    __typename?: "User";
+    _id: string;
+    fullname?: string | null;
+    contactNumber?: string | null;
+    userNumber: string;
+    userRole: EUserRole;
+    userType: EUserType;
+    username: string;
+    remark?: string | null;
+    status: EUserStatus;
+    validationStatus: EUserValidationStatus;
+    drivingStatus?: EDriverStatus | null;
+    profileImage?: {
+      __typename?: "File";
+      _id: string;
+      fileId: string;
+      filename: string;
+    } | null;
+    driverDetail?: {
+      __typename?: "DriverDetail";
+      _id: string;
+      driverType: Array<EDriverType>;
+      title: string;
+      otherTitle: string;
+      firstname?: string | null;
+      lastname?: string | null;
+      taxNumber: string;
+      phoneNumber: string;
+      lineId: string;
+      address: string;
+      province: string;
+      district: string;
+      subDistrict: string;
+      postcode: string;
+      fullname?: string | null;
+    } | null;
+  } | null;
+};
+
+export type GetUserQueryVariables = Exact<{
+  id?: InputMaybe<Scalars["String"]["input"]>;
+}>;
+
+export type GetUserQuery = {
+  __typename?: "Query";
+  getUser: {
+    __typename?: "User";
+    _id: string;
+    fullname?: string | null;
+    contactNumber?: string | null;
+    userNumber: string;
+    userRole: EUserRole;
+    userType: EUserType;
+    username: string;
+    remark?: string | null;
+    status: EUserStatus;
+    validationStatus: EUserValidationStatus;
+    drivingStatus?: EDriverStatus | null;
+    profileImage?: {
+      __typename?: "File";
+      _id: string;
+      fileId: string;
+      filename: string;
+    } | null;
+    driverDetail?: {
+      __typename?: "DriverDetail";
+      _id: string;
+      driverType: Array<EDriverType>;
+      title: string;
+      otherTitle: string;
+      firstname?: string | null;
+      lastname?: string | null;
+      taxNumber: string;
+      phoneNumber: string;
+      lineId: string;
+      address: string;
+      province: string;
+      district: string;
+      subDistrict: string;
+      postcode: string;
+      fullname?: string | null;
+    } | null;
+  };
 };
 
 export type GetVehicleTypeAvailableQueryVariables = Exact<{
@@ -4108,12 +4430,12 @@ export type ListenAvailableShipmentSubscription = {
       __typename?: "User";
       _id: string;
       userNumber: string;
-      userRole: string;
-      userType: string;
+      userRole: EUserRole;
+      userType: EUserType;
       username: string;
       remark?: string | null;
-      status: string;
-      validationStatus: string;
+      status: EUserStatus;
+      validationStatus: EUserValidationStatus;
       registration: string;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
@@ -4172,12 +4494,12 @@ export type ListenAvailableShipmentSubscription = {
       __typename?: "User";
       _id: string;
       userNumber: string;
-      userRole: string;
-      userType: string;
+      userRole: EUserRole;
+      userType: EUserType;
       username: string;
       remark?: string | null;
-      status: string;
-      validationStatus: string;
+      status: EUserStatus;
+      validationStatus: EUserValidationStatus;
       registration: string;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
@@ -4206,10 +4528,10 @@ export type ListenAvailableShipmentSubscription = {
         district: string;
         subDistrict: string;
         postcode: string;
-        bank: string;
-        bankBranch: string;
-        bankName: string;
-        bankNumber: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
         fullname?: string | null;
       } | null;
     } | null;
@@ -4630,67 +4952,68 @@ export type RemoveFcmMutationOptions = Apollo.BaseMutationOptions<
   RemoveFcmMutation,
   RemoveFcmMutationVariables
 >;
-export const IndividualDriverRegisterDocument = gql`
-  mutation IndividualDriverRegister($data: IndividualDriverRegisterInput!) {
-    individualDriverRegister(data: $data) {
+export const DriverRegisterDocument = gql`
+  mutation DriverRegister($data: DriverRegisterInput!) {
+    driverRegister(data: $data) {
       phoneNumber
       driverType
     }
   }
 `;
-export type IndividualDriverRegisterMutationFn = Apollo.MutationFunction<
-  IndividualDriverRegisterMutation,
-  IndividualDriverRegisterMutationVariables
+export type DriverRegisterMutationFn = Apollo.MutationFunction<
+  DriverRegisterMutation,
+  DriverRegisterMutationVariables
 >;
 
 /**
- * __useIndividualDriverRegisterMutation__
+ * __useDriverRegisterMutation__
  *
- * To run a mutation, you first call `useIndividualDriverRegisterMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useIndividualDriverRegisterMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useDriverRegisterMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDriverRegisterMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [individualDriverRegisterMutation, { data, loading, error }] = useIndividualDriverRegisterMutation({
+ * const [driverRegisterMutation, { data, loading, error }] = useDriverRegisterMutation({
  *   variables: {
  *      data: // value for 'data'
  *   },
  * });
  */
-export function useIndividualDriverRegisterMutation(
+export function useDriverRegisterMutation(
   baseOptions?: Apollo.MutationHookOptions<
-    IndividualDriverRegisterMutation,
-    IndividualDriverRegisterMutationVariables
+    DriverRegisterMutation,
+    DriverRegisterMutationVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions };
   return Apollo.useMutation<
-    IndividualDriverRegisterMutation,
-    IndividualDriverRegisterMutationVariables
-  >(IndividualDriverRegisterDocument, options);
+    DriverRegisterMutation,
+    DriverRegisterMutationVariables
+  >(DriverRegisterDocument, options);
 }
-export type IndividualDriverRegisterMutationHookResult = ReturnType<
-  typeof useIndividualDriverRegisterMutation
+export type DriverRegisterMutationHookResult = ReturnType<
+  typeof useDriverRegisterMutation
 >;
-export type IndividualDriverRegisterMutationResult =
-  Apollo.MutationResult<IndividualDriverRegisterMutation>;
-export type IndividualDriverRegisterMutationOptions =
-  Apollo.BaseMutationOptions<
-    IndividualDriverRegisterMutation,
-    IndividualDriverRegisterMutationVariables
-  >;
-export const VerifyIndiividualDriverDataDocument = gql`
-  mutation VerifyIndiividualDriverData($data: IndividualDriverDetailInput!) {
-    verifyIndiividualDriverData(data: $data) {
+export type DriverRegisterMutationResult =
+  Apollo.MutationResult<DriverRegisterMutation>;
+export type DriverRegisterMutationOptions = Apollo.BaseMutationOptions<
+  DriverRegisterMutation,
+  DriverRegisterMutationVariables
+>;
+export const VerifyDriverDataDocument = gql`
+  mutation VerifyDriverData($data: DriverDetailInput!) {
+    verifyDriverData(data: $data) {
       policyVersion
       driverType
       title
       otherTitle
       firstname
       lastname
+      businessName
+      businessBranch
       taxNumber
       phoneNumber
       lineId
@@ -4708,50 +5031,49 @@ export const VerifyIndiividualDriverDataDocument = gql`
     }
   }
 `;
-export type VerifyIndiividualDriverDataMutationFn = Apollo.MutationFunction<
-  VerifyIndiividualDriverDataMutation,
-  VerifyIndiividualDriverDataMutationVariables
+export type VerifyDriverDataMutationFn = Apollo.MutationFunction<
+  VerifyDriverDataMutation,
+  VerifyDriverDataMutationVariables
 >;
 
 /**
- * __useVerifyIndiividualDriverDataMutation__
+ * __useVerifyDriverDataMutation__
  *
- * To run a mutation, you first call `useVerifyIndiividualDriverDataMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useVerifyIndiividualDriverDataMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useVerifyDriverDataMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useVerifyDriverDataMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [verifyIndiividualDriverDataMutation, { data, loading, error }] = useVerifyIndiividualDriverDataMutation({
+ * const [verifyDriverDataMutation, { data, loading, error }] = useVerifyDriverDataMutation({
  *   variables: {
  *      data: // value for 'data'
  *   },
  * });
  */
-export function useVerifyIndiividualDriverDataMutation(
+export function useVerifyDriverDataMutation(
   baseOptions?: Apollo.MutationHookOptions<
-    VerifyIndiividualDriverDataMutation,
-    VerifyIndiividualDriverDataMutationVariables
+    VerifyDriverDataMutation,
+    VerifyDriverDataMutationVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions };
   return Apollo.useMutation<
-    VerifyIndiividualDriverDataMutation,
-    VerifyIndiividualDriverDataMutationVariables
-  >(VerifyIndiividualDriverDataDocument, options);
+    VerifyDriverDataMutation,
+    VerifyDriverDataMutationVariables
+  >(VerifyDriverDataDocument, options);
 }
-export type VerifyIndiividualDriverDataMutationHookResult = ReturnType<
-  typeof useVerifyIndiividualDriverDataMutation
+export type VerifyDriverDataMutationHookResult = ReturnType<
+  typeof useVerifyDriverDataMutation
 >;
-export type VerifyIndiividualDriverDataMutationResult =
-  Apollo.MutationResult<VerifyIndiividualDriverDataMutation>;
-export type VerifyIndiividualDriverDataMutationOptions =
-  Apollo.BaseMutationOptions<
-    VerifyIndiividualDriverDataMutation,
-    VerifyIndiividualDriverDataMutationVariables
-  >;
+export type VerifyDriverDataMutationResult =
+  Apollo.MutationResult<VerifyDriverDataMutation>;
+export type VerifyDriverDataMutationOptions = Apollo.BaseMutationOptions<
+  VerifyDriverDataMutation,
+  VerifyDriverDataMutationVariables
+>;
 export const ChangeDrivingStatusDocument = gql`
   mutation ChangeDrivingStatus($status: String!) {
     changeDrivingStatus(status: $status)
@@ -4799,6 +5121,167 @@ export type ChangeDrivingStatusMutationResult =
 export type ChangeDrivingStatusMutationOptions = Apollo.BaseMutationOptions<
   ChangeDrivingStatusMutation,
   ChangeDrivingStatusMutationVariables
+>;
+export const AddExistingAccountEmployeeDocument = gql`
+  mutation AddExistingAccountEmployee($driverId: String!) {
+    addExitingEmployee(driverId: $driverId)
+  }
+`;
+export type AddExistingAccountEmployeeMutationFn = Apollo.MutationFunction<
+  AddExistingAccountEmployeeMutation,
+  AddExistingAccountEmployeeMutationVariables
+>;
+
+/**
+ * __useAddExistingAccountEmployeeMutation__
+ *
+ * To run a mutation, you first call `useAddExistingAccountEmployeeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddExistingAccountEmployeeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addExistingAccountEmployeeMutation, { data, loading, error }] = useAddExistingAccountEmployeeMutation({
+ *   variables: {
+ *      driverId: // value for 'driverId'
+ *   },
+ * });
+ */
+export function useAddExistingAccountEmployeeMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    AddExistingAccountEmployeeMutation,
+    AddExistingAccountEmployeeMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    AddExistingAccountEmployeeMutation,
+    AddExistingAccountEmployeeMutationVariables
+  >(AddExistingAccountEmployeeDocument, options);
+}
+export type AddExistingAccountEmployeeMutationHookResult = ReturnType<
+  typeof useAddExistingAccountEmployeeMutation
+>;
+export type AddExistingAccountEmployeeMutationResult =
+  Apollo.MutationResult<AddExistingAccountEmployeeMutation>;
+export type AddExistingAccountEmployeeMutationOptions =
+  Apollo.BaseMutationOptions<
+    AddExistingAccountEmployeeMutation,
+    AddExistingAccountEmployeeMutationVariables
+  >;
+export const EmployeeRegisterDocument = gql`
+  mutation EmployeeRegister($data: EmployeeRegisterInput!) {
+    employeeRegister(data: $data) {
+      phoneNumber
+      driverType
+    }
+  }
+`;
+export type EmployeeRegisterMutationFn = Apollo.MutationFunction<
+  EmployeeRegisterMutation,
+  EmployeeRegisterMutationVariables
+>;
+
+/**
+ * __useEmployeeRegisterMutation__
+ *
+ * To run a mutation, you first call `useEmployeeRegisterMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEmployeeRegisterMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [employeeRegisterMutation, { data, loading, error }] = useEmployeeRegisterMutation({
+ *   variables: {
+ *      data: // value for 'data'
+ *   },
+ * });
+ */
+export function useEmployeeRegisterMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    EmployeeRegisterMutation,
+    EmployeeRegisterMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    EmployeeRegisterMutation,
+    EmployeeRegisterMutationVariables
+  >(EmployeeRegisterDocument, options);
+}
+export type EmployeeRegisterMutationHookResult = ReturnType<
+  typeof useEmployeeRegisterMutation
+>;
+export type EmployeeRegisterMutationResult =
+  Apollo.MutationResult<EmployeeRegisterMutation>;
+export type EmployeeRegisterMutationOptions = Apollo.BaseMutationOptions<
+  EmployeeRegisterMutation,
+  EmployeeRegisterMutationVariables
+>;
+export const VerifyEmployeeDataDocument = gql`
+  mutation VerifyEmployeeData($data: EmployeeDetailInput!) {
+    verifyEmployeeData(data: $data) {
+      title
+      otherTitle
+      firstname
+      lastname
+      taxNumber
+      phoneNumber
+      lineId
+      address
+      province
+      district
+      subDistrict
+      postcode
+    }
+  }
+`;
+export type VerifyEmployeeDataMutationFn = Apollo.MutationFunction<
+  VerifyEmployeeDataMutation,
+  VerifyEmployeeDataMutationVariables
+>;
+
+/**
+ * __useVerifyEmployeeDataMutation__
+ *
+ * To run a mutation, you first call `useVerifyEmployeeDataMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useVerifyEmployeeDataMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [verifyEmployeeDataMutation, { data, loading, error }] = useVerifyEmployeeDataMutation({
+ *   variables: {
+ *      data: // value for 'data'
+ *   },
+ * });
+ */
+export function useVerifyEmployeeDataMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    VerifyEmployeeDataMutation,
+    VerifyEmployeeDataMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    VerifyEmployeeDataMutation,
+    VerifyEmployeeDataMutationVariables
+  >(VerifyEmployeeDataDocument, options);
+}
+export type VerifyEmployeeDataMutationHookResult = ReturnType<
+  typeof useVerifyEmployeeDataMutation
+>;
+export type VerifyEmployeeDataMutationResult =
+  Apollo.MutationResult<VerifyEmployeeDataMutation>;
+export type VerifyEmployeeDataMutationOptions = Apollo.BaseMutationOptions<
+  VerifyEmployeeDataMutation,
+  VerifyEmployeeDataMutationVariables
 >;
 export const AcceptShipmentDocument = gql`
   mutation AcceptShipment($shipmentId: String!) {
@@ -6690,6 +7173,358 @@ export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeSuspenseQueryHookResult = ReturnType<typeof useMeSuspenseQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const EmployeesDocument = gql`
+  query Employees($parentId: String) {
+    users(parentId: $parentId) {
+      totalDocs
+      limit
+      totalPages
+      page
+      pagingCounter
+      hasPrevPage
+      hasNextPage
+      prevPage
+      nextPage
+      offset
+      docs {
+        _id
+        fullname
+        userNumber
+        userRole
+        userType
+        username
+        remark
+        status
+        contactNumber
+        validationStatus
+        profileImage {
+          _id
+          fileId
+          filename
+        }
+        driverDetail {
+          _id
+          driverType
+          title
+          otherTitle
+          firstname
+          lastname
+          taxNumber
+          phoneNumber
+          lineId
+          address
+          province
+          district
+          subDistrict
+          postcode
+          fullname
+          serviceVehicleTypes {
+            _id
+            type
+            isPublic
+            isLarger
+            name
+            width
+            length
+            height
+            maxCapacity
+            details
+            createdAt
+            updatedAt
+            image {
+              _id
+              fileId
+              filename
+              mimetype
+              createdAt
+              updatedAt
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * __useEmployeesQuery__
+ *
+ * To run a query within a React component, call `useEmployeesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useEmployeesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useEmployeesQuery({
+ *   variables: {
+ *      parentId: // value for 'parentId'
+ *   },
+ * });
+ */
+export function useEmployeesQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    EmployeesQuery,
+    EmployeesQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<EmployeesQuery, EmployeesQueryVariables>(
+    EmployeesDocument,
+    options,
+  );
+}
+export function useEmployeesLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    EmployeesQuery,
+    EmployeesQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<EmployeesQuery, EmployeesQueryVariables>(
+    EmployeesDocument,
+    options,
+  );
+}
+export function useEmployeesSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<EmployeesQuery, EmployeesQueryVariables>,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<EmployeesQuery, EmployeesQueryVariables>(
+    EmployeesDocument,
+    options,
+  );
+}
+export type EmployeesQueryHookResult = ReturnType<typeof useEmployeesQuery>;
+export type EmployeesLazyQueryHookResult = ReturnType<
+  typeof useEmployeesLazyQuery
+>;
+export type EmployeesSuspenseQueryHookResult = ReturnType<
+  typeof useEmployeesSuspenseQuery
+>;
+export type EmployeesQueryResult = Apollo.QueryResult<
+  EmployeesQuery,
+  EmployeesQueryVariables
+>;
+export const LookupDriverDocument = gql`
+  query LookupDriver($phonenumber: String!) {
+    lookupDriverByPhonenumber(phonenumber: $phonenumber) {
+      _id
+      fullname
+      contactNumber
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      validationStatus
+      drivingStatus
+      profileImage {
+        _id
+        fileId
+        filename
+      }
+      driverDetail {
+        _id
+        driverType
+        title
+        otherTitle
+        firstname
+        lastname
+        taxNumber
+        phoneNumber
+        lineId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        fullname
+      }
+    }
+  }
+`;
+
+/**
+ * __useLookupDriverQuery__
+ *
+ * To run a query within a React component, call `useLookupDriverQuery` and pass it any options that fit your needs.
+ * When your component renders, `useLookupDriverQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useLookupDriverQuery({
+ *   variables: {
+ *      phonenumber: // value for 'phonenumber'
+ *   },
+ * });
+ */
+export function useLookupDriverQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    LookupDriverQuery,
+    LookupDriverQueryVariables
+  > &
+    (
+      | { variables: LookupDriverQueryVariables; skip?: boolean }
+      | { skip: boolean }
+    ),
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<LookupDriverQuery, LookupDriverQueryVariables>(
+    LookupDriverDocument,
+    options,
+  );
+}
+export function useLookupDriverLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    LookupDriverQuery,
+    LookupDriverQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<LookupDriverQuery, LookupDriverQueryVariables>(
+    LookupDriverDocument,
+    options,
+  );
+}
+export function useLookupDriverSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        LookupDriverQuery,
+        LookupDriverQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<LookupDriverQuery, LookupDriverQueryVariables>(
+    LookupDriverDocument,
+    options,
+  );
+}
+export type LookupDriverQueryHookResult = ReturnType<
+  typeof useLookupDriverQuery
+>;
+export type LookupDriverLazyQueryHookResult = ReturnType<
+  typeof useLookupDriverLazyQuery
+>;
+export type LookupDriverSuspenseQueryHookResult = ReturnType<
+  typeof useLookupDriverSuspenseQuery
+>;
+export type LookupDriverQueryResult = Apollo.QueryResult<
+  LookupDriverQuery,
+  LookupDriverQueryVariables
+>;
+export const GetUserDocument = gql`
+  query GetUser($id: String) {
+    getUser(_id: $id) {
+      _id
+      fullname
+      contactNumber
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      validationStatus
+      drivingStatus
+      profileImage {
+        _id
+        fileId
+        filename
+      }
+      driverDetail {
+        _id
+        driverType
+        title
+        otherTitle
+        firstname
+        lastname
+        taxNumber
+        phoneNumber
+        lineId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        fullname
+      }
+    }
+  }
+`;
+
+/**
+ * __useGetUserQuery__
+ *
+ * To run a query within a React component, call `useGetUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetUserQuery(
+  baseOptions?: Apollo.QueryHookOptions<GetUserQuery, GetUserQueryVariables>,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<GetUserQuery, GetUserQueryVariables>(
+    GetUserDocument,
+    options,
+  );
+}
+export function useGetUserLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetUserQuery,
+    GetUserQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<GetUserQuery, GetUserQueryVariables>(
+    GetUserDocument,
+    options,
+  );
+}
+export function useGetUserSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<GetUserQuery, GetUserQueryVariables>,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<GetUserQuery, GetUserQueryVariables>(
+    GetUserDocument,
+    options,
+  );
+}
+export type GetUserQueryHookResult = ReturnType<typeof useGetUserQuery>;
+export type GetUserLazyQueryHookResult = ReturnType<typeof useGetUserLazyQuery>;
+export type GetUserSuspenseQueryHookResult = ReturnType<
+  typeof useGetUserSuspenseQuery
+>;
+export type GetUserQueryResult = Apollo.QueryResult<
+  GetUserQuery,
+  GetUserQueryVariables
+>;
 export const GetVehicleTypeAvailableDocument = gql`
   query GetVehicleTypeAvailable {
     getVehicleTypeAvailable {

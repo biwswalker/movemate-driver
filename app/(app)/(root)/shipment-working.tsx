@@ -143,7 +143,7 @@ export default function ShipmentDetail() {
         snapPoints={snapPoints}
         onChange={handleSheetChange}
         handleComponent={SheetHandle}
-        backdropComponent={SheetBackdrop}
+        backdropComponent={SheetBackdrop.Default}
       >
         <BottomSheetView
           style={{

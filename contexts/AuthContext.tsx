@@ -1,4 +1,5 @@
 import {
+  EUserRole,
   LoginMutation,
   useLoginMutation,
   useLogoutMutation,
@@ -139,7 +140,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const handleAuthSuccess = async ({ login }: LoginMutation) => {
     if (login) {
       const userRole = get(login, "user.userRole", "");
-      if (isEqual(userRole, "driver")) {
+      if (isEqual(userRole, EUserRole.DRIVER)) {
         await AsyncStorage.setItem("access_token", login.token);
         setUser(login.user as User);
         setAuthError(undefined);

@@ -1,17 +1,19 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Text from "@components/Text";
 import NavigationBar from "@components/NavigationBar";
 import { StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { find, get } from "lodash";
+import { find, get, map, reduce } from "lodash";
 import FlexImage from "react-native-flex-image";
 import UploadButton from "@components/UploadButton";
 import Button from "@components/Button";
 import {
+  EDriverType,
   OtpRequestMutation,
-  useGetVehicleTypeByIdQuery,
+  useGetVehicleTypeAvailableQuery,
   useOtpRequestMutation,
+  VehicleType,
 } from "@graphql/generated/graphql";
 import { ApolloError } from "@apollo/client";
 import Iconify from "@components/Iconify";
@@ -78,11 +80,20 @@ export default function RegisterIndividualPreviewScreen() {
   const params = JSON.parse(searchParam.param) as IndividualRegisterParam;
   const detail = get(params, "detail", undefined);
   const documents = get(params, "documents", undefined);
+  const isBusinessRegistration =
+    params.type?.driverType === EDriverType.BUSINESS;
 
   const [otpRequest, { loading }] = useOtpRequestMutation();
-  const { data: vehicleType } = useGetVehicleTypeByIdQuery({
-    variables: { id: detail?.serviceVehicleType || "" },
-  });
+  const { data: vehicleData } = useGetVehicleTypeAvailableQuery();
+  const vehicleTypes = useMemo<VehicleType[]>(() => {
+    if (vehicleData?.getVehicleTypeAvailable) {
+      return map(vehicleData.getVehicleTypeAvailable, (vehi) => ({
+        ...vehi,
+        name: `${vehi.name}${vehi.isConfigured ? "" : " (ยังไม่เปิดให้บริการ)"}`,
+      })) as VehicleType[];
+    }
+    return [];
+  }, [vehicleData]);
 
   function onSuccessRequestOTP(data: OtpRequestMutation) {
     const param = JSON.stringify(
@@ -125,14 +136,35 @@ export default function RegisterIndividualPreviewScreen() {
           </Text>
         </View>
         <View style={[styles.detailContainer, [{ gap: 16 }]]}>
-          {detail?.firstname && detail?.lastname && (
+          {isBusinessRegistration
+            ? detail?.businessName && (
+                <View style={styles.detailWrapper}>
+                  <Text varient="body2" color="disabled">
+                    ชื่อบริษัท
+                  </Text>
+                  <Text varient="body1">
+                    {detail.businessName}
+                    {detail.businessBranch ? ` (${detail.businessBranch})` : ""}
+                  </Text>
+                </View>
+              )
+            : detail?.firstname &&
+              detail?.lastname && (
+                <View style={styles.detailWrapper}>
+                  <Text varient="body2" color="disabled">
+                    ชื่อ - นามสกุล
+                  </Text>
+                  <Text varient="body1">
+                    {detail.firstname} {detail.lastname}
+                  </Text>
+                </View>
+              )}
+          {detail?.taxNumber && (
             <View style={styles.detailWrapper}>
               <Text varient="body2" color="disabled">
-                ชื่อ - นามสกุล
+                เลขประจำตัวผู้เสียภาษี
               </Text>
-              <Text varient="body1">
-                {detail.firstname} {detail.lastname}
-              </Text>
+              <Text varient="body1">{detail?.taxNumber}</Text>
             </View>
           )}
           {detail?.phoneNumber && (
@@ -180,13 +212,24 @@ export default function RegisterIndividualPreviewScreen() {
               )}
             </View>
           )}
-          {detail?.serviceVehicleType && vehicleType && (
+          {detail?.serviceVehicleTypes && vehicleTypes && (
             <View style={styles.detailWrapper}>
               <Text varient="body2" color="disabled">
                 ประเภทรถที่ให้บริการ
               </Text>
               <Text varient="body1">
-                {get(vehicleType, "getVehicleTypeById.name", "")}
+                {reduce(
+                  detail.serviceVehicleTypes,
+                  (prev, curr) => {
+                    const vehicle = find(vehicleTypes, ["_id", curr]);
+                    if (vehicle) {
+                      const vehicleName = vehicle.name;
+                      return prev ? `${prev}, ${vehicleName}` : vehicleName;
+                    }
+                    return prev;
+                  },
+                  ""
+                )}
               </Text>
             </View>
           )}
@@ -238,16 +281,28 @@ export default function RegisterIndividualPreviewScreen() {
                 />
               )}
             </View>
-            {documents?.copyVehicleRegistration && (
+            {documents?.businessRegistrationCertificate && (
               <UploadButton
-                label="สำเนาทะเบียนรถ"
-                file={documents.copyVehicleRegistration}
+                label="หนังสือรับรองบริษัท"
+                file={documents.businessRegistrationCertificate}
+              />
+            )}
+            {documents?.certificateValueAddedTaxRegistration && (
+              <UploadButton
+                label="ภพ 20"
+                file={documents.certificateValueAddedTaxRegistration}
               />
             )}
             {documents?.copyIDCard && (
               <UploadButton
                 label="สำเนาบัตรประชาชน"
                 file={documents.copyIDCard}
+              />
+            )}
+            {documents?.copyVehicleRegistration && (
+              <UploadButton
+                label="สำเนาทะเบียนรถ"
+                file={documents.copyVehicleRegistration}
               />
             )}
             {documents?.copyDrivingLicense && (

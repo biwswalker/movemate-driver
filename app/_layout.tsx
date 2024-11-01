@@ -16,6 +16,7 @@ import { SnackbarProvider } from "@/contexts/SnackbarContext";
 import { SnackbarV2Provider } from "@/contexts/SnackbarV2Context";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { StatusBar } from "expo-status-bar";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -54,12 +55,14 @@ export default function RootLayout() {
             <ThemeProvider value={DefaultTheme}>
               <SnackbarProvider>
                 <SnackbarV2Provider>
-                  <ActionSheetProvider>
-                    <SafeAreaProvider>
-                      <StatusBar style="dark" />
-                      <Slot />
-                    </SafeAreaProvider>
-                  </ActionSheetProvider>
+                  <BottomSheetModalProvider>
+                    <ActionSheetProvider>
+                      <SafeAreaProvider>
+                        <StatusBar style="dark" />
+                        <Slot />
+                      </SafeAreaProvider>
+                    </ActionSheetProvider>
+                  </BottomSheetModalProvider>
                 </SnackbarV2Provider>
               </SnackbarProvider>
             </ThemeProvider>

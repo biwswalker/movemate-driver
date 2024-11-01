@@ -10,11 +10,12 @@ import { normalize } from "@/utils/normalizeSize";
 import { fData } from "@/utils/number";
 import Yup from "@/utils/yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { isEmpty } from "lodash";
+import { includes, isEmpty } from "lodash";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { EDriverType } from "@/graphql/generated/graphql";
 
 interface FormValue {
   frontOfVehicle: FileInput | string;
@@ -28,6 +29,8 @@ interface FormValue {
   copyHouseRegistration: FileInput | string;
   insurancePolicy: FileInput | string;
   criminalRecordCheckCert: FileInput | string;
+  businessRegistrationCertificate: FileInput | string;
+  certificateValueAddedTaxRegistration: FileInput | string;
 }
 
 export const MAX_FILE_SIZE = 10 * 1000 * 1000;
@@ -35,56 +38,65 @@ const MAXIMUM_FILE_SIZE_TEXT = `ขนาดไฟล์ไม่เกิน ${
 
 export default function ProfileDocument() {
   const { user } = useAuth();
-  const documents = useMemo(() => user?.individualDriver?.documents, [user]);
+  const documents = useMemo(() => user?.driverDetail?.documents, [user]);
+  const isBusinessRegistration = useMemo(() => {
+    if (user?.driverDetail) {
+      return includes(user.driverDetail.driverType, EDriverType.BUSINESS);
+    }
+    return false;
+  }, [user]);
+
   const RegisterUploadSchema = Yup.object().shape({
     frontOfVehicle: Yup.mixed()
-      .test("require-file", "อัพโหลดรูปด้านหน้ารถ", (value) => !isEmpty(value))
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .required("อัพโหลดรูปด้านหน้ารถ"),
+      .test("require-file", "อัพโหลดรูปด้านหน้ารถ", (value) =>
+        isBusinessRegistration ? true : !isEmpty(value)
+      ),
     backOfVehicle: Yup.mixed()
-      .test("require-file", "อัพโหลดรูปด้านหลังรถ", (value) => !isEmpty(value))
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .required("อัพโหลดรูปด้านหลังรถ"),
+      .test("require-file", "อัพโหลดรูปด้านหลังรถ", (value) =>
+        isBusinessRegistration ? true : !isEmpty(value)
+      ),
     leftOfVehicle: Yup.mixed()
-      .test(
-        "require-file",
-        "อัพโหลดรูปด้านข้างซ้ายรถ",
-        (value) => !isEmpty(value)
-      )
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .required("อัพโหลดรูปด้านข้างซ้ายรถ"),
+      .test("require-file", "อัพโหลดรูปด้านข้างซ้ายรถ", (value) =>
+        isBusinessRegistration ? true : !isEmpty(value)
+      ),
     rigthOfVehicle: Yup.mixed()
-      .test(
-        "require-file",
-        "อัพโหลดรูปด้านข้างขวารถ",
-        (value) => !isEmpty(value)
-      )
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .required("อัพโหลดรูปด้านข้างขวารถ"),
+      .test("require-file", "อัพโหลดรูปด้านข้างขวารถ", (value) =>
+        isBusinessRegistration ? true : !isEmpty(value)
+      ),
     copyVehicleRegistration: Yup.mixed()
-      .test(
-        "require-file",
-        "อัพโหลดเอกสารสำเนาทะเบียนรถ",
-        (value) => !isEmpty(value)
-      )
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .required("อัพโหลดเอกสารสำเนาทะเบียนรถ"),
+      .test("require-file", "อัพโหลดเอกสารสำเนาทะเบียนรถ", (value) =>
+        isBusinessRegistration ? true : !isEmpty(value)
+      ),
     copyIDCard: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
       .test(
         "require-file",
         "อัพโหลดสำเนาบัตรประชาชน",
         (value) => !isEmpty(value)
-      )
-      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .required("อัพโหลดสำเนาบัตรประชาชน"),
+      ),
     copyDrivingLicense: Yup.mixed()
-      .test("require-file", "อัพโหลดสำเนาใบขับขี่", (value) => !isEmpty(value))
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
-      .required("อัพโหลดสำเนาใบขับขี่"),
+      .test("require-file", "อัพโหลดสำเนาใบขับขี่", (value) =>
+        isBusinessRegistration ? true : !isEmpty(value)
+      ),
     copyBookBank: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     copyHouseRegistration: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     insurancePolicy: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     criminalRecordCheckCert: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
+
+    businessRegistrationCertificate: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
+      .test("require-file", "อัพโหลดหนังสือรับรองบริษัท", (value) =>
+        isBusinessRegistration ? !isEmpty(value) : true
+      ),
+    certificateValueAddedTaxRegistration: Yup.mixed().maxFileSize(
+      MAXIMUM_FILE_SIZE_TEXT
+    ),
   });
 
   const defaultValues = useMemo(
@@ -122,6 +134,14 @@ export default function ProfileDocument() {
       criminalRecordCheckCert: documents?.criminalRecordCheckCert
         ? imagePath(documents.criminalRecordCheckCert.filename)
         : undefined,
+      businessRegistrationCertificate:
+        documents?.businessRegistrationCertificate
+          ? imagePath(documents.businessRegistrationCertificate.filename)
+          : undefined,
+      certificateValueAddedTaxRegistration:
+        documents?.certificateValueAddedTaxRegistration
+          ? imagePath(documents.certificateValueAddedTaxRegistration.filename)
+          : undefined,
     }),
     []
   );
@@ -131,12 +151,13 @@ export default function ProfileDocument() {
     defaultValues,
   });
 
-  const { handleSubmit, reset } = methods;
+  const { handleSubmit, reset, watch } = methods;
+  const values = watch();
 
   useEffect(() => {
     if (documents) {
       reset(defaultValues);
-      console.log('defaultValues: ', defaultValues)
+      console.log("defaultValues: ", defaultValues);
     }
   }, [documents]);
 
@@ -163,69 +184,98 @@ export default function ProfileDocument() {
             containerStyle={styles.sectionContainer}
           >
             <View style={styles.documentList}>
-              <View style={styles.sectionTitleWrapper}>
-                <Text>รูปถ่ายรถยนต์ (บังคับ)</Text>
+              {isBusinessRegistration && (
+                <>
+                  <RHFUploadButton
+                    file={values.businessRegistrationCertificate}
+                    name="businessRegistrationCertificate"
+                    label="หนังสือรับรองบริษัท (บังคับ)"
+                  />
+                  <RHFUploadButton
+                    file={values.copyIDCard}
+                    name="copyIDCard"
+                    label="สำเนาบัตรประชาชน (บังคับ)"
+                  />
+                  <RHFUploadButton
+                    file={values.certificateValueAddedTaxRegistration}
+                    name="certificateValueAddedTaxRegistration"
+                    label="ภพ 20"
+                  />
+                </>
+              )}
+              <View>
+                <Text>
+                  รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
+                </Text>
               </View>
               <View style={styles.rowWrapper}>
                 <RHFUploadButton
-                  disabled
+                  file={values.frontOfVehicle}
                   name="frontOfVehicle"
                   label="ด้านหน้ารถ"
                   isImagePreview
+                  actionMenus={["CAMERA", "GALLERY"]}
                 />
                 <RHFUploadButton
-                  disabled
+                  file={values.backOfVehicle}
                   name="backOfVehicle"
                   label="ด้านหลังรถ"
                   isImagePreview
+                  actionMenus={["CAMERA", "GALLERY"]}
                 />
               </View>
               <View style={styles.rowWrapper}>
                 <RHFUploadButton
-                  disabled
+                  file={values.leftOfVehicle}
                   name="leftOfVehicle"
                   label="ด้านข้าง ซ้ายรถ"
                   isImagePreview
+                  actionMenus={["CAMERA", "GALLERY"]}
                 />
                 <RHFUploadButton
-                  disabled
+                  file={values.rigthOfVehicle}
                   name="rigthOfVehicle"
                   label="ด้านข้าง ขวารถ"
                   isImagePreview
+                  actionMenus={["CAMERA", "GALLERY"]}
                 />
               </View>
               <RHFUploadButton
-                disabled
+                file={values.copyVehicleRegistration}
                 name="copyVehicleRegistration"
-                label="สำเนาทะเบียนรถ (บังคับ)"
+                label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
               />
+              {!isBusinessRegistration && (
+                <>
+                  <RHFUploadButton
+                    file={values.copyIDCard}
+                    name="copyIDCard"
+                    label={`สำเนาบัตรประชาชน${isBusinessRegistration ? "" : " (บังคับ)"}`}
+                  />
+                  <RHFUploadButton
+                    file={values.copyDrivingLicense}
+                    name="copyDrivingLicense"
+                    label={`สำเนาใบขับขี่${isBusinessRegistration ? "" : " (บังคับ)"}`}
+                  />
+                </>
+              )}
               <RHFUploadButton
-                disabled
-                name="copyIDCard"
-                label="สำเนาบัตรประชาชน (บังคับ)"
-              />
-              <RHFUploadButton
-                disabled
-                name="copyDrivingLicense"
-                label="สำเนาใบขับขี่ (บังคับ)"
-              />
-              <RHFUploadButton
-                disabled
+                file={values.copyBookBank}
                 name="copyBookBank"
                 label="สำเนาหน้าบัญชีธนาคาร"
               />
               <RHFUploadButton
-                disabled
+                file={values.copyHouseRegistration}
                 name="copyHouseRegistration"
                 label="สำเนาทะเบียนบ้าน"
               />
               <RHFUploadButton
-                disabled
+                file={values.insurancePolicy}
                 name="insurancePolicy"
                 label="กรมธรรม์ประกันรถ"
               />
               <RHFUploadButton
-                disabled
+                file={values.criminalRecordCheckCert}
                 name="criminalRecordCheckCert"
                 label="หนังสือรับรองตรวจประวัติอาชญากรรม"
               />

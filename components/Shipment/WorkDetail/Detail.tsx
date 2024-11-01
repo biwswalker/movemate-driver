@@ -13,7 +13,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { Shipment } from "@/graphql/generated/graphql";
+import { EShipmentStatus, Shipment } from "@/graphql/generated/graphql";
 
 interface OverviewDetailProps {
   shipment: Shipment;
@@ -30,7 +30,7 @@ export default function Detail({ shipment }: OverviewDetailProps) {
   const origin = get(destinations, "0", undefined);
   const dropoffs = tail(destinations);
   const isHiddenInfo = includes(
-    ["dilivered", "cancelled", "refund"],
+    [EShipmentStatus.DELIVERED, EShipmentStatus.CANCELLED, EShipmentStatus.REFUND],
     shipment?.status
   );
   return (

@@ -3,13 +3,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import AccountHeader from "@components/AccountHeader";
-import TabCarousel, { TabItem } from "@components/TabCarousel";
 import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
-import hexToRgba from "hex-to-rgba";
 import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import NewShipments, {
   NewShipmentsRef,
@@ -19,32 +16,21 @@ import TodayCard, {
   PendingApproval,
 } from "@/components/Shipment/TodayCard";
 import { includes } from "lodash";
+import { EDriverType, EUserStatus } from "@/graphql/generated/graphql";
+import UsersHeader from "@/components/UsersHeader";
+import Text from "@/components/Text";
+import Button from "@/components/Button";
 
 export default function HomeScreen() {
   const { user, refetchMe } = useAuth();
-  const [activeMenu, setActiveMenu] = useState("new");
   const [refreshing, setRefreshing] = useState(false);
   const newShipmentsRef = useRef<NewShipmentsRef>(null);
 
-  const menus = useMemo<TabItem[]>(() => {
-    return [
-      {
-        label: "งานขนส่งใหม่",
-        value: "new",
-        Icon: (isActive: boolean) => (
-          <Iconify
-            icon="bi:stars"
-            color={isActive ? colors.primary.main : colors.text.primary}
-            size={normalize(16)}
-          />
-        ),
-      },
-    ];
-  }, []);
-
-  function handleChangeTabMenu(menu: string) {
-    setActiveMenu(menu);
-  }
+  const userStatus = useMemo(() => user?.status, [user]);
+  const driverTypes = useMemo(
+    () => user?.driverDetail?.driverType || [],
+    [user]
+  );
 
   const handleShowShipmentDetail = useCallback((trackingNumber: string) => {
     router.push({ pathname: "/shipment-overview", params: { trackingNumber } });
@@ -88,56 +74,49 @@ export default function HomeScreen() {
             />
           }
         >
-          {user?.status === "active" && <TodayCard />}
+          {includes(driverTypes, EDriverType.BUSINESS) && (
+            <UsersHeader containerStyle={styles.userHeaderStyle} />
+          )}
+          {user?.status === EUserStatus.ACTIVE &&
+            !includes(driverTypes, EDriverType.BUSINESS) && <TodayCard />}
           <View style={styles.contentWrapper}>
-            {includes(["active"], user?.status) && (
+            {includes([EUserStatus.ACTIVE], user?.status) && (
               <View style={styles.tabMenuWrapper}>
-                <TabCarousel
-                  data={menus}
-                  value={activeMenu}
-                  onChange={handleChangeTabMenu}
-                  width={normalize(140)}
-                  height={36}
+                <Iconify
+                  icon="bi:stars"
+                  color={colors.primary.main}
+                  size={normalize(16)}
                 />
-                <View
-                  style={[
-                    StyleSheet.absoluteFillObject,
-                    styles.gradientWrapper,
-                  ]}
-                >
-                  <LinearGradient
-                    colors={[
-                      hexToRgba(colors.common.white, 0),
-                      hexToRgba(colors.common.white, 1),
-                    ]}
-                    style={styles.gradient}
-                    start={{ x: 1, y: 0 }}
-                    end={{ x: 0, y: 0 }}
-                  />
-                  <View style={styles.gradient} />
-                  <LinearGradient
-                    colors={[
-                      hexToRgba(colors.common.white, 0),
-                      hexToRgba(colors.common.white, 1),
-                    ]}
-                    style={styles.gradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  />
-                </View>
+                <Text varient="buttonM" style={{ flex: 1 }}>
+                  งานขนส่งใหม่
+                </Text>
+                <Button
+                  onPress={handleOnRefresh}
+                  color="inherit"
+                  varient="soft"
+                  size="small"
+                  title="โหลดใหม่"
+                  StartIcon={
+                    <Iconify
+                      icon="tabler:reload"
+                      size={normalize(16)}
+                      color={colors.text.primary}
+                    />
+                  }
+                />
               </View>
             )}
 
-            {user?.status === "pending" ? (
+            {user?.status === EUserStatus.PENDING ? (
               <PendingApproval />
-            ) : user?.status === "active" ? (
+            ) : user?.status === EUserStatus.ACTIVE ? (
               <NewShipments
                 onPress={handleShowShipmentDetail}
                 ref={newShipmentsRef}
               />
-            ) : user?.status === "inactive" ? (
+            ) : user?.status === EUserStatus.INACTIVE ? (
               <></>
-            ) : user?.status === "denied" ? (
+            ) : user?.status === EUserStatus.DENIED ? (
               <DeniedApproval />
             ) : (
               <></>
@@ -162,7 +141,7 @@ const styles = StyleSheet.create({
     paddingBottom: normalize(8),
   },
   contentWrapper: {
-    paddingTop: normalize(24),
+    paddingTop: normalize(16),
     alignItems: "center",
   },
   textCenter: {
@@ -190,8 +169,11 @@ const styles = StyleSheet.create({
     minWidth: normalize(32),
   },
   tabMenuWrapper: {
+    paddingHorizontal: normalize(24),
+    gap: normalize(8),
+    flexDirection: "row",
+    alignItems: "center",
     position: "relative",
-    height: 36,
     marginBottom: normalize(16),
   },
   listWrapper: {},
@@ -201,5 +183,9 @@ const styles = StyleSheet.create({
   gradientWrapper: {
     pointerEvents: "none",
     flexDirection: "row",
+  },
+  userHeaderStyle: {
+    marginHorizontal: normalize(16),
+    marginTop: normalize(8),
   },
 });

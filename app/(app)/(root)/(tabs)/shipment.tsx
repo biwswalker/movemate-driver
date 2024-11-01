@@ -13,6 +13,7 @@ import hexToRgba from "hex-to-rgba";
 import {
   EShipmentMatchingCriteria,
   EShipmentStatus,
+  EUserStatus,
   Shipment,
   useGetAvailableShipmentQuery,
 } from "@graphql/generated/graphql";
@@ -101,8 +102,8 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <SafeAreaView style={styles.wrapper}>
         <View style={styles.contentWrapper}>
-          {user?.status === "pending" && <PendingApproval />}
-          {user?.status === "denied" && <DeniedApproval />}
+          {user?.status === EUserStatus.PENDING && <PendingApproval />}
+          {user?.status === EUserStatus.DENIED && <DeniedApproval />}
           <View style={styles.tabMenuWrapper}>
             <TabCarousel<EShipmentMatchingCriteria>
               ref={tabsRef}
@@ -136,7 +137,7 @@ export default function HomeScreen() {
               />
             </View>
           </View>
-          {user?.status === "active" ? (
+          {user?.status === EUserStatus.ACTIVE ? (
             <Shipments status={activeMenu} />
           ) : (
             <View style={shipmentStyle.footerEmptyWrapper}>

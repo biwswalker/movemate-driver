@@ -16,6 +16,7 @@ import { ApolloError } from "@apollo/client";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { DropdownAlertType } from "react-native-dropdownalert";
 import {
+  EShipmentStatus,
   FileInput as FileInputGraph,
   useSentPodDocumentMutation,
 } from "@/graphql/generated/graphql";
@@ -213,7 +214,11 @@ export function DonePOD({ step, shipment }: ProgressingStepsProps) {
   const definition = head(step.definitions);
   const podDetail = shipment.podDetail;
   const isHiddenInfo = includes(
-    ["dilivered", "cancelled", "refund"],
+    [
+      EShipmentStatus.DELIVERED,
+      EShipmentStatus.CANCELLED,
+      EShipmentStatus.REFUND,
+    ],
     shipment?.status
   );
   return (

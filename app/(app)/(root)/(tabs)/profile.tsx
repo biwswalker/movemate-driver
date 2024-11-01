@@ -15,6 +15,7 @@ import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { EUserStatus } from "@/graphql/generated/graphql";
 
 const styles = StyleSheet.create({
   container: {
@@ -87,7 +88,7 @@ export default function Profile() {
       <SafeAreaView style={styles.wrapper}>
         <ScrollView>
           <View style={styles.contentWrapper}>
-            {user?.status === "pending" && <PendingApproval />}
+            {user?.status === EUserStatus.PENDING && <PendingApproval />}
             <View style={styles.userInfoWrapper}>
               <Image
                 source={userImageUri}

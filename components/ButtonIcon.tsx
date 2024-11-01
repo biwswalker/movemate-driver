@@ -147,13 +147,15 @@ export default function ButtonIcon({
     ],
   });
 
-  const textColor = colorVarient
-    ? ["outlined", "text"].includes(varient)
-      ? colorVarient.main
-      : varient === "soft"
-        ? colorVarient.dark
-        : colorVarient.contrastText
-    : Colors.text.primary;
+  const textColor = disabled
+    ? Colors.text.disabled
+    : colorVarient
+      ? ["outlined", "text"].includes(varient)
+        ? colorVarient.main
+        : varient === "soft"
+          ? colorVarient.dark
+          : colorVarient.contrastText
+      : Colors.text.primary;
 
   const buttonStyle = {
     ...baseButtonVarient,
@@ -168,6 +170,12 @@ export default function ButtonIcon({
     typeof children === "function"
       ? children({ color: textColor, textVarient })
       : children;
+
+  const disabledStyle = disabled
+    ? ["text"].includes(varient)
+      ? { backgroundColor: "transparent" }
+      : styles.disabled
+    : {};
 
   return (
     <Pressable
@@ -184,7 +192,7 @@ export default function ButtonIcon({
           fullWidth ? styles.fullwidth : styles.fitcontent,
           buttonStyle,
           { transform: [{ scale }] },
-          disabled && styles.disabled,
+          disabledStyle,
           style,
         ]}
       >

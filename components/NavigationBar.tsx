@@ -48,12 +48,14 @@ interface NavigationBarProps {
   onBack?: ((event: GestureResponderEvent) => void) | undefined;
   TitleComponent?: ReactNode;
   containerStyle?: ViewStyle;
+  RightComponent?: ReactNode;
 }
 
 export default function NavigationBar({
   title,
   onBack,
   TitleComponent,
+  RightComponent,
   containerStyle = {},
 }: NavigationBarProps) {
   function handleBack(event: GestureResponderEvent) {
@@ -81,6 +83,7 @@ export default function NavigationBar({
             )}
       </View>
       <View style={styles.actionWrapperRight}>
+        {RightComponent}
         {/* <ButtonIcon varient="outlined" color="inherit">
         {({ color }) => <Iconify icon="mi:chevron-left" size={24} color={color} />}
       </ButtonIcon> */}

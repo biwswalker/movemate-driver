@@ -69,6 +69,7 @@ export default forwardRef(function TextInput(
         contentStyle={styles.content}
         theme={{
           colors: {
+            onSurfaceDisabled: Colors.text.disabled,
             onSurfaceVariant: Colors.text.disabled,
             error: Colors.error.main,
           },

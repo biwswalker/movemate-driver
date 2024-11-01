@@ -9,16 +9,23 @@ import { useMemo } from "react";
 import colors from "@/constants/colors";
 import { StyleSheet } from "react-native";
 
-export default function SheetBackdrop({
+interface BottomSheetBackdropVarientProps extends BottomSheetBackdropProps {
+  opacity?: number;
+  animate?: boolean;
+}
+
+function SheetBackdropComponent({
   animatedIndex,
   style,
-}: BottomSheetBackdropProps) {
+  opacity = 0.18,
+  animate = true,
+}: BottomSheetBackdropVarientProps) {
   // animated variables
   const containerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
       animatedIndex.value,
-      [0, 1],
-      [0, 1],
+      [animate ? 0 : 1, 1],
+      [animate ? 0 : 1, 1],
       Extrapolation.CLAMP
     ),
   }));
@@ -28,7 +35,7 @@ export default function SheetBackdrop({
     () => [
       style,
       {
-        backgroundColor: hexToRgba(colors.common.black, 0.18),
+        backgroundColor: hexToRgba(colors.common.black, opacity),
       },
       containerAnimatedStyle,
     ],
@@ -43,3 +50,17 @@ const styles = StyleSheet.create({
     pointerEvents: "none",
   },
 });
+
+const SheetBackdrop = {
+  Default: (props: BottomSheetBackdropProps) => (
+    <SheetBackdropComponent {...props} />
+  ),
+  Normal: (props: BottomSheetBackdropProps) => (
+    <SheetBackdropComponent {...props} opacity={0.46} />
+  ),
+  NoAnimate: (props: BottomSheetBackdropProps) => (
+    <SheetBackdropComponent {...props} opacity={0.46} animate={false} />
+  ),
+};
+
+export default SheetBackdrop;

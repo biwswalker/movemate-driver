@@ -27,7 +27,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * @deprecated using shipment-overview instead
- * @returns 
+ * @returns
  */
 export default function _Deprecated_ShipmentDetail() {
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
@@ -106,7 +106,6 @@ interface OverviewProps {
 }
 
 function Overview({ shipment }: OverviewProps) {
-  console.log(shipment.payment)
   return (
     <View style={overviewStyles.container}>
       <View style={overviewStyles.titleContainer}>
@@ -198,9 +197,6 @@ interface OverviewDetailProps {
 
 function OverviewDetail({ shipment }: OverviewDetailProps) {
   const customer = get(shipment, "customer", undefined);
-  const imageUri: ImageSourcePropType = customer?.profileImage
-    ? { uri: imagePath(customer.profileImage?.filename) }
-    : require("@assets/images/user-duotone-large.png");
 
   const additionalService = get(shipment, "additionalServices", undefined);
   const destinations = get(shipment, "destinations", []);
@@ -211,11 +207,18 @@ function OverviewDetail({ shipment }: OverviewDetailProps) {
     <View style={detailStyles.cardWrapper}>
       <View style={[detailStyles.accountContainer]}>
         <View style={detailStyles.accountAvatarWrapper}>
-          <Image
-            style={detailStyles.avatarImage}
-            source={imageUri}
-            tintColor={colors.text.disabled}
-          />
+          {customer?.profileImage ? (
+            <Image
+              style={detailStyles.avatarImage}
+              source={{ uri: imagePath(customer.profileImage.filename) }}
+            />
+          ) : (
+            <Iconify
+              icon="solar:user-circle-bold-duotone"
+              size={normalize(44)}
+              color={colors.text.disabled}
+            />
+          )}
         </View>
         <View style={detailStyles.accountNameWrapper}>
           <Text varient="body2" color="secondary" numberOfLines={1}>

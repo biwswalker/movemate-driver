@@ -2,7 +2,7 @@ import { ProgressingStepsProps } from "./ProgressingStep";
 import { Image, StyleSheet, View } from "react-native";
 import { normalize } from "@/utils/normalizeSize";
 import Text from "@/components/Text";
-import { filter, get, isUndefined, map, pick, pullAt } from "lodash";
+import { filter, get, includes, isUndefined, map, pick, pullAt } from "lodash";
 import { ApolloError } from "@apollo/client";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { DropdownAlertType } from "react-native-dropdownalert";
@@ -11,6 +11,7 @@ import {
   FileInput as FileInputGraph,
   StepDefinition,
   EStepDefinition,
+  EShipmentStatus,
 } from "@/graphql/generated/graphql";
 import Button from "@/components/Button";
 import { useState } from "react";
@@ -157,7 +158,18 @@ export function ProgressPickAndDrop({
   );
 }
 
-export function DonePickAndDrop({ definition }: ProgressPickAndDropProps) {
+export function DonePickAndDrop({ definition, shipment }: ProgressPickAndDropProps) {
+  const isHiddenInfo = includes(
+    [
+      EShipmentStatus.DELIVERED,
+      EShipmentStatus.CANCELLED,
+      EShipmentStatus.REFUND,
+    ],
+    shipment?.status
+  );
+  if(isHiddenInfo) {
+    return <></>
+  }
   return (
     <View style={styles.wrapper}>
       <Text varient="body2" color="secondary">

@@ -39,7 +39,7 @@ export function ProgressArrivalLocation({
   const [isLoading, setLoading] = useState(false);
   const { showSnackbar } = useSnackbarV2();
   const [nextShipmentStep, { loading }] = useNextShipmentStepMutation();
-
+  
   function handleCallToCustomer() {
     const phoneNumber = destination?.contactNumber;
     if (phoneNumber) {
@@ -234,7 +234,7 @@ export function DoneArrivalLocation({
       </Text>
       <View style={progressStyles.contactWrapper}>
         <View style={progressStyles.contactNameWrapper}>
-          <Text varient="subtitle1">{destination?.name}</Text>
+          {!isHiddenInfo && <Text varient="subtitle1">{destination?.name}</Text>}
           <Text varient="body2">{destination?.detail}</Text>
         </View>
         {!isHiddenInfo && (

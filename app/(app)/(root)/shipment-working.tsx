@@ -1,20 +1,36 @@
 import Text from "@/components/Text";
 import colors from "@constants/colors";
 import {
+  EDriverStatus,
   EShipmentStatus,
   EStepDefinition,
   EStepStatus,
+  EUserStatus,
   Shipment,
+  useAvailableEmployeesQuery,
   useGetAvailableShipmentByTrackingNumberQuery,
+  User,
 } from "@/graphql/generated/graphql";
 import { normalize } from "@/utils/normalizeSize";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetFlashList,
+  BottomSheetModal,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
-import { filter, get, isEmpty } from "lodash";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { filter, get, includes, isEmpty } from "lodash";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
 import {
   BackHandler,
   Dimensions,
+  Image,
   Platform,
   StatusBar,
   StyleSheet,
@@ -29,10 +45,19 @@ import { MainStep } from "@/components/Shipment/Steps/Main";
 import FinishShipment from "@/components/Shipment/Steps/FinishStep";
 import SheetBackdrop from "@/components/Sheets/SheetBackdrop";
 import SheetHandle from "@/components/Sheets/SheetHandle";
+import { ActivityIndicator } from "react-native-paper";
+import { ListRenderItemInfo } from "@shopify/flash-list";
+import Iconify from "@/components/Iconify";
+import { imagePath } from "@/utils/file";
+import Button from "@/components/Button";
+import ConfirmAssignShipmentModal, {
+  ConfirmAssignShipmentModalRef,
+} from "@/components/Modals/confirm-assign-shipment";
 
 export default function ShipmentDetail() {
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const shipmentStepModalRef = useRef<BottomSheetModal>(null);
+  const assignDriverModalRef = useRef<AssingDriverModalRef>(null);
 
   const { data, refetch } = useGetAvailableShipmentByTrackingNumberQuery({
     variables: { tracking: searchParam.trackingNumber },
@@ -50,6 +75,11 @@ export default function ShipmentDetail() {
     `steps.${currentStepSeq}`,
     undefined
   );
+
+  const isPendingAssignDriver =
+    currentStepDefinition?.step === EStepDefinition.DRIVER_ACCEPTED &&
+    currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
+    shipment?.status === EShipmentStatus.PROGRESSING;
   const isConfirmFinishShipment =
     currentStepDefinition?.step === EStepDefinition.FINISH &&
     currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
@@ -67,17 +97,30 @@ export default function ShipmentDetail() {
     return () => backHandler.remove();
   }, []);
 
+  useEffect(() => {
+    if (shipment) {
+      if (isPendingAssignDriver) {
+        if (assignDriverModalRef.current) {
+          assignDriverModalRef.current.present(shipment._id);
+          if (shipmentStepModalRef.current) {
+            shipmentStepModalRef.current.close();
+          }
+        }
+      } else {
+        if (shipmentStepModalRef.current) {
+          shipmentStepModalRef.current.present();
+          if (assignDriverModalRef.current) {
+            assignDriverModalRef.current.close();
+          }
+        }
+      }
+    }
+  }, [shipment]);
+
   // Bottom Sheet
   const handleSheetChange = useCallback((index: number) => {
     // console.log("handleSheetChange", index);
   }, []);
-
-  // const handleSnapPress = useCallback((index: number) => {
-  //   bottomSheetRef.current?.snapToIndex(index);
-  // }, []);
-  // const handleClosePress = useCallback(() => {
-  //   bottomSheetRef.current?.close();
-  // }, []);
 
   function handleOnClose() {
     if (router.canDismiss()) {
@@ -90,7 +133,14 @@ export default function ShipmentDetail() {
     refetch();
   }
 
+  function handleAssignSuccess() {
+    handleRefetch();
+  }
+
   function handleOnShipmentComplete() {
+    if (shipmentStepModalRef.current) {
+      shipmentStepModalRef.current.close();
+    }
     router.push({
       pathname: "/shipment-success",
       params: { trackingNumber: shipment?.trackingNumber || "" },
@@ -104,40 +154,20 @@ export default function ShipmentDetail() {
   //   });
   // }
 
-  const stepItems = filter(
-    shipment?.steps,
-    (step) => !isEmpty(step.driverMessage) && step.step !== "FINISH"
-  );
-
-  return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.wrapper}>
-        <NavigationBar
-          onBack={handleOnClose}
-          containerStyle={styles.navigator}
-          TitleComponent={
-            <View>
-              <Text varient="body2" color="secondary" style={styles.textCenter}>
-                หมายเลขงานขนส่ง
-              </Text>
-              <Text varient="h4" style={styles.textCenter}>
-                {searchParam?.trackingNumber || ""}
-              </Text>
-            </View>
-          }
-        />
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {shipment && (
-            <>
-              <Overview shipment={shipment} />
-              <Detail shipment={shipment} />
-            </>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={1}
+  function ShipmentWorkingModal() {
+    const activeIndex = includes(
+      [EShipmentStatus.IDLE, EShipmentStatus.PROGRESSING],
+      shipment?.status
+    )
+      ? 1
+      : 0;
+    return (
+      <BottomSheetModal
+        ref={shipmentStepModalRef}
+        index={activeIndex}
+        detached
+        enablePanDownToClose={false}
+        enableDynamicSizing={false}
         style={styles.sheetContainer}
         topInset={StatusBar.currentHeight}
         snapPoints={snapPoints}
@@ -173,8 +203,295 @@ export default function ShipmentDetail() {
             </ScrollView>
           )}
         </BottomSheetView>
-      </BottomSheet>
+      </BottomSheetModal>
+    );
+  }
+
+  const stepItems = filter(
+    shipment?.steps,
+    (step) => !isEmpty(step.driverMessage) && step.step !== "FINISH"
+  );
+
+  return (
+    <View style={styles.container}>
+      <SafeAreaView style={styles.wrapper}>
+        <NavigationBar
+          onBack={handleOnClose}
+          containerStyle={styles.navigator}
+          TitleComponent={
+            <View>
+              <Text varient="body2" color="secondary" style={styles.textCenter}>
+                หมายเลขงานขนส่ง
+              </Text>
+              <Text varient="h4" style={styles.textCenter}>
+                {searchParam?.trackingNumber || ""}
+              </Text>
+            </View>
+          }
+        />
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {shipment && (
+            <>
+              <Overview shipment={shipment} />
+              <Detail shipment={shipment} />
+            </>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+      {/*  */}
+      <ShipmentWorkingModal />
+      {isPendingAssignDriver && (
+        <AssingDriverModal
+          ref={assignDriverModalRef}
+          onCallback={handleAssignSuccess}
+        />
+      )}
     </View>
+  );
+}
+
+interface AssingDriverProps {
+  shipmentId: string;
+  callback: VoidFunction;
+}
+
+interface AssingDriverModalRef {
+  present: (shipmentId: string) => void;
+  close: Function;
+}
+
+interface AssingDriverModalProps {
+  onCallback: VoidFunction;
+}
+
+const AssingDriverModal = forwardRef<
+  AssingDriverModalRef,
+  AssingDriverModalProps
+>(({ onCallback }, ref) => {
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const snapPoints = useMemo(() => ["15%", "90%"], []); // "85%"
+
+  function handlePresent(userId: string) {
+    if (bottomSheetModalRef.current) {
+      bottomSheetModalRef.current?.present(userId as any);
+    }
+  }
+
+  function handleCloseModal() {
+    if (bottomSheetModalRef.current) {
+      bottomSheetModalRef.current?.close();
+    }
+  }
+
+  useImperativeHandle(ref, () => ({
+    present: handlePresent,
+    close: handleCloseModal,
+  }));
+
+  const handleSheetChanges = useCallback((index: number) => {
+    if (index === 0) {
+      console.log("handleSheetChanges: Open", index);
+      // Open
+    } else {
+      console.log("handleSheetChanges:", index);
+      // Closed
+    }
+  }, []);
+
+  const handleCallback = useCallback(() => {
+    console.log("handleCallback inner: => ");
+    onCallback();
+    handleCloseModal();
+  }, []);
+
+  return (
+    <BottomSheetModal
+      ref={bottomSheetModalRef}
+      index={1}
+      detached
+      enablePanDownToClose={false}
+      enableDynamicSizing={false}
+      style={styles.sheetContainer}
+      topInset={StatusBar.currentHeight}
+      snapPoints={snapPoints}
+      onChange={handleSheetChanges}
+      handleComponent={SheetHandle}
+      backdropComponent={SheetBackdrop.Default}
+    >
+      {({ data }) =>
+        data ? (
+          <AssingDriver shipmentId={data as any} callback={handleCallback} />
+        ) : (
+          <></>
+        )
+      }
+    </BottomSheetModal>
+  );
+});
+
+function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
+  const confirmModalRef = useRef<ConfirmAssignShipmentModalRef>(null);
+  const { data, loading } = useAvailableEmployeesQuery({
+    variables: { shipmentId },
+  });
+
+  const employees = useMemo(() => data?.getAvailableDrivers as User[], [data]);
+
+  function handleConfimedAssign() {
+    callback();
+  }
+
+  function _FooterAction() {
+    if (loading) {
+      return (
+        <BottomSheetView style={styles.footerContainer}>
+          <ActivityIndicator size="small" color={colors.text.secondary} />
+        </BottomSheetView>
+      );
+    }
+    if (isEmpty(employees)) {
+      return (
+        <BottomSheetView style={styles.footerContainer}>
+          <Text varient="body1" color="secondary">
+            ไม่พบคนขับรถว่าง
+          </Text>
+        </BottomSheetView>
+      );
+    }
+    return <></>;
+  }
+
+  function _UserItem({ item: user }: ListRenderItemInfo<User>) {
+    function handleAssignDriver() {
+      if (confirmModalRef.current) {
+        confirmModalRef.current.present(user);
+      }
+    }
+
+    const accountStatus = () => {
+      switch (user.status) {
+        case EUserStatus.ACTIVE:
+          return { label: "ปกติ", color: colors.success.main };
+        case EUserStatus.BANNED:
+          return { label: "ห้ามใช้งาน", color: colors.error.main };
+        case EUserStatus.DENIED:
+          return { label: "ปฎิเสธบัญชี", color: colors.text.secondary };
+        case EUserStatus.INACTIVE:
+          return { label: "ระงับใช้งาน", color: colors.warning.darker };
+        case EUserStatus.PENDING:
+          return { label: "รอตรวจสอบบัญชี", color: colors.warning.main };
+        default:
+          return { label: "", color: colors.divider };
+      }
+    };
+
+    const drivingStatus = () => {
+      if (user.status === EUserStatus.ACTIVE) {
+        switch (user.drivingStatus) {
+          case EDriverStatus.IDLE:
+            return { label: "ว่าง", color: colors.success.main };
+          case EDriverStatus.WORKING:
+            return { label: "ดำเนินการขนส่งอยู่", color: colors.info.main };
+          case EDriverStatus.BUSY:
+            return { label: "ไม่ว่าง", color: colors.warning.main };
+          default:
+            return { label: "", color: colors.divider };
+        }
+      } else {
+        return { label: "-", color: colors.warning.main };
+      }
+    };
+
+    const { color: statusColor, label: statusLabel } = accountStatus();
+    const { color: drivingStatusColor, label: drivingStatusLabel } =
+      drivingStatus();
+
+    return (
+      <View style={styles.itemContainer}>
+        <View style={styles.driverInfoWrapper}>
+          {user.profileImage ? (
+            <Image
+              style={[styles.profileImage]}
+              source={{ uri: imagePath(user.profileImage?.filename) }}
+            />
+          ) : (
+            <Iconify
+              icon="solar:user-circle-bold-duotone"
+              size={normalize(44)}
+              color={colors.text.disabled}
+            />
+          )}
+          <View>
+            <Text varient="body1">{user.fullname}</Text>
+            <Text varient="body2" color="secondary">
+              {user.contactNumber}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.driverStatusWrapper}>
+          <View style={styles.driverStatusTextWrapper}>
+            <View style={styles.driverStatusText}>
+              <Text varient="subtitle2">สถานะบัญชี</Text>
+              <Text varient="body2" style={[{ color: statusColor }]}>
+                {statusLabel}
+              </Text>
+            </View>
+            <View style={styles.driverStatusText}>
+              <Text varient="subtitle2">สถานะขับรถ</Text>
+              <Text varient="body2" style={[{ color: drivingStatusColor }]}>
+                {drivingStatusLabel}
+              </Text>
+            </View>
+          </View>
+          <Button
+            title="มอบหมายงานนี้"
+            color="success"
+            varient="soft"
+            fullWidth
+            onPress={handleAssignDriver}
+            StartIcon={
+              <Iconify
+                icon="material-symbols-light:assignment-turned-in"
+                size={normalize(16)}
+                color={colors.success.dark}
+              />
+            }
+          />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <BottomSheetView
+        style={{
+          flex: 1,
+          gap: 8,
+        }}
+      >
+        <View style={{ paddingHorizontal: normalize(16) }}>
+          <Text varient="body2" color="secondary">
+            มอบหมายงานคนขับ
+          </Text>
+          <Text varient="h4">รายชื่อคนขับที่สามารถรับงานได้</Text>
+        </View>
+        <BottomSheetFlashList
+          scrollEnabled
+          data={employees}
+          estimatedItemSize={normalize(175)}
+          ListFooterComponent={_FooterAction}
+          renderItem={_UserItem}
+          contentContainerStyle={styles.listContainer}
+          keyExtractor={(item, indx) => `${indx}-${item._id}`}
+        />
+      </BottomSheetView>
+      <ConfirmAssignShipmentModal
+        shipmentId={shipmentId}
+        onCallback={handleConfimedAssign}
+        ref={confirmModalRef}
+      />
+    </>
   );
 }
 
@@ -232,5 +549,42 @@ const styles = StyleSheet.create({
       : {
           elevation: 18,
         }),
+  },
+  // Employee Item
+  itemContainer: {
+    padding: normalize(12),
+    borderRadius: normalize(16),
+    borderWidth: 1,
+    borderColor: colors.divider,
+    backgroundColor: colors.common.white,
+    gap: normalize(16),
+    marginBottom: normalize(16),
+  },
+  driverInfoWrapper: {
+    flexDirection: "row",
+    gap: normalize(4),
+  },
+  profileImage: {
+    width: normalize(44),
+    height: normalize(44),
+    borderRadius: normalize(22),
+  },
+  driverStatusWrapper: {
+    backgroundColor: colors.grey[200],
+    borderRadius: normalize(16),
+    padding: normalize(12),
+    gap: normalize(16),
+  },
+  driverStatusTextWrapper: {
+    flexDirection: "row",
+    flex: 1,
+  },
+  driverStatusText: {
+    flex: 1,
+  },
+  footerContainer: { flex: 1, paddingVertical: normalize(32) },
+  listContainer: {
+    paddingHorizontal: normalize(16),
+    paddingBottom: normalize(32),
   },
 });

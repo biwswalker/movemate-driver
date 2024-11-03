@@ -221,8 +221,8 @@ export default function UploadButton({
   }
 
   function handleOpenActionSheet() {
-    console.log("handleOpenActionSheet: ", disabled);
     if (disabled) return;
+    console.log("handleOpenActionSheet: ", disabled);
     // Note: Record called "utility type"
     const defaultMenu: DefaultActions = {
       CAMERA: { label: "ถ่ายรูป", value: "CAMERA" },

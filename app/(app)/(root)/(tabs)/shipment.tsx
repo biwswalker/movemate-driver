@@ -13,6 +13,7 @@ import hexToRgba from "hex-to-rgba";
 import {
   EShipmentMatchingCriteria,
   EShipmentStatus,
+  EStepDefinition,
   EUserStatus,
   Shipment,
   useGetAvailableShipmentQuery,
@@ -406,8 +407,14 @@ function Shipments({ status }: ShipmentsProps) {
 
     const currentLog = find(item.steps, ["seq", item.currentStepSeq]);
 
-    const statusColor =
-      item.status === EShipmentStatus.IDLE
+    const isFirstProcess =
+      index === 0 &&
+      (item.status === EShipmentStatus.PROGRESSING ||
+        item.status === EShipmentStatus.IDLE);
+    const assignDriver = currentLog?.step === EStepDefinition.DRIVER_ACCEPTED;
+    const statusColor = assignDriver
+      ? colors.warning
+      : item.status === EShipmentStatus.IDLE
         ? colors.warning
         : item.status === EShipmentStatus.PROGRESSING
           ? colors.primary
@@ -418,11 +425,19 @@ function Shipments({ status }: ShipmentsProps) {
               ? colors.error
               : colors.info;
 
+    // ถึง {dropoffLocations.length > 1 ? location?.detail : ``} {location?.detail}
+
+    const firstdropoff = head(dropoffLocations);
+    const dropofftexts =
+      dropoffLocations.length > 1
+        ? `ส่ง ${dropoffLocations.length} จุด`
+        : `ถึง ${firstdropoff?.detail}`;
+
     return (
       <View
         style={[
           shipmentStyle.cardWrapper,
-          item.status === EShipmentStatus.PROGRESSING && {
+          isFirstProcess && {
             borderWidth: 1,
             borderColor: colors.master.dark,
           },
@@ -437,7 +452,7 @@ function Shipments({ status }: ShipmentsProps) {
               >
                 {item.trackingNumber}
               </Text>
-              {index === 0 && (
+              {isFirstProcess && (
                 <Text
                   varient="caption"
                   style={{
@@ -493,23 +508,12 @@ function Shipments({ status }: ShipmentsProps) {
               จาก {pickupLocation?.detail}
             </Text>
           </View>
-          {map(dropoffLocations, (location, index) => {
-            return (
-              <View
-                style={shipmentStyle.descriptionWrapper}
-                key={`${index}-${location.placeId}`}
-              >
-                <Iconify
-                  icon="mage:flag"
-                  color={colors.text.disabled}
-                  size={16}
-                />
-                <Text varient="body2" color="secondary" numberOfLines={1}>
-                  ถึง {location?.detail}
-                </Text>
-              </View>
-            );
-          })}
+          <View style={shipmentStyle.descriptionWrapper}>
+            <Iconify icon="mage:flag" color={colors.text.disabled} size={16} />
+            <Text varient="body2" color="secondary" numberOfLines={1}>
+              {dropofftexts}
+            </Text>
+          </View>
           {item?.isRoundedReturn && (
             <View style={shipmentStyle.descriptionWrapper}>
               <Iconify
@@ -535,7 +539,9 @@ function Shipments({ status }: ShipmentsProps) {
               numberOfLines={1}
               style={[{ color: statusColor.dark }]}
             >
-              {currentLog?.driverMessage}
+              {assignDriver
+                ? "รอมอบหมายงานให้คนขับ"
+                : currentLog?.driverMessage}
             </Text>
           </View>
         </View>

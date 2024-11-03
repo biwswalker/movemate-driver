@@ -223,29 +223,35 @@ export function DonePOD({ step, shipment }: ProgressingStepsProps) {
   );
   return (
     <View style={styles.wrapper}>
-      <Text varient="body2" color="disabled">
-        รูปภาพหลักฐานการส่ง
-      </Text>
-      <View style={styles.contactWrapper}>
-        {map(definition?.images || [], (file, index) => {
-          return (
-            <Image
-              key={`image-${file._id}-${index}`}
-              style={[styles.imageStyle]}
-              source={{ uri: imagePath(file.filename) }}
-            />
-          );
-        })}
-      </View>
+      {!isHiddenInfo && (
+        <>
+          <Text varient="body2" color="disabled">
+            รูปภาพหลักฐานการส่ง
+          </Text>
+          <View style={styles.contactWrapper}>
+            {map(definition?.images || [], (file, index) => {
+              return (
+                <Image
+                  key={`image-${file._id}-${index}`}
+                  style={[styles.imageStyle]}
+                  source={{ uri: imagePath(file.filename) }}
+                />
+              );
+            })}
+          </View>
+        </>
+      )}
       {podDetail && (
         <View style={styles.addressContent}>
           <Text varient="body2" color="disabled">
             ที่อยู่
           </Text>
           <Text varient="body2">
-            {podDetail.address} แขวง/ตำบล {podDetail.subDistrict} เขต/อำเภอ{" "}
-            {podDetail.district} จังหวัด {podDetail.province}{" "}
-            {podDetail.postcode}
+            {isHiddenInfo
+              ? "********"
+              : `${podDetail.address} แขวง/ตำบล ${podDetail.subDistrict} เขต/อำเภอ{" "}
+            ${podDetail.district} จังหวัด ${podDetail.province}{" "}
+            ${podDetail.postcode}`}
           </Text>
           <Text varient="body2" color="disabled" style={styles.title}>
             หมายเลขติดต่อ
@@ -258,15 +264,19 @@ export function DonePOD({ step, shipment }: ProgressingStepsProps) {
           <Text varient="body2" color="disabled" style={styles.title}>
             ผู้ให้บริการ
           </Text>
-          <Text varient="body2">{podDetail.provider}</Text>
+          <Text varient="body2">{podDetail.provider || "-"}</Text>
           <Text varient="body2" color="disabled" style={styles.title}>
             หมายเลขติดตาม
           </Text>
-          <Text varient="body2">{podDetail.trackingNumber}</Text>
+          <Text varient="body2">
+            {isHiddenInfo
+              ? censorText(podDetail.trackingNumber || "-")
+              : podDetail.trackingNumber || "-"}
+          </Text>
           <Text varient="body2" color="disabled" style={styles.title}>
             หมายเหตุ
           </Text>
-          <Text varient="body2">{podDetail.remark}</Text>
+          <Text varient="body2">{podDetail.remark || "-"}</Text>
         </View>
       )}
     </View>

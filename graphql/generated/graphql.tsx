@@ -127,7 +127,7 @@ export type Admin = {
   firstname: Scalars["String"]["output"];
   fullname?: Maybe<Scalars["String"]["output"]>;
   lastname: Scalars["String"]["output"];
-  permission: Scalars["String"]["output"];
+  permission: EAdminPermission;
   phoneNumber: Scalars["String"]["output"];
   postcode?: Maybe<Scalars["String"]["output"]>;
   province?: Maybe<Scalars["String"]["output"]>;
@@ -659,9 +659,17 @@ export enum EAdminAcceptanceStatus {
   REJECTED = "REJECTED",
 }
 
+/** Admin permission */
+export enum EAdminPermission {
+  ADMIN = "ADMIN",
+  OWNER = "OWNER",
+  SUPERVISOR = "SUPERVISOR",
+}
+
 /** Driver acceptance status */
 export enum EDriverAcceptanceStatus {
   ACCEPTED = "ACCEPTED",
+  ASSIGN = "ASSIGN",
   IDLE = "IDLE",
   PENDING = "PENDING",
   UNINTERESTED = "UNINTERESTED",
@@ -696,6 +704,12 @@ export enum EPaymentStatus {
   REFUND = "REFUND",
   REFUNDED = "REFUNDED",
   WAITING_CONFIRM_PAYMENT = "WAITING_CONFIRM_PAYMENT",
+}
+
+/** Registration type */
+export enum ERegistration {
+  APP = "APP",
+  WEB = "WEB",
 }
 
 /** Shipment matching status criteria */
@@ -867,7 +881,7 @@ export type FavoriteDriverPayload = {
   notifications?: Maybe<Array<Notification>>;
   parents?: Maybe<Array<Scalars["String"]["output"]>>;
   profileImage?: Maybe<File>;
-  registration: Scalars["String"]["output"];
+  registration: ERegistration;
   remark?: Maybe<Scalars["String"]["output"]>;
   status: EUserStatus;
   updatedAt: Scalars["DateTimeISO"]["output"];
@@ -982,6 +996,7 @@ export type Mutation = {
   approvalCashPayment: Scalars["Boolean"]["output"];
   approvalUser: User;
   approveCreditPayment: Scalars["Boolean"]["output"];
+  assignShipment: Scalars["Boolean"]["output"];
   changeDrivingStatus: Scalars["Boolean"]["output"];
   changePassword: Scalars["Boolean"]["output"];
   confirmInvoiceSent: Scalars["Boolean"]["output"];
@@ -1110,6 +1125,11 @@ export type MutationApproveCreditPaymentArgs = {
   imageEvidence?: InputMaybe<FileInput>;
   paymentDate: Scalars["DateTimeISO"]["input"];
   paymentTime: Scalars["DateTimeISO"]["input"];
+};
+
+export type MutationAssignShipmentArgs = {
+  driverId: Scalars["String"]["input"];
+  shipmentId: Scalars["String"]["input"];
 };
 
 export type MutationChangeDrivingStatusArgs = {
@@ -1641,6 +1661,7 @@ export type Query = {
   billingCycle: BillingCycle;
   billingCycleList: BillingCyclePaginationAggregatePayload;
   billingNumberByShipment: Scalars["String"]["output"];
+  calculateMonthlyTransaction: Scalars["Float"]["output"];
   calculateRoute: DirectionsResultPayload;
   calculateTransaction: TransactionPayload;
   event: Event;
@@ -1650,6 +1671,7 @@ export type Query = {
   getAdditionalServices: AdditionalServicePaginationPayload;
   getAdditionalServicesByVehicleType: Array<AdditionalService>;
   getAddressByPostcode: AddressPayload;
+  getAvailableDrivers: Array<User>;
   getAvailableShipment: Array<Shipment>;
   getAvailableShipmentByTrackingNumber: Shipment;
   getBookingConfig: BookingConfigPayload;
@@ -1756,15 +1778,15 @@ export type QueryAlluserIdsArgs = {
   name?: InputMaybe<Scalars["String"]["input"]>;
   parentId?: InputMaybe<Scalars["String"]["input"]>;
   phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
-  registration?: InputMaybe<Scalars["String"]["input"]>;
+  registration?: InputMaybe<ERegistration>;
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EUserStatus>;
   taxId?: InputMaybe<Scalars["String"]["input"]>;
   userNumber?: InputMaybe<Scalars["String"]["input"]>;
-  userRole?: InputMaybe<Scalars["String"]["input"]>;
-  userType?: InputMaybe<Scalars["String"]["input"]>;
+  userRole?: InputMaybe<EUserRole>;
+  userType?: InputMaybe<EUserType>;
   username?: InputMaybe<Scalars["String"]["input"]>;
-  validationStatus?: InputMaybe<Scalars["String"]["input"]>;
+  validationStatus?: InputMaybe<EUserValidationStatus>;
 };
 
 export type QueryBillingCycleArgs = {
@@ -1790,6 +1812,10 @@ export type QueryBillingCycleListArgs = {
 
 export type QueryBillingNumberByShipmentArgs = {
   trackingNumber: Scalars["String"]["input"];
+};
+
+export type QueryCalculateMonthlyTransactionArgs = {
+  date: Scalars["DateTimeISO"]["input"];
 };
 
 export type QueryCalculateRouteArgs = {
@@ -1824,6 +1850,10 @@ export type QueryGetAdditionalServicesByVehicleTypeArgs = {
 
 export type QueryGetAddressByPostcodeArgs = {
   postcode: Scalars["Int"]["input"];
+};
+
+export type QueryGetAvailableDriversArgs = {
+  shipmentId: Scalars["String"]["input"];
 };
 
 export type QueryGetAvailableShipmentArgs = {
@@ -1928,15 +1958,15 @@ export type QueryGetUserArgs = {
   name?: InputMaybe<Scalars["String"]["input"]>;
   parentId?: InputMaybe<Scalars["String"]["input"]>;
   phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
-  registration?: InputMaybe<Scalars["String"]["input"]>;
+  registration?: InputMaybe<ERegistration>;
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EUserStatus>;
   taxId?: InputMaybe<Scalars["String"]["input"]>;
   userNumber?: InputMaybe<Scalars["String"]["input"]>;
-  userRole?: InputMaybe<Scalars["String"]["input"]>;
-  userType?: InputMaybe<Scalars["String"]["input"]>;
+  userRole?: InputMaybe<EUserRole>;
+  userType?: InputMaybe<EUserType>;
   username?: InputMaybe<Scalars["String"]["input"]>;
-  validationStatus?: InputMaybe<Scalars["String"]["input"]>;
+  validationStatus?: InputMaybe<EUserValidationStatus>;
 };
 
 export type QueryGetUserByUsernameArgs = {
@@ -2123,17 +2153,17 @@ export type QueryUsersArgs = {
   page?: InputMaybe<Scalars["Int"]["input"]>;
   parentId?: InputMaybe<Scalars["String"]["input"]>;
   phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
-  registration?: InputMaybe<Scalars["String"]["input"]>;
+  registration?: InputMaybe<ERegistration>;
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EUserStatus>;
   taxId?: InputMaybe<Scalars["String"]["input"]>;
   userNumber?: InputMaybe<Scalars["String"]["input"]>;
-  userRole?: InputMaybe<Scalars["String"]["input"]>;
-  userType?: InputMaybe<Scalars["String"]["input"]>;
+  userRole?: InputMaybe<EUserRole>;
+  userType?: InputMaybe<EUserType>;
   username?: InputMaybe<Scalars["String"]["input"]>;
-  validationStatus?: InputMaybe<Scalars["String"]["input"]>;
+  validationStatus?: InputMaybe<EUserValidationStatus>;
 };
 
 export type Refund = {
@@ -2195,7 +2225,7 @@ export type RegisterInput = {
   individualDetail?: InputMaybe<RegisterIndividualInput>;
   password: Scalars["String"]["input"];
   remark?: InputMaybe<Scalars["String"]["input"]>;
-  userType: Scalars["String"]["input"];
+  userType: EUserType;
 };
 
 export type RegisterOtpInput = {
@@ -2642,7 +2672,7 @@ export type User = {
   notifications?: Maybe<Array<Notification>>;
   parents?: Maybe<Array<Scalars["String"]["output"]>>;
   profileImage?: Maybe<File>;
-  registration: Scalars["String"]["output"];
+  registration: ERegistration;
   remark?: Maybe<Scalars["String"]["output"]>;
   status: EUserStatus;
   updatedAt: Scalars["DateTimeISO"]["output"];
@@ -2793,7 +2823,7 @@ export type LoginMutation = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: string;
+      registration: ERegistration;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
       isVerifiedEmail: boolean;
@@ -3035,6 +3065,16 @@ export type MarkAsFinishMutation = {
   markAsFinish: boolean;
 };
 
+export type AssignShipmentMutationVariables = Exact<{
+  shipmentId: Scalars["String"]["input"];
+  driverId: Scalars["String"]["input"];
+}>;
+
+export type AssignShipmentMutation = {
+  __typename?: "Mutation";
+  assignShipment: boolean;
+};
+
 export type OtpRequestMutationVariables = Exact<{
   phoneNumber: Scalars["String"]["input"];
   action: Scalars["String"]["input"];
@@ -3161,7 +3201,7 @@ export type GetAvailableShipmentQuery = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: string;
+      registration: ERegistration;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
       lastestOTPTime?: any | null;
@@ -3225,7 +3265,7 @@ export type GetAvailableShipmentQuery = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: string;
+      registration: ERegistration;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
       lastestOTPTime?: any | null;
@@ -3400,7 +3440,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: string;
+      registration: ERegistration;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
       lastestOTPTime?: any | null;
@@ -3556,7 +3596,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: string;
+      registration: ERegistration;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
       lastestOTPTime?: any | null;
@@ -3846,7 +3886,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: string;
+      registration: ERegistration;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
       lastestOTPTime?: any | null;
@@ -3932,11 +3972,13 @@ export type GetTransactionQueryVariables = Exact<{
   >;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   skip?: InputMaybe<Scalars["Int"]["input"]>;
+  transactionDate: Scalars["DateTimeISO"]["input"];
 }>;
 
 export type GetTransactionQuery = {
   __typename?: "Query";
   totalTransaction: number;
+  calculateMonthlyTransaction: number;
   getTransaction: Array<{
     __typename?: "Transaction";
     _id: string;
@@ -3974,7 +4016,7 @@ export type MeQuery = {
     remark?: string | null;
     status: EUserStatus;
     validationStatus: EUserValidationStatus;
-    registration: string;
+    registration: ERegistration;
     lastestOTP?: string | null;
     lastestOTPRef?: string | null;
     isVerifiedEmail: boolean;
@@ -4186,6 +4228,7 @@ export type EmployeesQuery = {
       remark?: string | null;
       status: EUserStatus;
       contactNumber?: string | null;
+      drivingStatus?: EDriverStatus | null;
       validationStatus: EUserValidationStatus;
       profileImage?: {
         __typename?: "File";
@@ -4331,6 +4374,52 @@ export type GetUserQuery = {
   };
 };
 
+export type AvailableEmployeesQueryVariables = Exact<{
+  shipmentId: Scalars["String"]["input"];
+}>;
+
+export type AvailableEmployeesQuery = {
+  __typename?: "Query";
+  getAvailableDrivers: Array<{
+    __typename?: "User";
+    _id: string;
+    fullname?: string | null;
+    userNumber: string;
+    userRole: EUserRole;
+    userType: EUserType;
+    username: string;
+    remark?: string | null;
+    status: EUserStatus;
+    contactNumber?: string | null;
+    drivingStatus?: EDriverStatus | null;
+    validationStatus: EUserValidationStatus;
+    profileImage?: {
+      __typename?: "File";
+      _id: string;
+      fileId: string;
+      filename: string;
+    } | null;
+    driverDetail?: {
+      __typename?: "DriverDetail";
+      _id: string;
+      driverType: Array<EDriverType>;
+      title: string;
+      otherTitle: string;
+      firstname?: string | null;
+      lastname?: string | null;
+      taxNumber: string;
+      phoneNumber: string;
+      lineId: string;
+      address: string;
+      province: string;
+      district: string;
+      subDistrict: string;
+      postcode: string;
+      fullname?: string | null;
+    } | null;
+  }>;
+};
+
 export type GetVehicleTypeAvailableQueryVariables = Exact<{
   [key: string]: never;
 }>;
@@ -4436,7 +4525,7 @@ export type ListenAvailableShipmentSubscription = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: string;
+      registration: ERegistration;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
       lastestOTPTime?: any | null;
@@ -4500,7 +4589,7 @@ export type ListenAvailableShipmentSubscription = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: string;
+      registration: ERegistration;
       lastestOTP?: string | null;
       lastestOTPRef?: string | null;
       lastestOTPTime?: any | null;
@@ -5522,6 +5611,55 @@ export type MarkAsFinishMutationResult =
 export type MarkAsFinishMutationOptions = Apollo.BaseMutationOptions<
   MarkAsFinishMutation,
   MarkAsFinishMutationVariables
+>;
+export const AssignShipmentDocument = gql`
+  mutation AssignShipment($shipmentId: String!, $driverId: String!) {
+    assignShipment(shipmentId: $shipmentId, driverId: $driverId)
+  }
+`;
+export type AssignShipmentMutationFn = Apollo.MutationFunction<
+  AssignShipmentMutation,
+  AssignShipmentMutationVariables
+>;
+
+/**
+ * __useAssignShipmentMutation__
+ *
+ * To run a mutation, you first call `useAssignShipmentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAssignShipmentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [assignShipmentMutation, { data, loading, error }] = useAssignShipmentMutation({
+ *   variables: {
+ *      shipmentId: // value for 'shipmentId'
+ *      driverId: // value for 'driverId'
+ *   },
+ * });
+ */
+export function useAssignShipmentMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    AssignShipmentMutation,
+    AssignShipmentMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    AssignShipmentMutation,
+    AssignShipmentMutationVariables
+  >(AssignShipmentDocument, options);
+}
+export type AssignShipmentMutationHookResult = ReturnType<
+  typeof useAssignShipmentMutation
+>;
+export type AssignShipmentMutationResult =
+  Apollo.MutationResult<AssignShipmentMutation>;
+export type AssignShipmentMutationOptions = Apollo.BaseMutationOptions<
+  AssignShipmentMutation,
+  AssignShipmentMutationVariables
 >;
 export const OtpRequestDocument = gql`
   mutation OtpRequest($phoneNumber: String!, $action: String!) {
@@ -6846,6 +6984,7 @@ export const GetTransactionDocument = gql`
     $sortField: [String!]
     $sortAscending: Boolean
     $skip: Int
+    $transactionDate: DateTimeISO!
   ) {
     getTransaction(
       limit: $limit
@@ -6872,6 +7011,7 @@ export const GetTransactionDocument = gql`
       totalOverall
     }
     totalTransaction
+    calculateMonthlyTransaction(date: $transactionDate)
   }
 `;
 
@@ -6891,14 +7031,19 @@ export const GetTransactionDocument = gql`
  *      sortField: // value for 'sortField'
  *      sortAscending: // value for 'sortAscending'
  *      skip: // value for 'skip'
+ *      transactionDate: // value for 'transactionDate'
  *   },
  * });
  */
 export function useGetTransactionQuery(
-  baseOptions?: Apollo.QueryHookOptions<
+  baseOptions: Apollo.QueryHookOptions<
     GetTransactionQuery,
     GetTransactionQueryVariables
-  >,
+  > &
+    (
+      | { variables: GetTransactionQueryVariables; skip?: boolean }
+      | { skip: boolean }
+    ),
 ) {
   const options = { ...defaultOptions, ...baseOptions };
   return Apollo.useQuery<GetTransactionQuery, GetTransactionQueryVariables>(
@@ -7196,6 +7341,7 @@ export const EmployeesDocument = gql`
         remark
         status
         contactNumber
+        drivingStatus
         validationStatus
         profileImage {
           _id
@@ -7524,6 +7670,120 @@ export type GetUserSuspenseQueryHookResult = ReturnType<
 export type GetUserQueryResult = Apollo.QueryResult<
   GetUserQuery,
   GetUserQueryVariables
+>;
+export const AvailableEmployeesDocument = gql`
+  query AvailableEmployees($shipmentId: String!) {
+    getAvailableDrivers(shipmentId: $shipmentId) {
+      _id
+      fullname
+      userNumber
+      userRole
+      userType
+      username
+      remark
+      status
+      contactNumber
+      drivingStatus
+      validationStatus
+      profileImage {
+        _id
+        fileId
+        filename
+      }
+      driverDetail {
+        _id
+        driverType
+        title
+        otherTitle
+        firstname
+        lastname
+        taxNumber
+        phoneNumber
+        lineId
+        address
+        province
+        district
+        subDistrict
+        postcode
+        fullname
+      }
+    }
+  }
+`;
+
+/**
+ * __useAvailableEmployeesQuery__
+ *
+ * To run a query within a React component, call `useAvailableEmployeesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAvailableEmployeesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAvailableEmployeesQuery({
+ *   variables: {
+ *      shipmentId: // value for 'shipmentId'
+ *   },
+ * });
+ */
+export function useAvailableEmployeesQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    AvailableEmployeesQuery,
+    AvailableEmployeesQueryVariables
+  > &
+    (
+      | { variables: AvailableEmployeesQueryVariables; skip?: boolean }
+      | { skip: boolean }
+    ),
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<
+    AvailableEmployeesQuery,
+    AvailableEmployeesQueryVariables
+  >(AvailableEmployeesDocument, options);
+}
+export function useAvailableEmployeesLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    AvailableEmployeesQuery,
+    AvailableEmployeesQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    AvailableEmployeesQuery,
+    AvailableEmployeesQueryVariables
+  >(AvailableEmployeesDocument, options);
+}
+export function useAvailableEmployeesSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        AvailableEmployeesQuery,
+        AvailableEmployeesQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<
+    AvailableEmployeesQuery,
+    AvailableEmployeesQueryVariables
+  >(AvailableEmployeesDocument, options);
+}
+export type AvailableEmployeesQueryHookResult = ReturnType<
+  typeof useAvailableEmployeesQuery
+>;
+export type AvailableEmployeesLazyQueryHookResult = ReturnType<
+  typeof useAvailableEmployeesLazyQuery
+>;
+export type AvailableEmployeesSuspenseQueryHookResult = ReturnType<
+  typeof useAvailableEmployeesSuspenseQuery
+>;
+export type AvailableEmployeesQueryResult = Apollo.QueryResult<
+  AvailableEmployeesQuery,
+  AvailableEmployeesQueryVariables
 >;
 export const GetVehicleTypeAvailableDocument = gql`
   query GetVehicleTypeAvailable {

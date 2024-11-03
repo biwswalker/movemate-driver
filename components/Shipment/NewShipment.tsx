@@ -30,6 +30,7 @@ import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import hexToRgba from "hex-to-rgba";
+import { ActivityIndicator } from "react-native-paper";
 
 export interface NewShipmentsRef {
   onRestartListening: Function;
@@ -43,7 +44,7 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
   ({ onPress }, ref) => {
     const isFocused = useIsFocused();
     const { user } = useAuth();
-    const { data, restart } = useListenAvailableShipmentSubscription({
+    const { data, restart, loading } = useListenAvailableShipmentSubscription({
       onError: (errr) => {
         console.log("Listen error: ", JSON.stringify(errr));
       },
@@ -211,6 +212,14 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
     }
 
     function FooterAction() {
+      if (loading) {
+        return (
+          <></>
+          // <View style={shipmentStyle.loadingWrapper}>
+          //   <ActivityIndicator size="small" color={colors.text.secondary} />
+          // </View>
+        );
+      }
       if (isEmpty(shipments)) {
         if (user?.drivingStatus === EDriverStatus.BUSY) {
           return (
@@ -398,5 +407,11 @@ const shipmentStyle = StyleSheet.create({
     paddingTop: normalize(8),
     paddingHorizontal: normalize(24),
     alignItems: "center",
+  },
+  loadingWrapper: {
+    padding: normalize(24),
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

@@ -17,10 +17,11 @@ import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const today = new Date().toISOString();
 export default function FinanceList() {
   const [hasMore, setHasMore] = useState(false);
   const { data, loading, fetchMore } = useGetTransactionQuery({
-    variables: { limit: 10, skip: 0 },
+    variables: { limit: 10, skip: 0, transactionDate: today },
     onError: (error) => {
       console.log("error: ", error);
     },

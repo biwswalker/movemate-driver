@@ -55,14 +55,14 @@ export default function RootLayout() {
             <ThemeProvider value={DefaultTheme}>
               <SnackbarProvider>
                 <SnackbarV2Provider>
-                  <BottomSheetModalProvider>
-                    <ActionSheetProvider>
+                  <ActionSheetProvider>
+                    <BottomSheetModalProvider>
                       <SafeAreaProvider>
                         <StatusBar style="dark" />
                         <Slot />
                       </SafeAreaProvider>
-                    </ActionSheetProvider>
-                  </BottomSheetModalProvider>
+                    </BottomSheetModalProvider>
+                  </ActionSheetProvider>
                 </SnackbarV2Provider>
               </SnackbarProvider>
             </ThemeProvider>

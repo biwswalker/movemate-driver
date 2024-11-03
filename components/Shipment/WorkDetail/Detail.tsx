@@ -13,26 +13,36 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { EShipmentStatus, Shipment } from "@/graphql/generated/graphql";
+import {
+  EShipmentStatus,
+  EUserType,
+  Shipment,
+} from "@/graphql/generated/graphql";
+import useAuth from "@/hooks/useAuth";
 
 interface OverviewDetailProps {
   shipment: Shipment;
 }
 
 export default function Detail({ shipment }: OverviewDetailProps) {
+  const { user } = useAuth();
+  const isBusiness = user?.userType === EUserType.BUSINESS;
+  const driver = get(shipment, "driver", undefined);
   const customer = get(shipment, "customer", undefined);
-  const imageUri: ImageSourcePropType = customer?.profileImage
-    ? { uri: imagePath(customer.profileImage?.filename) }
-    : require("@assets/images/user-duotone-large.png");
 
   const additionalService = get(shipment, "additionalServices", undefined);
   const destinations = get(shipment, "destinations", []);
   const origin = get(destinations, "0", undefined);
   const dropoffs = tail(destinations);
   const isHiddenInfo = includes(
-    [EShipmentStatus.DELIVERED, EShipmentStatus.CANCELLED, EShipmentStatus.REFUND],
+    [
+      EShipmentStatus.DELIVERED,
+      EShipmentStatus.CANCELLED,
+      EShipmentStatus.REFUND,
+    ],
     shipment?.status
   );
+
   return (
     <>
       <View
@@ -45,14 +55,54 @@ export default function Detail({ shipment }: OverviewDetailProps) {
         <View style={[detailStyles.divider, { flex: 1 }]} />
       </View>
 
+      {/*  */}
+      {isBusiness && driver && (
+        <View
+          style={[
+            detailStyles.accountContainer,
+            { ...(!isHiddenInfo ? { marginBottom: 0 } : {}) },
+          ]}
+        >
+          <View style={detailStyles.accountAvatarWrapper}>
+            {driver?.profileImage ? (
+              <Image
+                style={detailStyles.avatarImage}
+                source={{ uri: imagePath(driver.profileImage.filename) }}
+              />
+            ) : (
+              <Iconify
+                icon="solar:user-circle-bold-duotone"
+                size={normalize(32)}
+                color={colors.text.disabled}
+              />
+            )}
+          </View>
+          <View style={detailStyles.accountNameWrapper}>
+            <Text varient="body2" color="secondary" numberOfLines={1}>
+              คนขับที่รับผิดชอบ
+            </Text>
+            <Text varient="subtitle1" color="primary">
+              {driver?.fullname}
+            </Text>
+          </View>
+        </View>
+      )}
+
       {!isHiddenInfo && (
         <View style={[detailStyles.accountContainer]}>
           <View style={detailStyles.accountAvatarWrapper}>
-            <Image
-              style={detailStyles.avatarImage}
-              source={imageUri}
-              tintColor={colors.action.focus}
-            />
+            {customer?.profileImage ? (
+              <Image
+                style={detailStyles.avatarImage}
+                source={{ uri: imagePath(customer.profileImage.filename) }}
+              />
+            ) : (
+              <Iconify
+                icon="solar:user-circle-bold-duotone"
+                size={normalize(32)}
+                color={colors.text.disabled}
+              />
+            )}
           </View>
           <View style={detailStyles.accountNameWrapper}>
             <Text varient="body2" color="secondary" numberOfLines={1}>
@@ -83,7 +133,9 @@ export default function Detail({ shipment }: OverviewDetailProps) {
               {/* <Label text="ดำเนินการ" color="warning" /> */}
             </View>
             <Text varient="subtitle2" color="primary">
-              {origin?.name} {origin?.detail}
+              {isHiddenInfo
+                ? origin?.detail
+                : `${origin?.name} ${origin?.detail}`}
             </Text>
           </View>
         </View>
@@ -109,7 +161,9 @@ export default function Detail({ shipment }: OverviewDetailProps) {
                   {/* <Label text="ดำเนินการ" color="warning" /> */}
                 </View>
                 <Text varient="subtitle2" color="primary">
-                  {destination?.name} {destination?.detail}
+                  {isHiddenInfo
+                    ? destination?.detail
+                    : `${destination?.name} ${destination?.detail}`}
                 </Text>
               </View>
             </View>

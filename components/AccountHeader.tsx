@@ -54,18 +54,21 @@ export default function AccountHeader({
 }: AccountHeaderProps) {
   const { user, notificationCount } = useAuth();
 
-  const imageUri: ImageSourcePropType = user?.profileImage
-    ? { uri: imagePath(user.profileImage.filename) }
-    : require("@assets/images/user-duotone-large.png");
-
   return (
     <View style={[styles.accountContainer, containerStyle]}>
       <View style={styles.accountAvatarWrapper}>
-        <Image
-          style={styles.avatarImage}
-          source={imageUri}
-          tintColor={colors.text.secondary}
-        />
+        {user?.profileImage ? (
+          <Image
+            style={styles.avatarImage}
+            source={{ uri: imagePath(user.profileImage.filename) }}
+          />
+        ) : (
+          <Iconify
+            icon="solar:user-circle-bold-duotone"
+            size={normalize(48)}
+            color={colors.text.disabled}
+          />
+        )}
       </View>
       <View style={styles.accountNameWrapper}>
         <Text varient="h5" numberOfLines={1}>

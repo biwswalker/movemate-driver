@@ -3,6 +3,7 @@ query GetTransaction(
   $sortField: [String!]
   $sortAscending: Boolean
   $skip: Int
+  $transactionDate: DateTimeISO!
 ) {
   getTransaction(
     limit: $limit
@@ -29,4 +30,5 @@ query GetTransaction(
     totalOverall
   }
   totalTransaction
+  calculateMonthlyTransaction(date: $transactionDate)
 }

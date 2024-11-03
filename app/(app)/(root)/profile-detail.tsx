@@ -6,10 +6,15 @@ import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
 import colors from "@constants/colors";
 import { YUP_VALIDATION_ERROR_TYPE } from "@/constants/error";
-import { BANKPROVIDER, TITLE_NAME_OPTIONS } from "@/constants/values";
+import {
+  BANKPROVIDER,
+  BUSINESS_TITLE_NAME_OPTIONS,
+  TITLE_NAME_OPTIONS,
+} from "@/constants/values";
 import {
   DriverDetail,
   EUserStatus,
+  EUserType,
   EUserValidationStatus,
   useGetDistrictLazyQuery,
   useGetProvinceQuery,
@@ -24,12 +29,18 @@ import Yup from "@/utils/yup";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFocusEffect } from "expo-router";
-import { find, forEach, get, isEqual, map } from "lodash";
-import { useEffect, useMemo } from "react";
+import { find, forEach, get, isEqual, map, reduce } from "lodash";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DriverFormValueType } from "../register/types";
+import CustomTextInput from "@components/TextInput";
+import { TextInput } from "react-native-paper";
+import Iconify from "@/components/Iconify";
+import VehicleSelectorModal, {
+  VehicleSelectorRef,
+} from "@/components/Modals/vehicle-selector";
 
 type FormValues = Omit<
   DriverFormValueType,
@@ -37,8 +48,10 @@ type FormValues = Omit<
 >;
 
 export default function ProfileDetail() {
+  const bottomSheetModalRef = useRef<VehicleSelectorRef>(null);
   const { user, refetchMe } = useAuth();
   const { showSnackbar } = useSnackbar();
+  const isBusinessDriver = user?.userType === EUserType.BUSINESS;
 
   useFocusEffect(() => {
     refetchMe();
@@ -52,7 +65,8 @@ export default function ProfileDetail() {
     useGetSubDistrictLazyQuery();
 
   const isApproved =
-    user?.status === EUserStatus.ACTIVE && user.validationStatus === EUserValidationStatus.APPROVE;
+    user?.status === EUserStatus.ACTIVE &&
+    user.validationStatus === EUserValidationStatus.APPROVE;
 
   const vehicleTypes = useMemo<VehicleType[]>(() => {
     if (vehicleData?.getVehicleTypeAvailable) {
@@ -89,9 +103,16 @@ export default function ProfileDetail() {
         ? schema.required("ระบุคำนำหน้าชื่อ")
         : schema.notRequired()
     ),
-    firstname: Yup.string().required("ระบุชื่อ"),
-    lastname: Yup.string().required("ระบุนามสกุล"),
-    taxId: Yup.string()
+    ...(isBusinessDriver
+      ? {
+          businessName: Yup.string().required("ระบุชื่อบริษัท"),
+          businessBranch: Yup.string(),
+        }
+      : {
+          firstname: Yup.string().required("ระบุชื่อ"),
+          lastname: Yup.string().required("ระบุนามสกุล"),
+        }),
+    taxNumber: Yup.string()
       .matches(/^[0-9]+$/, "เลขประจำตัวผู้เสียภาษีเป็นตัวเลขเท่านั้น")
       .min(13, "เลขประจำตัวผู้เสียภาษี 13 หลัก")
       .max(13, "เลขประจำตัวผู้เสียภาษี 13 หลัก"),
@@ -122,7 +143,7 @@ export default function ProfileDetail() {
       .matches(/^[0-9\s]+$/g, "ตัวเลขเท่านั้น")
       .min(10, "ตัวเลขขั้นต่ำ 10 หลัก")
       .max(15, "ตัวเลขสูงสุด 15 หลัก"),
-    serviceVehicleType: Yup.string().required("ระบุประเภทรถที่ให้บริการ"),
+    serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
   });
 
   const defaultValues: FormValues = {
@@ -213,190 +234,256 @@ export default function ProfileDetail() {
     } catch (error) {}
   }
 
+  function handleSelectedVehicle() {
+    if (bottomSheetModalRef.current) {
+      bottomSheetModalRef.current.present();
+    }
+  }
+
+  function handleOnSelectedVehicleModal(vehicles: string[]) {
+    setValue("serviceVehicleTypes", vehicles);
+  }
+
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.wrapper}>
-        <NavigationBar title="ข้อมูลส่วนตัว" />
-        <View style={styles.content}>
-          <FormProvider methods={methods} containerStyle={styles.inputWrapper}>
-            <RHFSelectDropdown
-              disabled={!isApproved}
-              name="title"
-              label="คำนำหน้าชื่อ*"
-              options={TITLE_NAME_OPTIONS}
-              value={values.title}
-              labelField="label"
-              valueField="value"
-            />
-            {values.title === "อื่นๆ" && (
+    <>
+      <View style={styles.container}>
+        <SafeAreaView style={styles.wrapper}>
+          <NavigationBar title="ข้อมูลส่วนตัว" />
+          <View style={styles.content}>
+            <FormProvider
+              methods={methods}
+              containerStyle={styles.inputWrapper}
+            >
+              <RHFSelectDropdown
+                disabled={!isApproved}
+                name="title"
+                label="คำนำหน้าชื่อ*"
+                options={
+                  isBusinessDriver
+                    ? BUSINESS_TITLE_NAME_OPTIONS
+                    : TITLE_NAME_OPTIONS
+                }
+                value={values.title}
+                labelField="label"
+                valueField="value"
+              />
+              {values.title === "อื่นๆ" && (
+                <RHFTextInput
+                  disabled={!isApproved}
+                  name="otherTitle"
+                  label="ระบุคำนำหน้าชื่อ*"
+                />
+              )}
+              {isBusinessDriver ? (
+                <>
+                  <RHFTextInput
+                    disabled={!isApproved}
+                    name="businessName"
+                    label="ชื่อบริษัท*"
+                  />
+                  <RHFTextInput
+                    disabled={!isApproved}
+                    name="businessBranch"
+                    label="สาขา"
+                  />
+                </>
+              ) : (
+                <>
+                  <RHFTextInput
+                    disabled={!isApproved}
+                    name="firstname"
+                    label="ชื่อ*"
+                  />
+                  <RHFTextInput
+                    disabled={!isApproved}
+                    name="lastname"
+                    label="นามสกุล*"
+                  />
+                </>
+              )}
               <RHFTextInput
                 disabled={!isApproved}
-                name="otherTitle"
-                label="ระบุคำนำหน้าชื่อ*"
+                name="taxNumber"
+                label="เลขบัตรประจำตัวประชาชน*"
+                helperText="กรอกเป็นตัวเลข 13 ตัวเท่านั้น"
               />
-            )}
-            <RHFTextInput
-              disabled={!isApproved}
-              name="firstname"
-              label="ชื่อ*"
-            />
-            <RHFTextInput
-              disabled={!isApproved}
-              name="lastname"
-              label="นามสกุล*"
-            />
-            <RHFTextInput
-              disabled={!isApproved}
-              name="taxId"
-              label="เลขบัตรประจำตัวประชาชน*"
-              helperText="กรอกเป็นตัวเลข 13 ตัวเท่านั้น"
-            />
-            <View style={styles.formSubtitle}>
-              <Text varient="caption" color="disabled">
-                ข้อมูลการลงชื่อเข้าใช้
-              </Text>
-            </View>
-            <RHFTextInput
-              disabled={!isApproved}
-              name="phoneNumber"
-              label="เบอร์โทรศัพท์*"
-              helperText={
-                errors.phoneNumber
-                  ? errors.phoneNumber.message
-                  : "กรอกเป็นตัวเลขไม่เกิน 10 ตัวเท่านั้น"
-              }
-            />
-            <RHFTextInput
-              disabled={!isApproved}
-              name="lineId"
-              label="ไลน์ไอดี"
-            />
-
-            <View style={styles.formSubtitle}>
-              <Text varient="caption" color="disabled">
-                ข้อมูลที่อยู่ปัจจุบัน
-              </Text>
-            </View>
-            <RHFTextInput
-              disabled={!isApproved}
-              name="address"
-              label="ที่อยู่*"
-            />
-            <RHFSelectDropdown
-              disabled={!isApproved}
-              name="province"
-              label="จังหวัด*"
-              options={prvinces?.getProvince || []}
-              labelField="nameTh"
-              valueField="nameTh"
-              value={values.province}
-              onChanged={(province) => {
-                getDistrict({ variables: { provinceThName: province.nameTh } });
-                setValue("province", province.nameTh);
-                setValue("district", "");
-                setValue("subDistrict", "");
-                setValue("postcode", "");
-              }}
-            />
-            <RHFSelectDropdown
-              name="district"
-              label="อำเภอ*"
-              options={district?.getDistrict || []}
-              labelField="nameTh"
-              valueField="nameTh"
-              value={values.district}
-              disabled={!values.province || !isApproved}
-              onChanged={(district) => {
-                getSubDistrict({
-                  variables: { districtName: district.nameTh },
-                });
-                setValue("district", district.nameTh);
-                setValue("subDistrict", "");
-                setValue("postcode", "");
-              }}
-            />
-            <RHFSelectDropdown
-              name="subDistrict"
-              label="ตำบล*"
-              options={subDistrict?.getSubDistrict || []}
-              disabled={!values.district || !isApproved}
-              value={values.subDistrict}
-              labelField="nameTh"
-              valueField="nameTh"
-              onChanged={(subdistrict) => {
-                const subDistrictData = find(
-                  subDistrict?.getSubDistrict || [],
-                  ["nameTh", subdistrict.nameTh]
-                );
-                setValue("subDistrict", subdistrict.nameTh);
-                setValue("postcode", `${subDistrictData?.zipCode}` || "");
-              }}
-            />
-            <RHFTextInput
-              disabled={!isApproved}
-              name="postcode"
-              label="รหัสไปรษณีย์*"
-              readOnly
-            />
-            <View style={styles.formSubtitle}>
-              <Text varient="caption" color="disabled">
-                บัญชีธนาคาร
-              </Text>
-            </View>
-            <RHFSelectDropdown
-              name="bank"
-              label="ธนาคาร*"
-              disabled={!isApproved}
-              options={BANKPROVIDER}
-              value={values.bank}
-              labelField="label"
-              valueField="value"
-            />
-            <RHFTextInput
-              disabled={!isApproved}
-              name="bankBranch"
-              label="สาขา*"
-            />
-            <RHFTextInput
-              disabled={!isApproved}
-              name="bankName"
-              label="ชื่อบัญชี*"
-            />
-            <RHFTextInput
-              disabled={!isApproved}
-              name="bankNumber"
-              label="เลขที่บัญชี*"
-            />
-
-            {/* <View style={styles.formSubtitle}>
-              <Text varient="caption" color="disabled">
-                เลือกประเภทรถที่ให้บริการ
-              </Text>
-            </View>
-            <RHFSelectDropdown
-              disabled={!isApproved}
-              dropdownPosition="top"
-              name="serviceVehicleType"
-              label="ประเภทรถที่ให้บริการ*"
-              options={vehicleTypes}
-              value={values.serviceVehicleType}
-              labelField="name"
-              valueField="_id"
-            /> */}
-            <View style={styles.actionWrapper}>
-              <Button
-                fullWidth
-                title="บันทึกการเปลี่ยนแปลง"
-                size="large"
-                onPress={handleSubmit(onSubmit)}
+              <View style={styles.formSubtitle}>
+                <Text varient="caption" color="disabled">
+                  ข้อมูลการลงชื่อเข้าใช้
+                </Text>
+              </View>
+              <RHFTextInput
                 disabled={!isApproved}
-                // loading={verifyLoading}
+                name="phoneNumber"
+                label="เบอร์โทรศัพท์*"
+                helperText={
+                  errors.phoneNumber
+                    ? errors.phoneNumber.message
+                    : "กรอกเป็นตัวเลขไม่เกิน 10 ตัวเท่านั้น"
+                }
               />
-            </View>
-          </FormProvider>
-        </View>
-      </SafeAreaView>
-    </View>
+              <RHFTextInput
+                disabled={!isApproved}
+                name="lineId"
+                label="ไลน์ไอดี"
+              />
+
+              <View style={styles.formSubtitle}>
+                <Text varient="caption" color="disabled">
+                  ข้อมูลที่อยู่ปัจจุบัน
+                </Text>
+              </View>
+              <RHFTextInput
+                disabled={!isApproved}
+                name="address"
+                label="ที่อยู่*"
+              />
+              <RHFSelectDropdown
+                disabled={!isApproved}
+                name="province"
+                label="จังหวัด*"
+                options={prvinces?.getProvince || []}
+                labelField="nameTh"
+                valueField="nameTh"
+                value={values.province}
+                onChanged={(province) => {
+                  getDistrict({
+                    variables: { provinceThName: province.nameTh },
+                  });
+                  setValue("province", province.nameTh);
+                  setValue("district", "");
+                  setValue("subDistrict", "");
+                  setValue("postcode", "");
+                }}
+              />
+              <RHFSelectDropdown
+                name="district"
+                label="อำเภอ*"
+                options={district?.getDistrict || []}
+                labelField="nameTh"
+                valueField="nameTh"
+                value={values.district}
+                disabled={!values.province || !isApproved}
+                onChanged={(district) => {
+                  getSubDistrict({
+                    variables: { districtName: district.nameTh },
+                  });
+                  setValue("district", district.nameTh);
+                  setValue("subDistrict", "");
+                  setValue("postcode", "");
+                }}
+              />
+              <RHFSelectDropdown
+                name="subDistrict"
+                label="ตำบล*"
+                options={subDistrict?.getSubDistrict || []}
+                disabled={!values.district || !isApproved}
+                value={values.subDistrict}
+                labelField="nameTh"
+                valueField="nameTh"
+                onChanged={(subdistrict) => {
+                  const subDistrictData = find(
+                    subDistrict?.getSubDistrict || [],
+                    ["nameTh", subdistrict.nameTh]
+                  );
+                  setValue("subDistrict", subdistrict.nameTh);
+                  setValue("postcode", `${subDistrictData?.zipCode}` || "");
+                }}
+              />
+              <RHFTextInput
+                disabled={!isApproved}
+                name="postcode"
+                label="รหัสไปรษณีย์*"
+                readOnly
+              />
+              <View style={styles.formSubtitle}>
+                <Text varient="caption" color="disabled">
+                  บัญชีธนาคาร
+                </Text>
+              </View>
+              <RHFSelectDropdown
+                name="bank"
+                label="ธนาคาร*"
+                disabled={!isApproved}
+                options={BANKPROVIDER}
+                value={values.bank}
+                labelField="label"
+                valueField="value"
+              />
+              <RHFTextInput
+                disabled={!isApproved}
+                name="bankBranch"
+                label="สาขา*"
+              />
+              <RHFTextInput
+                disabled={!isApproved}
+                name="bankName"
+                label="ชื่อบัญชี*"
+              />
+              <RHFTextInput
+                disabled={!isApproved}
+                name="bankNumber"
+                label="เลขที่บัญชี*"
+              />
+
+              <View style={styles.formSubtitle}>
+                <Text varient="caption" color="disabled">
+                  เลือกประเภทรถที่ให้บริการ
+                </Text>
+                <CustomTextInput
+                  multiline={isBusinessDriver}
+                  onPress={handleSelectedVehicle}
+                  value={reduce(
+                    values.serviceVehicleTypes,
+                    (prev, curr) => {
+                      const vehicle = find(vehicleTypes, ["_id", curr]);
+                      if (vehicle) {
+                        const vehicleName = vehicle.name;
+                        return prev ? `${prev}, ${vehicleName}` : vehicleName;
+                      }
+                      return prev;
+                    },
+                    ""
+                  )}
+                  label="ประเภทรถที่ให้บริการ"
+                  disabled
+                  error={!!errors.serviceVehicleTypes}
+                  helperText={errors.serviceVehicleTypes?.message}
+                  right={
+                    <TextInput.Icon
+                      icon={({ color, size }) => (
+                        <Iconify
+                          icon="system-uicons:plus"
+                          color={color || colors.text.primary}
+                          size={size}
+                        />
+                      )}
+                    />
+                  }
+                />
+              </View>
+
+              <View style={styles.actionWrapper}>
+                <Button
+                  fullWidth
+                  title="บันทึกการเปลี่ยนแปลง"
+                  size="large"
+                  onPress={handleSubmit(onSubmit)}
+                  disabled={!isApproved}
+                  // loading={verifyLoading}
+                />
+              </View>
+            </FormProvider>
+          </View>
+        </SafeAreaView>
+      </View>
+      <VehicleSelectorModal
+        multiple={isBusinessDriver}
+        ref={bottomSheetModalRef}
+        onSelected={handleOnSelectedVehicleModal}
+        value={values.serviceVehicleTypes}
+      />
+    </>
   );
 }
 

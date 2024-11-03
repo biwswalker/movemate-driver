@@ -198,6 +198,7 @@ query Employees($parentId: String) {
       remark
       status
       contactNumber
+      drivingStatus
       validationStatus
       profileImage {
         _id
@@ -298,6 +299,44 @@ query GetUser($id: String) {
     status
     validationStatus
     drivingStatus
+    profileImage {
+      _id
+      fileId
+      filename
+    }
+    driverDetail {
+      _id
+      driverType
+      title
+      otherTitle
+      firstname
+      lastname
+      taxNumber
+      phoneNumber
+      lineId
+      address
+      province
+      district
+      subDistrict
+      postcode
+      fullname
+    }
+  }
+}
+
+query AvailableEmployees($shipmentId: String!) {
+  getAvailableDrivers(shipmentId: $shipmentId) {
+    _id
+    fullname
+    userNumber
+    userRole
+    userType
+    username
+    remark
+    status
+    contactNumber
+    drivingStatus
+    validationStatus
     profileImage {
       _id
       fileId

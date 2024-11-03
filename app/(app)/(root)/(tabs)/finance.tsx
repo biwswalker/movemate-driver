@@ -25,11 +25,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 
+const today = new Date().toISOString();
+
 export default function Financial() {
   const isFocused = useIsFocused();
   const { user } = useAuth();
   const { data, refetch } = useGetTransactionQuery({
-    variables: { limit: 10 },
+    variables: { limit: 10, transactionDate: today },
     onError: (error) => {
       console.log("error: ", error);
     },
@@ -66,41 +68,63 @@ export default function Financial() {
         </View>
         <View style={styles.content}>
           {data?.calculateTransaction && (
-            <View style={styles.totalWrapper}>
-              <View
-                style={[
-                  styles.innerBoxWrapper,
-                  { backgroundColor: hexToRgba(colors.primary.main, 0.08) },
-                ]}
-              >
-                <Iconify icon="ion:cash" color={colors.primary.dark} />
-                <Text
-                  varient="body2"
-                  style={{ color: colors.primary.dark, marginTop: 4 }}
+            <View style={styles.summaryContainer}>
+              <View style={styles.totalWrapper}>
+                <View
+                  style={[
+                    styles.innerBoxWrapper,
+                    {
+                      backgroundColor: hexToRgba(colors.primary.main, 0.08),
+                      paddingVertical: normalize(12),
+                    },
+                  ]}
                 >
-                  รายได้ปัจจุบัน
-                </Text>
-                <Text varient="h5" style={{ color: colors.primary.dark }}>
-                  {fNumber(
-                    data.calculateTransaction.totalPending || 0,
-                    "0,0.0"
-                  )}{" "}
-                </Text>
+                  <Iconify icon="ion:cash" color={colors.primary.dark} />
+                  <Text
+                    varient="body2"
+                    style={{ color: colors.primary.dark, marginTop: 4 }}
+                  >
+                    รายได้เดือนนี้
+                  </Text>
+                  <Text varient="h5" style={{ color: colors.primary.dark }}>
+                    {fNumber(data.calculateMonthlyTransaction || 0, "0,0.0")}{" "}
+                  </Text>
+                </View>
               </View>
-              <View style={[styles.innerBoxWrapper]}>
-                <Iconify
-                  icon="streamline:piggy-bank"
-                  color={colors.success.main}
-                />
-                <Text
-                  varient="body2"
-                  style={{ color: colors.success.dark, marginTop: 4 }}
+              <View style={styles.totalWrapper}>
+                <View
+                  style={[
+                    styles.innerBoxWrapper,
+                    { backgroundColor: hexToRgba(colors.info.main, 0.08) },
+                  ]}
                 >
-                  รายได้ทั้งหมด
-                </Text>
-                <Text varient="h5" style={{ color: colors.success.dark }}>
-                  {fNumber(data.calculateTransaction.totalIncome || 0, "0,0.0")}{" "}
-                </Text>
+                  <Text
+                    varient="body2"
+                    style={{ color: colors.info.dark, marginTop: 4 }}
+                  >
+                    รอรับเงิน
+                  </Text>
+                  <Text varient="h5" style={{ color: colors.info.dark }}>
+                    {fNumber(
+                      data.calculateTransaction.totalPending || 0,
+                      "0,0.0"
+                    )}{" "}
+                  </Text>
+                </View>
+                <View style={[styles.innerBoxWrapper]}>
+                  <Text
+                    varient="body2"
+                    style={{ color: colors.success.dark, marginTop: 4 }}
+                  >
+                    ได้รับเงินแล้ว
+                  </Text>
+                  <Text varient="h5" style={{ color: colors.success.dark }}>
+                    {fNumber(
+                      data.calculateTransaction.totalOutcome || 0,
+                      "0,0.0"
+                    )}{" "}
+                  </Text>
+                </View>
               </View>
             </View>
           )}
@@ -295,6 +319,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  summaryContainer: {
+    gap: normalize(8),
+  },
   totalWrapper: {
     marginHorizontal: normalize(16),
     borderRadius: normalize(8),
@@ -307,7 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: hexToRgba(colors.success.main, 0.08),
     alignItems: "center",
     paddingHorizontal: normalize(8),
-    paddingVertical: normalize(16),
+    paddingVertical: normalize(8),
   },
   actionWrapper: {
     marginTop: normalize(8),

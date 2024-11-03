@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import Text from "@components/Text";
 import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
@@ -79,10 +74,6 @@ export default function Profile() {
     router.replace("/landing");
   }
 
-  const userImageUri = user?.profileImage
-    ? { uri: imagePath(user.profileImage.filename || "") }
-    : require("@assets/images/user-duotone-large.png");
-
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.wrapper}>
@@ -90,15 +81,22 @@ export default function Profile() {
           <View style={styles.contentWrapper}>
             {user?.status === EUserStatus.PENDING && <PendingApproval />}
             <View style={styles.userInfoWrapper}>
-              <Image
-                source={userImageUri}
-                tintColor={colors.text.secondary}
-                style={{
-                  width: normalize(100),
-                  height: normalize(100),
-                  borderRadius: normalize(50),
-                }}
-              />
+              {user?.profileImage ? (
+                <Image
+                  style={{
+                    width: normalize(100),
+                    height: normalize(100),
+                    borderRadius: normalize(50),
+                  }}
+                  source={{ uri: imagePath(user.profileImage.filename) }}
+                />
+              ) : (
+                <Iconify
+                  icon="solar:user-circle-bold-duotone"
+                  size={normalize(100)}
+                  color={colors.text.disabled}
+                />
+              )}
               <View style={styles.userInfoTextWrapper}>
                 <Text varient="h5">{user?.fullname}</Text>
                 <Text varient="body2" color="secondary">
@@ -117,28 +115,33 @@ export default function Profile() {
               <View style={styles.menuItemWrapper}>
                 <Item
                   label="ข้อมูลส่วนตัว"
-                  onPress={() => router.push('/profile-detail')}
+                  onPress={() => router.push("/profile-detail")}
                 />
                 <Item
                   label="ข้อมูลเอกสาร"
-                  onPress={() => router.push('/profile-document')}
+                  onPress={() => router.push("/profile-document")}
                 />
                 <Item
                   label="งานขนส่ง/แจ้งเตือน"
-                  onPress={() => router.push('/profile-setting')}
+                  onPress={() => router.push("/profile-setting")}
                 />
               </View>
               <Text
                 varient="body2"
                 color="secondary"
-                style={[{ paddingHorizontal: normalize(16), paddingTop: normalize(16) }]}
+                style={[
+                  {
+                    paddingHorizontal: normalize(16),
+                    paddingTop: normalize(16),
+                  },
+                ]}
               >
                 ข้อกำหนด
               </Text>
               <View style={styles.menuItemWrapper}>
                 <Item
                   label="ข้อกำหนดการให้บริการ"
-                  onPress={() => router.push('/profile-policy')}
+                  onPress={() => router.push("/profile-policy")}
                 />
               </View>
               <View
@@ -189,7 +192,7 @@ const itemStyled = StyleSheet.create({
     paddingVertical: normalize(12),
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: normalize(16),
   },
 });

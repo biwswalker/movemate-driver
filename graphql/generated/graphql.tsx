@@ -3438,6 +3438,21 @@ export type GetAvailableShipmentQuery = {
         filename: string;
       } | null;
     } | null;
+    driver?: {
+      __typename?: "User";
+      _id: string;
+      fullname?: string | null;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      remark?: string | null;
+      status: EUserStatus;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        filename: string;
+      } | null;
+    } | null;
   }>;
 };
 
@@ -4004,6 +4019,41 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       } | null;
     } | null;
   };
+};
+
+export type NotificationsQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  skip?: InputMaybe<Scalars["Int"]["input"]>;
+}>;
+
+export type NotificationsQuery = {
+  __typename?: "Query";
+  totalNotification: number;
+  notifications: Array<{
+    __typename?: "Notification";
+    _id: string;
+    userId: string;
+    varient: string;
+    title: string;
+    message: Array<string>;
+    infoText?: string | null;
+    infoLink?: string | null;
+    errorText?: string | null;
+    errorLink?: string | null;
+    masterText?: string | null;
+    masterLink?: string | null;
+    read: boolean;
+    permanent: boolean;
+    createdAt: any;
+    updatedAt: any;
+  }>;
+};
+
+export type UnreadCountQueryVariables = Exact<{ [key: string]: never }>;
+
+export type UnreadCountQuery = {
+  __typename?: "Query";
+  unreadCount: { __typename?: "UnreadCountPayload"; notification: number };
 };
 
 export type GetDriverPoliciesInfoQueryVariables = Exact<{
@@ -6433,6 +6483,19 @@ export const GetAvailableShipmentDocument = gql`
           filename
         }
       }
+      driver {
+        _id
+        fullname
+        userNumber
+        userRole
+        userType
+        remark
+        status
+        profileImage {
+          _id
+          filename
+        }
+      }
     }
     totalAvailableShipment(status: $status)
   }
@@ -7106,6 +7169,175 @@ export type GetAvailableShipmentByTrackingNumberQueryResult =
     GetAvailableShipmentByTrackingNumberQuery,
     GetAvailableShipmentByTrackingNumberQueryVariables
   >;
+export const NotificationsDocument = gql`
+  query Notifications($limit: Int, $skip: Int) {
+    notifications(skip: $skip, limit: $limit) {
+      _id
+      userId
+      varient
+      title
+      message
+      infoText
+      infoLink
+      errorText
+      errorLink
+      masterText
+      masterLink
+      read
+      permanent
+      createdAt
+      updatedAt
+    }
+    totalNotification
+  }
+`;
+
+/**
+ * __useNotificationsQuery__
+ *
+ * To run a query within a React component, call `useNotificationsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useNotificationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useNotificationsQuery({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *      skip: // value for 'skip'
+ *   },
+ * });
+ */
+export function useNotificationsQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    NotificationsQuery,
+    NotificationsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<NotificationsQuery, NotificationsQueryVariables>(
+    NotificationsDocument,
+    options,
+  );
+}
+export function useNotificationsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    NotificationsQuery,
+    NotificationsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<NotificationsQuery, NotificationsQueryVariables>(
+    NotificationsDocument,
+    options,
+  );
+}
+export function useNotificationsSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        NotificationsQuery,
+        NotificationsQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<
+    NotificationsQuery,
+    NotificationsQueryVariables
+  >(NotificationsDocument, options);
+}
+export type NotificationsQueryHookResult = ReturnType<
+  typeof useNotificationsQuery
+>;
+export type NotificationsLazyQueryHookResult = ReturnType<
+  typeof useNotificationsLazyQuery
+>;
+export type NotificationsSuspenseQueryHookResult = ReturnType<
+  typeof useNotificationsSuspenseQuery
+>;
+export type NotificationsQueryResult = Apollo.QueryResult<
+  NotificationsQuery,
+  NotificationsQueryVariables
+>;
+export const UnreadCountDocument = gql`
+  query UnreadCount {
+    unreadCount {
+      notification
+    }
+  }
+`;
+
+/**
+ * __useUnreadCountQuery__
+ *
+ * To run a query within a React component, call `useUnreadCountQuery` and pass it any options that fit your needs.
+ * When your component renders, `useUnreadCountQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUnreadCountQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useUnreadCountQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    UnreadCountQuery,
+    UnreadCountQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<UnreadCountQuery, UnreadCountQueryVariables>(
+    UnreadCountDocument,
+    options,
+  );
+}
+export function useUnreadCountLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    UnreadCountQuery,
+    UnreadCountQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<UnreadCountQuery, UnreadCountQueryVariables>(
+    UnreadCountDocument,
+    options,
+  );
+}
+export function useUnreadCountSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        UnreadCountQuery,
+        UnreadCountQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<UnreadCountQuery, UnreadCountQueryVariables>(
+    UnreadCountDocument,
+    options,
+  );
+}
+export type UnreadCountQueryHookResult = ReturnType<typeof useUnreadCountQuery>;
+export type UnreadCountLazyQueryHookResult = ReturnType<
+  typeof useUnreadCountLazyQuery
+>;
+export type UnreadCountSuspenseQueryHookResult = ReturnType<
+  typeof useUnreadCountSuspenseQuery
+>;
+export type UnreadCountQueryResult = Apollo.QueryResult<
+  UnreadCountQuery,
+  UnreadCountQueryVariables
+>;
 export const GetDriverPoliciesInfoDocument = gql`
   query GetDriverPoliciesInfo {
     getDriverPoliciesInfo {

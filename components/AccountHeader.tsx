@@ -14,6 +14,7 @@ import { imagePath } from "@utils/file";
 import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { normalize } from "@/utils/normalizeSize";
+import { router } from "expo-router";
 
 const styles = StyleSheet.create({
   accountContainer: {
@@ -54,6 +55,10 @@ export default function AccountHeader({
 }: AccountHeaderProps) {
   const { user, notificationCount } = useAuth();
 
+  function handleViewNotifications() {
+    router.push("/notifications");
+  }
+
   return (
     <View style={[styles.accountContainer, containerStyle]}>
       <View style={styles.accountAvatarWrapper}>
@@ -79,7 +84,7 @@ export default function AccountHeader({
         </Text>
       </View>
       <View style={styles.accountActionWrapper}>
-        <ButtonIcon varient="text" circle>
+        <ButtonIcon varient="text" circle onPress={handleViewNotifications}>
           <Iconify
             icon="solar:bell-bold-duotone"
             size={normalize(24)}

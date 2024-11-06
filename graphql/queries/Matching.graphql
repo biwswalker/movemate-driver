@@ -208,6 +208,19 @@ query GetAvailableShipment(
         filename
       }
     }
+    driver {
+      _id
+      fullname
+      userNumber
+      userRole
+      userType
+      remark
+      status
+      profileImage {
+        _id
+        filename
+      }
+    }
   }
   totalAvailableShipment(status: $status)
 }

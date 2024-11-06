@@ -15,6 +15,7 @@ import {
   EShipmentStatus,
   EStepDefinition,
   EUserStatus,
+  EUserType,
   Shipment,
   useGetAvailableShipmentQuery,
 } from "@graphql/generated/graphql";
@@ -339,8 +340,10 @@ interface ShipmentsProps {
 }
 
 function Shipments({ status }: ShipmentsProps) {
+  const { user } = useAuth();
   const isFocused = useIsFocused();
 
+  const isBusinessDriver = user?.userType === EUserType.BUSINESS;
   const [hasMore, setHasMore] = useState(false);
   const { data, refetch, fetchMore, loading } = useGetAvailableShipmentQuery({
     variables: {
@@ -488,7 +491,7 @@ function Shipments({ status }: ShipmentsProps) {
           </View>
         </View>
         <View style={shipmentStyle.detailWrapper}>
-          {item.agentDriver && (
+          {item.agentDriver && !isBusinessDriver && (
             <View style={shipmentStyle.descriptionWrapper}>
               <Iconify
                 icon="fluent:person-circle-32-regular"
@@ -501,6 +504,41 @@ function Shipments({ status }: ShipmentsProps) {
                 </Text>
                 <Text varient="body2" numberOfLines={1}>
                   {item.agentDriver?.fullname || "-"}
+                </Text>
+              </View>
+            </View>
+          )}
+          {item.driver && isBusinessDriver && (
+            <View style={shipmentStyle.descriptionWrapper}>
+              <Iconify
+                icon="fluent:person-circle-32-regular"
+                color={colors.text.disabled}
+                size={16}
+              />
+              <View style={{ flexDirection: "row", gap: normalize(4) }}>
+                <Text varient="body2" color="secondary" numberOfLines={1}>
+                  คนขับ
+                </Text>
+                <Text varient="body2" numberOfLines={1}>
+                  {item.driver?.fullname || "-"}
+                </Text>
+              </View>
+            </View>
+          )}
+          {!item.driver && isBusinessDriver && (
+            <View style={shipmentStyle.descriptionWrapper}>
+              <Iconify
+                icon="fluent:person-circle-32-regular"
+                color={colors.text.disabled}
+                size={16}
+              />
+              <View style={{ flexDirection: "row", gap: normalize(4) }}>
+                <Text
+                  varient="body2"
+                  numberOfLines={1}
+                  style={{ color: colors.warning.main }}
+                >
+                  ยังไม่ได้มอบหมายงานให้คนขับ
                 </Text>
               </View>
             </View>
@@ -573,7 +611,9 @@ function Shipments({ status }: ShipmentsProps) {
               <Iconify icon="gg:details-more" color={colors.common.white} />
             }
             onPress={() => handleDetailShipment(item.trackingNumber)}
-            onLongPress={() => { console.log('long press...........')}}
+            onLongPress={() => {
+              console.log("long press...........");
+            }}
           />
         </View>
       </View>

@@ -79,7 +79,7 @@ export default function FinanceList() {
             style={[{ paddingTop: 4, textAlign: "center" }]}
             varient="caption"
             color="secondary"
-          >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nโปรดตรวจสอบอีกครั้ง`}</Text>
+          >{`ไม่มีรายการการเงินใหม่ที่แสดงในขณะนี้\nโปรดตรวจสอบอีกครั้ง`}</Text>
         </View>
       );
     } else if (

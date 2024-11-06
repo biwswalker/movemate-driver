@@ -1,0 +1,26 @@
+query Notifications($limit: Int, $skip: Int) {
+  notifications(skip: $skip, limit: $limit) {
+    _id
+    userId
+    varient
+    title
+    message
+    infoText
+    infoLink
+    errorText
+    errorLink
+    masterText
+    masterLink
+    read
+    permanent
+    createdAt
+    updatedAt
+  }
+  totalNotification
+}
+
+query UnreadCount {
+  unreadCount {
+    notification
+  }
+}

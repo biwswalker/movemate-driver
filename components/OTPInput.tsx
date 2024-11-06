@@ -1,52 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import Text from './Text';
-import { normalize, normBaseW } from '@utils/normalizeSize';
-import colors from '@constants/colors';
-
-
-const styles = StyleSheet.create({
-  section: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  hiddenTextInput: {
-    position: 'absolute',
-    width: 1,
-    height: 1,
-    opacity: 0,
-  },
-  pressesable: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    gap: normalize(8),
-  },
-  otpInput: {
-    borderRadius: 4,
-    minWidth: normalize(40),
-    height: normalize(56),
-    backgroundColor: colors.background.neutral,
-    textAlign: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  otpInputFocus: {
-    backgroundColor: colors.grey[300],
-  },
-});
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Keyboard,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  TextInput,
+  View,
+  ViewStyle,
+} from "react-native";
+import Text from "./Text";
+import { normalize, normBaseW } from "@utils/normalizeSize";
+import colors from "@constants/colors";
 
 interface OTPInputProps {
   code: string;
+  style?: StyleProp<ViewStyle>;
   maxLength?: number;
   setPinReady?: (state: boolean) => void;
-  onChangeText: (code: string) => void;
+  onChangeText: (code: string, ready?: boolean) => void;
 }
 
 const DEFAULT_CODE_LENGTH = 4;
 export default function OTPInput({
   setPinReady = () => {},
   code,
+  style = {},
   onChangeText,
   maxLength = DEFAULT_CODE_LENGTH,
 }: OTPInputProps) {
@@ -77,7 +55,7 @@ export default function OTPInput({
   }
 
   function toCodeDigitInput(_value: string, index: number) {
-    const emptyInputChar = ' ';
+    const emptyInputChar = " ";
     const digit = code[index] || emptyInputChar;
 
     const isCurrentDigit = index === code.length;
@@ -88,15 +66,19 @@ export default function OTPInput({
 
     return (
       <View
-        style={[styles.otpInput, inputContainerIsFocused && isDigitFocused && styles.otpInputFocus]}
-        key={index}>
+        style={[
+          styles.otpInput,
+          inputContainerIsFocused && isDigitFocused && styles.otpInputFocus,
+        ]}
+        key={index}
+      >
         <Text varient="h5">{digit}</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.section}>
+    <View style={[styles.section, style]}>
       <Pressable style={styles.pressesable} onPress={handleOnPresses}>
         {codeDigitsArray.map(toCodeDigitInput)}
       </Pressable>
@@ -104,7 +86,10 @@ export default function OTPInput({
         ref={textInputRef}
         style={styles.hiddenTextInput}
         value={code}
-        onChangeText={onChangeText}
+        onChangeText={(text) => {
+          const isReady = text.length === maxLength;
+          onChangeText(text, isReady);
+        }}
         onBlur={handleOnBlur}
         maxLength={maxLength}
         keyboardType="number-pad"
@@ -114,3 +99,34 @@ export default function OTPInput({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  section: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  hiddenTextInput: {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    opacity: 0,
+  },
+  pressesable: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    gap: normalize(8),
+  },
+  otpInput: {
+    borderRadius: 4,
+    minWidth: normalize(40),
+    height: normalize(56),
+    backgroundColor: colors.background.neutral,
+    textAlign: "center",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  otpInputFocus: {
+    backgroundColor: colors.grey[300],
+  },
+});

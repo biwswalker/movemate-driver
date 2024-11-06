@@ -6,13 +6,7 @@ import { normalize } from "@/utils/normalizeSize";
 import hexToRgba from "hex-to-rgba";
 import { get, includes, map, tail } from "lodash";
 import { Fragment } from "react";
-import {
-  Image,
-  ImageSourcePropType,
-  Platform,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Image, Platform, StyleSheet, View } from "react-native";
 import {
   EShipmentStatus,
   EUserType,
@@ -28,6 +22,7 @@ export default function Detail({ shipment }: OverviewDetailProps) {
   const { user } = useAuth();
   const isBusiness = user?.userType === EUserType.BUSINESS;
   const driver = get(shipment, "driver", undefined);
+  const agentDriver = get(shipment, "agentDriver", undefined);
   const customer = get(shipment, "customer", undefined);
 
   const additionalService = get(shipment, "additionalServices", undefined);
@@ -83,6 +78,38 @@ export default function Detail({ shipment }: OverviewDetailProps) {
             </Text>
             <Text varient="subtitle1" color="primary">
               {driver?.fullname}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {agentDriver && (
+        <View
+          style={[
+            detailStyles.accountContainer,
+            { ...(!isHiddenInfo ? { marginBottom: 0 } : {}) },
+          ]}
+        >
+          <View style={detailStyles.accountAvatarWrapper}>
+            {agentDriver?.profileImage ? (
+              <Image
+                style={detailStyles.avatarImage}
+                source={{ uri: imagePath(agentDriver.profileImage.filename) }}
+              />
+            ) : (
+              <Iconify
+                icon="solar:user-circle-bold-duotone"
+                size={normalize(32)}
+                color={colors.text.disabled}
+              />
+            )}
+          </View>
+          <View style={detailStyles.accountNameWrapper}>
+            <Text varient="body2" color="secondary" numberOfLines={1}>
+              นายหน้า
+            </Text>
+            <Text varient="subtitle1" color="primary">
+              {agentDriver?.fullname}
             </Text>
           </View>
         </View>

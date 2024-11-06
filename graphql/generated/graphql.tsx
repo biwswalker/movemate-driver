@@ -706,6 +706,12 @@ export enum EPaymentStatus {
   WAITING_CONFIRM_PAYMENT = "WAITING_CONFIRM_PAYMENT",
 }
 
+/** Ref type */
+export enum ERefType {
+  BILLING = "BILLING",
+  SHIPMENT = "SHIPMENT",
+}
+
 /** Registration type */
 export enum ERegistration {
   APP = "APP",
@@ -768,6 +774,25 @@ export enum EStepStatus {
   EXPIRE = "EXPIRE",
   IDLE = "IDLE",
   PROGRESSING = "PROGRESSING",
+}
+
+/** Transaction owner */
+export enum ETransactionOwner {
+  BUSINESS_DRIVER = "BUSINESS_DRIVER",
+  DRIVER = "DRIVER",
+  MOVEMATE = "MOVEMATE",
+}
+
+/** Transaction status */
+export enum ETransactionStatus {
+  COMPLETE = "COMPLETE",
+  PENDING = "PENDING",
+}
+
+/** Transaction type */
+export enum ETransactionType {
+  INCOME = "INCOME",
+  OUTCOME = "OUTCOME",
 }
 
 /** User role */
@@ -1038,7 +1063,6 @@ export type Mutation = {
   resentReceiptToEmail: Scalars["Boolean"]["output"];
   saveEvent: Scalars["Boolean"]["output"];
   sentPODDocument: Scalars["Boolean"]["output"];
-  sentTextDriverNotification: Scalars["Boolean"]["output"];
   storeFCM: Scalars["Boolean"]["output"];
   subtotalCalculation: SubtotalCalculatedPayload;
   triggerAdminMenuNotificationCount: Scalars["Boolean"]["output"];
@@ -2604,11 +2628,11 @@ export type Transaction = {
   createdAt: Scalars["DateTimeISO"]["output"];
   description: Scalars["String"]["output"];
   ownerId: Scalars["String"]["output"];
-  ownerType: Scalars["String"]["output"];
+  ownerType: ETransactionOwner;
   refId: Scalars["String"]["output"];
-  refType: Scalars["String"]["output"];
-  status: Scalars["String"]["output"];
-  transactionType: Scalars["String"]["output"];
+  refType: ERefType;
+  status: ETransactionStatus;
+  transactionType: ETransactionType;
   updatedAt: Scalars["DateTimeISO"]["output"];
 };
 
@@ -2920,6 +2944,39 @@ export type RemoveFcmMutationVariables = Exact<{ [key: string]: never }>;
 
 export type RemoveFcmMutation = { __typename?: "Mutation"; removeFCM: boolean };
 
+export type AcceptedPolicyMutationVariables = Exact<{
+  data: AcceptedPolicyInput;
+}>;
+
+export type AcceptedPolicyMutation = {
+  __typename?: "Mutation";
+  acceptedPolicy: boolean;
+};
+
+export type ForgotPasswordMutationVariables = Exact<{
+  username: Scalars["String"]["input"];
+}>;
+
+export type ForgotPasswordMutation = {
+  __typename?: "Mutation";
+  forgotPassword: {
+    __typename?: "VerifyPayload";
+    countdown: any;
+    duration: string;
+  };
+};
+
+export type VerifyResetPasswordMutationVariables = Exact<{
+  username: Scalars["String"]["input"];
+  code: Scalars["String"]["input"];
+  password: Scalars["String"]["input"];
+}>;
+
+export type VerifyResetPasswordMutation = {
+  __typename?: "Mutation";
+  verifyResetPassword: boolean;
+};
+
 export type DriverRegisterMutationVariables = Exact<{
   data: DriverRegisterInput;
 }>;
@@ -3200,17 +3257,6 @@ export type GetAvailableShipmentQuery = {
       username: string;
       remark?: string | null;
       status: EUserStatus;
-      validationStatus: EUserValidationStatus;
-      registration: ERegistration;
-      lastestOTP?: string | null;
-      lastestOTPRef?: string | null;
-      lastestOTPTime?: any | null;
-      isVerifiedEmail: boolean;
-      isVerifiedPhoneNumber: boolean;
-      acceptPolicyVersion?: number | null;
-      acceptPolicyTime?: any | null;
-      createdAt: any;
-      updatedAt: any;
       individualDetail?: {
         __typename?: "IndividualCustomer";
         _id: string;
@@ -3265,16 +3311,6 @@ export type GetAvailableShipmentQuery = {
       remark?: string | null;
       status: EUserStatus;
       validationStatus: EUserValidationStatus;
-      registration: ERegistration;
-      lastestOTP?: string | null;
-      lastestOTPRef?: string | null;
-      lastestOTPTime?: any | null;
-      isVerifiedEmail: boolean;
-      isVerifiedPhoneNumber: boolean;
-      acceptPolicyVersion?: number | null;
-      acceptPolicyTime?: any | null;
-      createdAt: any;
-      updatedAt: any;
       driverDetail?: {
         __typename?: "DriverDetail";
         _id: string;
@@ -3326,17 +3362,7 @@ export type GetAvailableShipmentQuery = {
       height: number;
       maxCapacity: number;
       details?: string | null;
-      createdAt: any;
-      updatedAt: any;
-      image: {
-        __typename?: "File";
-        _id: string;
-        fileId: string;
-        filename: string;
-        mimetype: string;
-        createdAt: any;
-        updatedAt: any;
-      };
+      image: { __typename?: "File"; _id: string; filename: string };
     };
     additionalImages?: Array<{
       __typename?: "File";
@@ -3397,6 +3423,21 @@ export type GetAvailableShipmentQuery = {
         totalCost: number;
       } | null;
     };
+    agentDriver?: {
+      __typename?: "User";
+      _id: string;
+      fullname?: string | null;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      remark?: string | null;
+      status: EUserStatus;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        filename: string;
+      } | null;
+    } | null;
   }>;
 };
 
@@ -3947,6 +3988,21 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         updatedAt: any;
       } | null;
     } | null;
+    agentDriver?: {
+      __typename?: "User";
+      _id: string;
+      fullname?: string | null;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      remark?: string | null;
+      status: EUserStatus;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        filename: string;
+      } | null;
+    } | null;
   };
 };
 
@@ -3983,13 +4039,13 @@ export type GetTransactionQuery = {
     __typename?: "Transaction";
     _id: string;
     ownerId: string;
-    ownerType: string;
+    ownerType: ETransactionOwner;
     refId: string;
-    refType: string;
+    refType: ERefType;
     amount: number;
-    transactionType: string;
+    transactionType: ETransactionType;
     description: string;
-    status: string;
+    status: ETransactionStatus;
     createdAt: any;
     updatedAt: any;
   }>;
@@ -5041,6 +5097,159 @@ export type RemoveFcmMutationOptions = Apollo.BaseMutationOptions<
   RemoveFcmMutation,
   RemoveFcmMutationVariables
 >;
+export const AcceptedPolicyDocument = gql`
+  mutation AcceptedPolicy($data: AcceptedPolicyInput!) {
+    acceptedPolicy(data: $data)
+  }
+`;
+export type AcceptedPolicyMutationFn = Apollo.MutationFunction<
+  AcceptedPolicyMutation,
+  AcceptedPolicyMutationVariables
+>;
+
+/**
+ * __useAcceptedPolicyMutation__
+ *
+ * To run a mutation, you first call `useAcceptedPolicyMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAcceptedPolicyMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [acceptedPolicyMutation, { data, loading, error }] = useAcceptedPolicyMutation({
+ *   variables: {
+ *      data: // value for 'data'
+ *   },
+ * });
+ */
+export function useAcceptedPolicyMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    AcceptedPolicyMutation,
+    AcceptedPolicyMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    AcceptedPolicyMutation,
+    AcceptedPolicyMutationVariables
+  >(AcceptedPolicyDocument, options);
+}
+export type AcceptedPolicyMutationHookResult = ReturnType<
+  typeof useAcceptedPolicyMutation
+>;
+export type AcceptedPolicyMutationResult =
+  Apollo.MutationResult<AcceptedPolicyMutation>;
+export type AcceptedPolicyMutationOptions = Apollo.BaseMutationOptions<
+  AcceptedPolicyMutation,
+  AcceptedPolicyMutationVariables
+>;
+export const ForgotPasswordDocument = gql`
+  mutation ForgotPassword($username: String!) {
+    forgotPassword(username: $username) {
+      countdown
+      duration
+    }
+  }
+`;
+export type ForgotPasswordMutationFn = Apollo.MutationFunction<
+  ForgotPasswordMutation,
+  ForgotPasswordMutationVariables
+>;
+
+/**
+ * __useForgotPasswordMutation__
+ *
+ * To run a mutation, you first call `useForgotPasswordMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useForgotPasswordMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [forgotPasswordMutation, { data, loading, error }] = useForgotPasswordMutation({
+ *   variables: {
+ *      username: // value for 'username'
+ *   },
+ * });
+ */
+export function useForgotPasswordMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    ForgotPasswordMutation,
+    ForgotPasswordMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    ForgotPasswordMutation,
+    ForgotPasswordMutationVariables
+  >(ForgotPasswordDocument, options);
+}
+export type ForgotPasswordMutationHookResult = ReturnType<
+  typeof useForgotPasswordMutation
+>;
+export type ForgotPasswordMutationResult =
+  Apollo.MutationResult<ForgotPasswordMutation>;
+export type ForgotPasswordMutationOptions = Apollo.BaseMutationOptions<
+  ForgotPasswordMutation,
+  ForgotPasswordMutationVariables
+>;
+export const VerifyResetPasswordDocument = gql`
+  mutation VerifyResetPassword(
+    $username: String!
+    $code: String!
+    $password: String!
+  ) {
+    verifyResetPassword(username: $username, code: $code, password: $password)
+  }
+`;
+export type VerifyResetPasswordMutationFn = Apollo.MutationFunction<
+  VerifyResetPasswordMutation,
+  VerifyResetPasswordMutationVariables
+>;
+
+/**
+ * __useVerifyResetPasswordMutation__
+ *
+ * To run a mutation, you first call `useVerifyResetPasswordMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useVerifyResetPasswordMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [verifyResetPasswordMutation, { data, loading, error }] = useVerifyResetPasswordMutation({
+ *   variables: {
+ *      username: // value for 'username'
+ *      code: // value for 'code'
+ *      password: // value for 'password'
+ *   },
+ * });
+ */
+export function useVerifyResetPasswordMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    VerifyResetPasswordMutation,
+    VerifyResetPasswordMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    VerifyResetPasswordMutation,
+    VerifyResetPasswordMutationVariables
+  >(VerifyResetPasswordDocument, options);
+}
+export type VerifyResetPasswordMutationHookResult = ReturnType<
+  typeof useVerifyResetPasswordMutation
+>;
+export type VerifyResetPasswordMutationResult =
+  Apollo.MutationResult<VerifyResetPasswordMutation>;
+export type VerifyResetPasswordMutationOptions = Apollo.BaseMutationOptions<
+  VerifyResetPasswordMutation,
+  VerifyResetPasswordMutationVariables
+>;
 export const DriverRegisterDocument = gql`
   mutation DriverRegister($data: DriverRegisterInput!) {
     driverRegister(data: $data) {
@@ -6055,17 +6264,6 @@ export const GetAvailableShipmentDocument = gql`
         username
         remark
         status
-        validationStatus
-        registration
-        lastestOTP
-        lastestOTPRef
-        lastestOTPTime
-        isVerifiedEmail
-        isVerifiedPhoneNumber
-        acceptPolicyVersion
-        acceptPolicyTime
-        createdAt
-        updatedAt
         individualDetail {
           _id
           userNumber
@@ -6117,16 +6315,6 @@ export const GetAvailableShipmentDocument = gql`
         remark
         status
         validationStatus
-        registration
-        lastestOTP
-        lastestOTPRef
-        lastestOTPTime
-        isVerifiedEmail
-        isVerifiedPhoneNumber
-        acceptPolicyVersion
-        acceptPolicyTime
-        createdAt
-        updatedAt
         driverDetail {
           _id
           driverType
@@ -6174,15 +6362,9 @@ export const GetAvailableShipmentDocument = gql`
         height
         maxCapacity
         details
-        createdAt
-        updatedAt
         image {
           _id
-          fileId
           filename
-          mimetype
-          createdAt
-          updatedAt
         }
       }
       additionalImages {
@@ -6236,6 +6418,19 @@ export const GetAvailableShipmentDocument = gql`
         }
         invoice {
           totalCost
+        }
+      }
+      agentDriver {
+        _id
+        fullname
+        userNumber
+        userRole
+        userType
+        remark
+        status
+        profileImage {
+          _id
+          filename
         }
       }
     }
@@ -6817,6 +7012,19 @@ export const GetAvailableShipmentByTrackingNumberDocument = gql`
         paymentTime
         createdAt
         updatedAt
+      }
+      agentDriver {
+        _id
+        fullname
+        userNumber
+        userRole
+        userType
+        remark
+        status
+        profileImage {
+          _id
+          filename
+        }
       }
     }
   }

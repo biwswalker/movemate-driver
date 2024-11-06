@@ -3,6 +3,7 @@ import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
 import colors from "@constants/colors";
 import {
+  ETransactionOwner,
   Transaction,
   useGetTransactionQuery,
 } from "@/graphql/generated/graphql";
@@ -139,6 +140,8 @@ const styles = StyleSheet.create({
 });
 
 function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
+  const isAgentDriverShipment =
+    item.ownerType === ETransactionOwner.BUSINESS_DRIVER;
   return (
     <View style={finStyle.container}>
       <View style={finStyle.trackingNumberWrapper}>
@@ -154,14 +157,16 @@ function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
           {format(item.createdAt, "EEEE dd MMM yyyy HH:mm", { locale: th })}
         </Text>
         <Text
-          varient="h5"
+          varient={isAgentDriverShipment ? "body1" : "h5"}
           style={{
             textAlign: "left",
             flexShrink: 0,
-            color: colors.success.dark,
+            color: isAgentDriverShipment
+              ? colors.text.secondary
+              : colors.success.dark,
           }}
         >
-          {fNumber(item.amount, "0,0.0")}
+          {isAgentDriverShipment ? "-" : fNumber(item.amount, "0,0.0")}
         </Text>
       </View>
     </View>

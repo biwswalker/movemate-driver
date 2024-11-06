@@ -20,6 +20,7 @@ import Button from "@/components/Button";
 import { fDateTime } from "@/utils/formatTime";
 import { censorText } from "@/utils/string";
 import { useState } from "react";
+import { ScrollView } from "react-native-gesture-handler";
 
 interface ArrivalLocationProps extends ProgressingStepsProps {
   definition: StepDefinition | undefined;
@@ -83,7 +84,7 @@ export function ProgressArrivalLocation({
   }
 
   return (
-    <View style={progressStyles.wrapper}>
+    <ScrollView style={progressStyles.wrapper}>
       {/* Direction detail */}
       <Text varient="body2" color="secondary">
         ข้อมูลสถานที่
@@ -155,17 +156,18 @@ export function ProgressArrivalLocation({
       ) : (
         <View style={progressStyles.actionsWrapper}>
           <Button
+            ripple
             size="large"
             title="กดค้างเพื่อยืนยันมาถึงแล้ว"
             varient="soft"
             fullWidth
             loading={isLoading}
-            delayLongPress={1000}
+            delayLongPress={1500}
             onLongPress={handleConfirm}
           />
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 

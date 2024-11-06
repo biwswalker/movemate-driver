@@ -9,6 +9,7 @@ import {
 
 enum ENavigationType {
   SHIPMENT = "shipment",
+  SHIPMENT_WORK = "shipment-work",
   FINANCE = "finance",
 }
 
@@ -23,6 +24,13 @@ function useNotificationObserver() {
           if (data.trackingNumber) {
             router.push({
               pathname: "/shipment-overview",
+              params: { trackingNumber: data.trackingNumber },
+            });
+          }
+        } else if (data.navigation === ENavigationType.SHIPMENT_WORK) {
+          if (data.trackingNumber) {
+            router.push({
+              pathname: "/shipment-working",
               params: { trackingNumber: data.trackingNumber },
             });
           }
@@ -51,13 +59,24 @@ function useNotificationObserver() {
 
 export default function RootLayout() {
   useNotificationObserver();
-  const { isAuthenticated, isInitialized } = useAuth();
+  const {
+    isAuthenticated,
+    isInitialized,
+    requireAcceptedPolicy,
+    requirePasswordChange,
+  } = useAuth();
   useEffect(() => {
     console.log("root mounted");
     if (isAuthenticated) {
-      router.replace("/(tabs)");
+      if (requirePasswordChange) {
+        router.replace("/change-password");
+      } else if (requireAcceptedPolicy) {
+        router.replace("/readfirst");
+      } else {
+        router.replace("/(tabs)");
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, requirePasswordChange, requireAcceptedPolicy]);
 
   useEffect(() => {
     if (isInitialized) {
@@ -114,6 +133,14 @@ export default function RootLayout() {
       />
       <Stack.Screen
         name="employee"
+        options={{ headerShown: false, presentation: "fullScreenModal" }}
+      />
+      <Stack.Screen
+        name="change-password"
+        options={{ headerShown: false, presentation: "fullScreenModal" }}
+      />
+      <Stack.Screen
+        name="readfirst"
         options={{ headerShown: false, presentation: "fullScreenModal" }}
       />
     </Stack>

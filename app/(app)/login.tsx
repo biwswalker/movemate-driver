@@ -77,6 +77,10 @@ export default function Login() {
     router.push("/register");
   }
 
+  function handleForgotPassword() {
+    router.push("/forgot-password");
+  }
+
   async function onSubmit({ afterSubmit: _, ...values }: LoginFormValue) {
     try {
       login(values);
@@ -151,6 +155,7 @@ export default function Login() {
           </View>
           <View style={styles.forgotpasswordWrapper}>
             <Button
+              onPress={handleForgotPassword}
               title="ลืมรหัสผ่าน?"
               varient="text"
               size="medium"

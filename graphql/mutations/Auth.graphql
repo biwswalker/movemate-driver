@@ -96,3 +96,22 @@ mutation StoreFCM($fcmToken: String!) {
 mutation RemoveFCM {
   removeFCM
 }
+
+mutation AcceptedPolicy($data: AcceptedPolicyInput!) {
+  acceptedPolicy(data: $data)
+}
+
+mutation ForgotPassword($username: String!) {
+  forgotPassword(username: $username) {
+    countdown
+    duration
+  }
+}
+
+mutation VerifyResetPassword(
+  $username: String!
+  $code: String!
+  $password: String!
+) {
+  verifyResetPassword(username: $username, code: $code, password: $password)
+}

@@ -50,6 +50,7 @@ const authLink = setContext(
       headers: {
         ...headers,
         platform: "app",
+        original: "movemate-driver",
         ...(existingAuthorization
           ? { authorization: existingAuthorization }
           : token

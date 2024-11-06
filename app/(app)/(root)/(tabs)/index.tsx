@@ -20,6 +20,7 @@ import { EDriverType, EUserStatus } from "@/graphql/generated/graphql";
 import UsersHeader from "@/components/UsersHeader";
 import Text from "@/components/Text";
 import Button from "@/components/Button";
+import hexToRgba from "hex-to-rgba";
 
 export default function HomeScreen() {
   const { user, refetchMe } = useAuth();
@@ -32,6 +33,11 @@ export default function HomeScreen() {
     [user]
   );
 
+  const isOnlyBusinessDriver =
+    driverTypes.length > 1
+      ? false
+      : includes(driverTypes, EDriverType.BUSINESS_DRIVER);
+
   const handleShowShipmentDetail = useCallback((trackingNumber: string) => {
     router.push({ pathname: "/shipment-overview", params: { trackingNumber } });
   }, []);
@@ -41,7 +47,7 @@ export default function HomeScreen() {
       // Refresh
       setRefreshing(true);
       await refetchMe();
-      if (newShipmentsRef.current) {
+      if (newShipmentsRef.current && !isOnlyBusinessDriver) {
         newShipmentsRef.current.onRestartListening();
       }
     } catch (error) {
@@ -80,40 +86,80 @@ export default function HomeScreen() {
           {user?.status === EUserStatus.ACTIVE &&
             !includes(driverTypes, EDriverType.BUSINESS) && <TodayCard />}
           <View style={styles.contentWrapper}>
-            {includes([EUserStatus.ACTIVE], user?.status) && (
-              <View style={styles.tabMenuWrapper}>
-                <Iconify
-                  icon="bi:stars"
-                  color={colors.primary.main}
-                  size={normalize(16)}
-                />
-                <Text varient="buttonM" style={{ flex: 1 }}>
-                  งานขนส่งใหม่
-                </Text>
-                <Button
-                  onPress={handleOnRefresh}
-                  color="inherit"
-                  varient="soft"
-                  size="small"
-                  title="โหลดใหม่"
-                  StartIcon={
-                    <Iconify
-                      icon="tabler:reload"
-                      size={normalize(16)}
-                      color={colors.text.primary}
-                    />
-                  }
-                />
-              </View>
-            )}
+            {includes([EUserStatus.ACTIVE], user?.status) &&
+              !isOnlyBusinessDriver && (
+                <View style={styles.tabMenuWrapper}>
+                  <Iconify
+                    icon="bi:stars"
+                    color={colors.primary.main}
+                    size={normalize(16)}
+                  />
+                  <Text varient="buttonM" style={{ flex: 1 }}>
+                    งานขนส่งใหม่
+                  </Text>
+                  <Button
+                    onPress={handleOnRefresh}
+                    color="inherit"
+                    varient="soft"
+                    size="small"
+                    title="โหลดใหม่"
+                    StartIcon={
+                      <Iconify
+                        icon="tabler:reload"
+                        size={normalize(16)}
+                        color={colors.text.primary}
+                      />
+                    }
+                  />
+                </View>
+              )}
 
             {user?.status === EUserStatus.PENDING ? (
               <PendingApproval />
             ) : user?.status === EUserStatus.ACTIVE ? (
-              <NewShipments
-                onPress={handleShowShipmentDetail}
-                ref={newShipmentsRef}
-              />
+              isOnlyBusinessDriver ? (
+                <View style={styles.onlyBusinessDriverWrapper}>
+                  <Iconify
+                    icon="solar:sticker-smile-circle-2-bold-duotone"
+                    color={hexToRgba(colors.primary.main, 0.32)}
+                    size={normalize(124)}
+                  />
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: normalize(6),
+                      paddingTop: normalize(16),
+                      paddingBottom: normalize(8),
+                    }}
+                  >
+                    <Text color="secondary">ยินดีต้อนรับสู่</Text>
+                    <Text
+                      varient="subtitle1"
+                      style={{ color: colors.primary.dark }}
+                    >
+                      Movemate Driver
+                    </Text>
+                  </View>
+                  <Button
+                    title="ไปหน้างานขนส่งของท่าน"
+                    varient="soft"
+                    onPress={() => {
+                      router.push("/shipment");
+                    }}
+                    EndIcon={
+                      <Iconify
+                        icon="mingcute:arrow-right-line"
+                        color={colors.primary.dark}
+                      />
+                    }
+                  />
+                </View>
+              ) : (
+                <NewShipments
+                  onPress={handleShowShipmentDetail}
+                  ref={newShipmentsRef}
+                />
+              )
             ) : user?.status === EUserStatus.INACTIVE ? (
               <></>
             ) : user?.status === EUserStatus.DENIED ? (
@@ -176,7 +222,10 @@ const styles = StyleSheet.create({
     position: "relative",
     marginBottom: normalize(16),
   },
-  listWrapper: {},
+  onlyBusinessDriverWrapper: {
+    paddingVertical: normalize(32),
+    alignItems: "center",
+  },
   gradient: {
     flex: 1,
   },

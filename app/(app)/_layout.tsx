@@ -12,6 +12,7 @@ export default function AppLayout() {
       <Stack.Screen name="landing" />
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
+      <Stack.Screen name="forgot-password" />
     </Stack>
   );
 }

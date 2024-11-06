@@ -1,13 +1,22 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { tabStyles, IconItem } from "@/components/navigation/TabBarIcon";
-import { useListenUserStatusSubscription } from "@/graphql/generated/graphql";
+import {
+  EDriverType,
+  useListenUserStatusSubscription,
+} from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
+import { get, includes } from "lodash";
 
 export default function TabLayout() {
-  const { refetchMe } = useAuth();
+  const { refetchMe, user } = useAuth();
 
   // Subscription
+  const driverType = get(user, "driverDetail.driverType", []);
+  const isOnlyBusinessDriver =
+    driverType.length > 1
+      ? false
+      : includes(driverType, EDriverType.BUSINESS_DRIVER);
   function handleListenUserStatusData(data: any) {
     console.log("handleListenUserStatusData: ", data);
     refetchMe();
@@ -31,7 +40,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="finance"
-        options={{ tabBarButton: IconItem("finance") }}
+        options={{ tabBarButton: IconItem("finance", isOnlyBusinessDriver) }}
       />
       <Tabs.Screen
         name="profile"

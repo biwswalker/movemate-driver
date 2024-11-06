@@ -49,13 +49,14 @@ export default function FinishShipment({
     <View style={[styles.finishWrapper, { paddingBottom: insets.bottom }]}>
       <View style={styles.actionsWrapper}>
         <Button
+          ripple
           size="large"
           varient="soft"
           color="success"
           title="กดค้างเพื่อแจ้งเสร็จงาน"
           fullWidth
           style={[{ borderRadius: normalize(24) }]}
-          delayLongPress={1000}
+          delayLongPress={2000}
           onLongPress={handleOnPressFinish}
           loading={loading}
           StartIcon={

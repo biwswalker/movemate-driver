@@ -488,6 +488,23 @@ function Shipments({ status }: ShipmentsProps) {
           </View>
         </View>
         <View style={shipmentStyle.detailWrapper}>
+          {item.agentDriver && (
+            <View style={shipmentStyle.descriptionWrapper}>
+              <Iconify
+                icon="fluent:person-circle-32-regular"
+                color={colors.text.disabled}
+                size={16}
+              />
+              <View style={{ flexDirection: "row", gap: normalize(4) }}>
+                <Text varient="body2" color="secondary" numberOfLines={1}>
+                  งานจากนายหน้า
+                </Text>
+                <Text varient="body2" numberOfLines={1}>
+                  {item.agentDriver?.fullname || "-"}
+                </Text>
+              </View>
+            </View>
+          )}
           <View style={shipmentStyle.descriptionWrapper}>
             <Iconify
               icon="fluent:clock-12-regular"
@@ -556,6 +573,7 @@ function Shipments({ status }: ShipmentsProps) {
               <Iconify icon="gg:details-more" color={colors.common.white} />
             }
             onPress={() => handleDetailShipment(item.trackingNumber)}
+            onLongPress={() => { console.log('long press...........')}}
           />
         </View>
       </View>

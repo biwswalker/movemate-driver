@@ -49,7 +49,7 @@ export default function ProfileSetting() {
   async function onToggleShipmentSwitch(state: boolean) {
     try {
       setIsShipmentLoding(true);
-      if (!includes([EDriverStatus.IDLE, EDriverStatus.BUSY], user?.drivingStatus)) return;
+      // if (!includes([EDriverStatus.IDLE, EDriverStatus.BUSY], user?.drivingStatus)) return;
       const changeStatus = state ? EDriverStatus.IDLE : EDriverStatus.BUSY;
       await changeDrivingStatus({ variables: { status: changeStatus } });
       await refetchMe();
@@ -74,7 +74,8 @@ export default function ProfileSetting() {
 
   useEffect(() => {
     if (user) {
-      setIsShipment(user.drivingStatus === EDriverStatus.IDLE);
+      console.log('user.drivingStatus', user.drivingStatus)
+      setIsShipment(user.drivingStatus === EDriverStatus.IDLE || user.drivingStatus === EDriverStatus.WORKING);
     }
   }, [user]);
 
@@ -116,12 +117,7 @@ export default function ProfileSetting() {
             ) : (
               <Switch
                 value={isShipment}
-                disabled={
-                  !includes(
-                    [EDriverStatus.IDLE, EDriverStatus.BUSY],
-                    user?.drivingStatus
-                  ) || user?.status === EUserStatus.DENIED
-                }
+                disabled={user?.status === EUserStatus.DENIED}
                 onValueChange={onToggleShipmentSwitch}
               />
             )}

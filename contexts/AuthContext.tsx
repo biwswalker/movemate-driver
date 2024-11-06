@@ -84,6 +84,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         requireBeforeSignin,
         unreadCount: { notification = 0 },
       }) => {
+        // logout()
         if (meData) {
           setUser(meData as User);
           setAuthenticated(true);

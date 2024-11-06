@@ -45,9 +45,12 @@ const Label: Record<TMenu, string> = {
   profile: "โปรไฟล์",
 };
 
-export function IconItem(menu: TMenu) {
+export function IconItem(menu: TMenu, hidden: boolean = false) {
   return ({ accessibilityState, onPress }: BottomTabBarButtonProps) => {
     const isActive = accessibilityState?.selected;
+    if (hidden) {
+      return <></>;
+    }
     return (
       <TouchableOpacity
         onPress={onPress}

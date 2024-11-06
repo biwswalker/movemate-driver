@@ -15,6 +15,7 @@ import { fNumber } from "@utils/number";
 import { format } from "date-fns";
 import { th } from "date-fns/locale/th";
 import {
+  ETransactionOwner,
   EUserStatus,
   Transaction,
   useGetTransactionQuery,
@@ -247,29 +248,28 @@ const finStyle = StyleSheet.create({
 });
 
 function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
+  const isAgentDriverShipment =
+    item.ownerType === ETransactionOwner.BUSINESS_DRIVER;
   return (
     <View style={finStyle.container}>
       <View style={finStyle.trackingNumberWrapper}>
         <Text varient="body2">{item.description}</Text>
       </View>
-      <View
-        style={[
-          finStyle.trackingNumberWrapper,
-          { alignItems: "center", paddingTop: normalize(4) },
-        ]}
-      >
+      <View style={[finStyle.trackingNumberWrapper, { alignItems: "center" }]}>
         <Text varient="caption" color="secondary">
           {format(item.createdAt, "EEEE dd MMM yyyy HH:mm", { locale: th })}
         </Text>
         <Text
-          varient="h5"
+          varient={isAgentDriverShipment ? "body1" : "h5"}
           style={{
             textAlign: "left",
             flexShrink: 0,
-            color: colors.success.dark,
+            color: isAgentDriverShipment
+              ? colors.text.secondary
+              : colors.success.dark,
           }}
         >
-          {fNumber(item.amount, "0,0.0")}
+          {isAgentDriverShipment ? "-" : fNumber(item.amount, "0,0.0")}
         </Text>
       </View>
     </View>

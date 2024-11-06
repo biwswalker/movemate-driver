@@ -28,6 +28,7 @@ import { ApolloError } from "@apollo/client";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { DropdownAlertType } from "react-native-dropdownalert";
 import { censorText } from "@/utils/string";
+import { ScrollView } from "react-native-gesture-handler";
 // import hexToRgba from "hex-to-rgba";
 
 export function ProgressConfirmDatetime({
@@ -166,7 +167,7 @@ export function ProgressConfirmDatetime({
   const pickupDestination = head(shipment?.destinations);
 
   return (
-    <View style={progressStyles.wrapper}>
+    <ScrollView style={progressStyles.wrapper}>
       <Text varient="body2" color="secondary">
         ข้อมูลการติดต่อ
       </Text>
@@ -235,13 +236,14 @@ export function ProgressConfirmDatetime({
       <View style={progressStyles.actionsWrapper}>
         {!isLoaded && (
           <Button
+            ripple
             size="large"
             varient="soft"
             title="กดค้างเพื่อยืนยันนัดหมายเวลา"
             fullWidth
             loading={loading}
             disabled={!pickedDate && !pickedTime}
-            delayLongPress={1000}
+            delayLongPress={1500}
             onLongPress={handleConfirmDatetime}
           />
         )}
@@ -266,7 +268,7 @@ export function ProgressConfirmDatetime({
           setOpen={setOpenTime}
         />
       )}
-    </View>
+    </ScrollView>
   );
 }
 

@@ -5,12 +5,27 @@ import {
   Pressable,
   Animated,
   View,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
 } from "react-native";
 import Text from "./Text";
 import colors from "@constants/colors";
 import hexToRgba from "hex-to-rgba";
 import { ActivityIndicator } from "react-native-paper";
 import { normalize } from "@/utils/normalizeSize";
+import Reanimated, {
+  Easing,
+  measure,
+  runOnJS,
+  useAnimatedRef,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 const styles = StyleSheet.create({
   button: {
@@ -57,6 +72,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: normalize(8),
   },
+  buttonRipple: {
+    width: normalize(200),
+    height: normalize(56),
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: normalize(25),
+    backgroundColor: colors.background.default,
+  },
 });
 
 export interface ButtonComponentProps extends TouchableOpacityProps {
@@ -69,6 +92,7 @@ export interface ButtonComponentProps extends TouchableOpacityProps {
   loading?: boolean;
   StartIcon?: ReactNode;
   EndIcon?: ReactNode;
+  ripple?: boolean;
 }
 
 export default function Button({
@@ -83,6 +107,9 @@ export default function Button({
   loading,
   StartIcon,
   EndIcon,
+  ripple,
+  onLongPress,
+  delayLongPress,
   ...props
 }: ButtonComponentProps) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -126,18 +153,19 @@ export default function Button({
           : styles.containedStyled;
 
   const colorVarient = color !== "inherit" ? colors[color] : null;
+  const backgroundDefult = colorVarient
+    ? ["outlined", "text"].includes(varient)
+      ? hexToRgba(colorVarient.main, 0)
+      : varient === "soft"
+        ? hexToRgba(colorVarient.main, 0.16)
+        : colorVarient.main
+    : varient === "soft"
+      ? hexToRgba(colors.grey["300"], 0.32)
+      : hexToRgba(colors.grey["300"], 0);
   const backgroundColor = colorAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [
-      colorVarient
-        ? ["outlined", "text"].includes(varient)
-          ? hexToRgba(colorVarient.main, 0)
-          : varient === "soft"
-            ? hexToRgba(colorVarient.main, 0.16)
-            : colorVarient.main
-        : varient === "soft"
-          ? hexToRgba(colors.grey["300"], 0.32)
-          : hexToRgba(colors.grey["300"], 0),
+      backgroundDefult,
       colorVarient
         ? ["outlined", "text"].includes(varient)
           ? hexToRgba(colorVarient.main, 0.08)
@@ -158,13 +186,41 @@ export default function Button({
           : colorVarient.contrastText
       : colors.text.primary;
 
+  const outlineStyle =
+    varient === "outlined"
+      ? { borderColor: colorVarient ? textColor : colors.divider }
+      : {};
   const buttonStyle = {
     ...baseButtonVarient,
     backgroundColor,
-    ...(varient === "outlined" && {
-      borderColor: colorVarient ? textColor : colors.divider,
-    }),
+    ...outlineStyle,
   };
+
+  if (ripple) {
+    return (
+      <RippleButton
+        text={title}
+        color={colorVarient}
+        duration={delayLongPress}
+        onPress={onLongPress as any}
+        style={[fullWidth ? { width: "100%" } : styles.fitcontent]}
+        loading={loading}
+        containerStyle={[
+          styles.button,
+          baseButtonVarient,
+          buttonSize,
+          { backgroundColor: backgroundDefult },
+          outlineStyle,
+          fullWidth ? { width: "100%" } : styles.fitcontent,
+          (disabled || loading) && styles.disabled,
+          style,
+        ]}
+        textStyle={[{ color: textColor }]}
+        StartIcon={StartIcon}
+        EndIcon={EndIcon}
+      />
+    );
+  }
 
   return (
     <Pressable
@@ -174,6 +230,7 @@ export default function Button({
       activeOpacity={disabled ? 1 : 0.7}
       disabled={disabled || loading}
       style={[fullWidth ? styles.fullwidth : styles.fitcontent]}
+      onLongPress={onLongPress}
       {...props}
     >
       <Animated.View
@@ -200,5 +257,135 @@ export default function Button({
         )}
       </Animated.View>
     </Pressable>
+  );
+}
+
+interface RippleButtonProps {
+  text: string;
+  color?: {
+    lighter: string;
+    light: string;
+    main: string;
+    dark: string;
+    darker: string;
+    contrastText: string;
+  } | null;
+  textSize?: TFontVarient;
+  duration?: number;
+  style?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  textColor?: string;
+  onPress?: VoidFunction;
+  children?: ReactNode;
+  loading?: boolean;
+  StartIcon?: ReactNode;
+  EndIcon?: ReactNode;
+}
+
+function RippleButton({
+  text,
+  textSize,
+  style,
+  onPress,
+  loading = false,
+  color,
+  duration = 1000,
+  textColor,
+  textStyle = {},
+  containerStyle = {},
+  StartIcon,
+  EndIcon,
+}: RippleButtonProps) {
+  const centerX = useSharedValue(0);
+  const centerY = useSharedValue(0);
+  const scale = useSharedValue(0);
+  const containerScale = useSharedValue(1);
+
+  const aRef = useAnimatedRef<View>();
+  const width = useSharedValue(0);
+  const height = useSharedValue(0);
+
+  const rippleOpacity = useSharedValue(1);
+
+  const textVarient: TFontVarient = textSize || "buttonM";
+
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(duration)
+    .onBegin((event) => {
+      console.log("onBegin: ->");
+      const layout = measure(aRef);
+      width.value = layout?.width ?? 0;
+      height.value = layout?.height ?? 0;
+      centerX.value = event.x;
+      centerY.value = event.y;
+
+      rippleOpacity.value = 1;
+      scale.value = 0;
+      scale.value = withTiming(1, {
+        duration: duration,
+        easing: Easing.bezier(0.24, 0.56, 0.8, 0),
+      });
+    })
+    .onStart(() => {
+      console.log("onStart: ->");
+      rippleOpacity.value = withTiming(0);
+      containerScale.value = withSequence(withSpring(1.02), withSpring(1));
+      if (typeof onPress === "function") runOnJS(onPress)();
+    })
+    .onFinalize(() => {
+      rippleOpacity.value = withTiming(0);
+    });
+
+  const cStyle = useAnimatedStyle(() => {
+    return {
+      flex: 1,
+      transform: [{ scale: containerScale.value }],
+    };
+  });
+
+  const painRBackground = color?.darker ?? colors.text.primary;
+  const rippleBackground = hexToRgba(painRBackground, 0.3);
+  const rStyle = useAnimatedStyle(() => {
+    const circleRadius = Math.sqrt(width.value ** 2 + height.value ** 2);
+    const translateX = centerX.value - circleRadius;
+    const translateY = centerY.value - circleRadius;
+
+    return {
+      width: circleRadius * 2,
+      height: circleRadius * 2,
+      borderRadius: circleRadius,
+      opacity: rippleOpacity.value,
+      backgroundColor: rippleBackground,
+      position: "absolute",
+      top: 0,
+      left: 0,
+      transform: [{ translateX }, { translateY }, { scale: scale.value }],
+    };
+  });
+
+  return (
+    <Reanimated.View ref={aRef} style={[style, cStyle]}>
+      <GestureDetector gesture={longPressGesture}>
+        <Reanimated.View
+          style={[style, containerStyle, { overflow: "hidden" }]}
+        >
+          <View style={styles.rowDirection}>
+            {loading ? (
+              <ActivityIndicator size="small" color={textColor} />
+            ) : (
+              <>
+                {StartIcon && StartIcon}
+                <Text style={textStyle} varient={textVarient}>
+                  {text}
+                </Text>
+                {EndIcon && EndIcon}
+              </>
+            )}
+          </View>
+          <Reanimated.View style={rStyle} />
+        </Reanimated.View>
+      </GestureDetector>
+    </Reanimated.View>
   );
 }

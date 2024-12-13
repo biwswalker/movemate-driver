@@ -1,6 +1,7 @@
 import colors from "@constants/colors";
 import React, {
   forwardRef,
+  Fragment,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -30,7 +31,6 @@ import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import hexToRgba from "hex-to-rgba";
-import { ActivityIndicator } from "react-native-paper";
 
 export interface NewShipmentsRef {
   onRestartListening: Function;
@@ -214,7 +214,7 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
     function FooterAction() {
       if (loading) {
         return (
-          <></>
+          <Fragment />
           // <View style={shipmentStyle.loadingWrapper}>
           //   <ActivityIndicator size="small" color={colors.text.secondary} />
           // </View>
@@ -309,7 +309,6 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
       );
     }
 
-    console.log("shipment-----> ", shipments);
     return (
       <View style={shipmentStyle.container}>
         <FlatList

@@ -1,25 +1,25 @@
 import NavigationBar from "@/components/NavigationBar";
 import colors from "@/constants/colors";
-import { useLocalSearchParams } from "expo-router";
 import { Image, Keyboard, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
-import { useCallback, useRef, useState } from "react";
-import Yup from "@/utils/yup";
-import { forEach, get, isEmpty, isEqual } from "lodash";
-import { EmployeeRegisterParam } from "./types";
+import { Fragment, useCallback, useRef, useState } from "react";
+import { forEach, get, isEmpty } from "lodash";
 import TextInput from "@/components/TextInput";
 import { normalize } from "@/utils/normalizeSize";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import {
   EDriverStatus,
   EUserStatus,
-  useAddExistingAccountEmployeeMutation,
   useLookupDriverLazyQuery,
   User,
 } from "@/graphql/generated/graphql";
 import { ApolloError } from "@apollo/client";
-import { EXISTING_DRIVER_PHONENUMBER, NOT_FOUND } from "@/constants/error";
+import {
+  EXISTING_DRIVER_PHONENUMBER,
+  NOT_FOUND,
+  EXISTING_PARENT,
+} from "@/constants/error";
 import Text from "@/components/Text";
 import Iconify from "@/components/Iconify";
 import { ActivityIndicator } from "react-native-paper";
@@ -38,6 +38,7 @@ export default function NewEmployee() {
   const [phoneNumberError, setPhoneNumberError] = useState("");
 
   const [existingUser, setExistingUser] = useState<User | undefined>(undefined);
+  const [isExistingParent, setIsExistingParent] = useState<boolean>(false);
   const [isNewUser, setIsNewUser] = useState<boolean | undefined>(undefined);
   const [isReadyNext, setIsReadyNext] = useState<boolean | undefined>(
     undefined
@@ -69,10 +70,12 @@ export default function NewEmployee() {
         if (code === NOT_FOUND) {
           setIsNewUser(true);
           setExistingUser(undefined);
+          setIsExistingParent(false);
         } else if (code === EXISTING_DRIVER_PHONENUMBER) {
           setPhoneNumberError("เบอร์ติดต่อซ้ำ");
           setIsNewUser(undefined);
           setExistingUser(undefined);
+          setIsExistingParent(false);
         }
       });
     }
@@ -88,13 +91,20 @@ export default function NewEmployee() {
       "data.lookupDriverByPhonenumber",
       undefined
     ) as User | undefined;
+    const isExistingParent = get(
+      userResponse,
+      "data.isExistingParentDriverByPhonenumber",
+      false
+    ) as boolean | undefined;
 
     if (user) {
       setIsNewUser(false);
       setExistingUser(user);
+      setIsExistingParent(isExistingParent || false);
     } else {
       setIsNewUser(true);
       setExistingUser(undefined);
+      setIsExistingParent(false);
     }
   }
 
@@ -106,7 +116,7 @@ export default function NewEmployee() {
       if (validated) {
         handleLookupPhonenumber(text);
         setIsReadyNext(true);
-        Keyboard.dismiss()
+        Keyboard.dismiss();
       } else {
         setIsReadyNext(false);
         if (isDirty) {
@@ -148,9 +158,9 @@ export default function NewEmployee() {
             ) : isNewUser ? (
               <NewEmployeeForm phoneNumber={phoneNumber} />
             ) : existingUser ? (
-              <ExistingDriver user={existingUser} />
+              <ExistingDriver user={existingUser} exist={isExistingParent} />
             ) : (
-              <></>
+              <Fragment />
             )
           ) : (
             <PleasePutPhoneNumber />
@@ -186,9 +196,10 @@ function PleasePutPhoneNumber() {
 
 interface ExistingDriverProps {
   user: User;
+  exist: boolean;
 }
 
-function ExistingDriver({ user }: ExistingDriverProps) {
+function ExistingDriver({ user, exist }: ExistingDriverProps) {
   const modalRef = useRef<ConfirmEmployeeModalRef>(null);
 
   const handleConfirmAdd = useCallback(() => {
@@ -236,7 +247,7 @@ function ExistingDriver({ user }: ExistingDriverProps) {
     drivingStatus();
 
   return (
-    <>
+    <Fragment>
       <View style={styles.itemContainer}>
         <View style={styles.driverInfoWrapper}>
           {user.profileImage ? (
@@ -273,24 +284,34 @@ function ExistingDriver({ user }: ExistingDriverProps) {
               </Text>
             </View>
           </View>
+          <View style={styles.driverWraningWrapper}>
+            <Text varient="body2" color="secondary">
+              เบอร์นี้มีบัญชีเป็นคนขับในระบบเราอยู่แล้ว
+            </Text>
+          </View>
           <Button
-            title="เพิ่มคนขับ"
+            title={exist ? "เป็นคนขับของคุณอยู่แล้ว" : "เพิ่มคนขับ"}
             color="primary"
             varient="soft"
             fullWidth
+            disabled={exist}
             onPress={handleConfirmAdd}
             StartIcon={
-              <Iconify
-                icon="typcn:plus"
-                size={normalize(16)}
-                color={colors.primary.dark}
-              />
+              exist ? (
+                <Fragment />
+              ) : (
+                <Iconify
+                  icon="typcn:plus"
+                  size={normalize(16)}
+                  color={colors.primary.dark}
+                />
+              )
             }
           />
         </View>
       </View>
       <ConfirmEmployee user={user} ref={modalRef} />
-    </>
+    </Fragment>
   );
 }
 
@@ -344,7 +365,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey[200],
     borderRadius: normalize(16),
     padding: normalize(12),
-    gap: normalize(16),
+    gap: normalize(8),
   },
   driverStatusTextWrapper: {
     flexDirection: "row",
@@ -352,5 +373,9 @@ const styles = StyleSheet.create({
   },
   driverStatusText: {
     flex: 1,
+  },
+  driverWraningWrapper: {
+    alignItems: "center",
+    paddingTop: normalize(8),
   },
 });

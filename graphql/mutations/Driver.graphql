@@ -5,8 +5,12 @@ mutation DriverRegister($data: DriverRegisterInput!) {
   }
 }
 
-mutation VerifyDriverData($data: DriverDetailInput!) {
-  verifyDriverData(data: $data) {
+mutation DriverReRegister($data: DriverReRegisterInput!, $driverId: String) {
+  driverReRegister(data: $data, driverId: $driverId)
+}
+
+mutation VerifyDriverData($data: DriverDetailInput!, $driverId: String) {
+  verifyDriverData(data: $data, driverId: $driverId) {
     policyVersion
     driverType
     title
@@ -47,8 +51,8 @@ mutation EmployeeRegister($data: EmployeeRegisterInput!) {
   }
 }
 
-mutation VerifyEmployeeData($data: EmployeeDetailInput!) {
-  verifyEmployeeData(data: $data) {
+mutation VerifyEmployeeData($data: EmployeeDetailInput!, $driverId: String) {
+  verifyEmployeeData(data: $data, driverId: $driverId) {
     title
     otherTitle
     firstname
@@ -61,5 +65,14 @@ mutation VerifyEmployeeData($data: EmployeeDetailInput!) {
     district
     subDistrict
     postcode
+    serviceVehicleTypes
   }
+}
+
+mutation AcceptationEmployee($result: String!, $agentId: String!) {
+  acceptationEmployee(result: $result, agentId: $agentId)
+}
+
+mutation RemoveEmployee($driverId: String!) {
+  removeEmployee(driverId: $driverId)
 }

@@ -4,7 +4,7 @@ import NavigationBar from "@components/NavigationBar";
 import { StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { get, map, pick } from "lodash";
+import { find, get, map, pick, reduce } from "lodash";
 import UploadButton from "@components/UploadButton";
 import Button from "@components/Button";
 import {
@@ -23,6 +23,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { EmployeeRegisterParam } from "./types";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { fileUploadAPI } from "@/services/upload";
+import FlexImage from "react-native-flex-image";
 
 export default function RegisterIndividualPreviewScreen() {
   const { showSnackbar, DropdownType } = useSnackbarV2();
@@ -125,6 +126,8 @@ export default function RegisterIndividualPreviewScreen() {
           documents.criminalRecordCheckCert
         );
 
+        console.log('submit detail...', JSON.stringify(detail, undefined, 2))
+
         const data: EmployeeRegisterInput = {
           detail,
           documents: {
@@ -158,6 +161,8 @@ export default function RegisterIndividualPreviewScreen() {
     }
   }
 
+  console.log('00000', detail);
+  
   return (
     <SafeAreaView style={styles.container}>
       <NavigationBar title="ตรวจสอบข้อมูลและเอกสาร" />
@@ -215,7 +220,119 @@ export default function RegisterIndividualPreviewScreen() {
               </Text>
             </View>
           )}
+          {detail?.serviceVehicleTypes && vehicleTypes && (
+            <View style={styles.detailWrapper}>
+              <Text varient="body2" color="disabled">
+                ประเภทรถที่ให้บริการ
+              </Text>
+              <Text varient="body1">
+                {reduce(
+                  detail.serviceVehicleTypes,
+                  (prev, curr) => {
+                    const vehicle = find(vehicleTypes, ["_id", curr]);
+                    if (vehicle) {
+                      const vehicleName = vehicle.name;
+                      return prev ? `${prev}, ${vehicleName}` : vehicleName;
+                    }
+                    return prev;
+                  },
+                  ""
+                )}
+              </Text>
+            </View>
+          )}
           <View style={[styles.detailWrapper, [{ gap: 8 }]]}>
+            <Text varient="body2" color="disabled">
+              เอกสารที่แนบมาด้วย
+            </Text>
+            <View style={styles.contentRow}>
+              {documents?.frontOfVehicle && (
+                <FlexImage
+                  style={styles.flexImageStyle}
+                  source={
+                    typeof documents.frontOfVehicle === "string"
+                      ? { uri: documents.frontOfVehicle }
+                      : documents.frontOfVehicle
+                  }
+                />
+              )}
+              {documents?.backOfVehicle && (
+                <FlexImage
+                  style={styles.flexImageStyle}
+                  source={
+                    typeof documents.backOfVehicle === "string"
+                      ? { uri: documents.backOfVehicle }
+                      : documents.backOfVehicle
+                  }
+                />
+              )}
+            </View>
+            <View style={styles.contentRow}>
+              {documents?.leftOfVehicle && (
+                <FlexImage
+                  style={styles.flexImageStyle}
+                  source={
+                    typeof documents.leftOfVehicle === "string"
+                      ? { uri: documents.leftOfVehicle }
+                      : documents.leftOfVehicle
+                  }
+                />
+              )}
+              {documents?.rigthOfVehicle && (
+                <FlexImage
+                  style={styles.flexImageStyle}
+                  source={
+                    typeof documents.rigthOfVehicle === "string"
+                      ? { uri: documents.rigthOfVehicle }
+                      : documents.rigthOfVehicle
+                  }
+                />
+              )}
+            </View>
+            {documents?.copyIDCard && (
+              <UploadButton
+                label="สำเนาบัตรประชาชน"
+                file={documents.copyIDCard}
+              />
+            )}
+            {documents?.copyVehicleRegistration && (
+              <UploadButton
+                label="สำเนาทะเบียนรถ"
+                file={documents.copyVehicleRegistration}
+              />
+            )}
+            {documents?.copyDrivingLicense && (
+              <UploadButton
+                label="สำเนาใบขับขี่"
+                file={documents.copyDrivingLicense}
+              />
+            )}
+            {documents?.copyBookBank && (
+              <UploadButton
+                label="สำเนาหน้าบัญชีธนาคาร"
+                file={documents.copyBookBank}
+              />
+            )}
+            {documents?.copyHouseRegistration && (
+              <UploadButton
+                label="สำเนาทะเบียนบ้าน"
+                file={documents.copyHouseRegistration}
+              />
+            )}
+            {documents?.insurancePolicy && (
+              <UploadButton
+                label="กรมธรรม์ประกันรถ"
+                file={documents.insurancePolicy}
+              />
+            )}
+            {documents?.criminalRecordCheckCert && (
+              <UploadButton
+                label="หนังสือรับรองตรวจประวัติอาชญากรรม"
+                file={documents.criminalRecordCheckCert}
+              />
+            )}
+          </View>
+          {/* <View style={[styles.detailWrapper, [{ gap: 8 }]]}>
             <Text varient="body2" color="disabled">
               เอกสารที่แนบมาด้วย
             </Text>
@@ -249,7 +366,7 @@ export default function RegisterIndividualPreviewScreen() {
                 file={documents.criminalRecordCheckCert}
               />
             )}
-          </View>
+          </View> */}
         </View>
         <View style={styles.actionWrapper}>
           {error && (
@@ -274,6 +391,7 @@ export default function RegisterIndividualPreviewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background.default,
   },
   wrapper: {
     flex: 1,

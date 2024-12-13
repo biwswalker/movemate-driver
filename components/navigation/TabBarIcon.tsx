@@ -1,6 +1,6 @@
 import colors from "@constants/colors";
 import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
-import { ReactNode, type ComponentProps } from "react";
+import { Fragment, ReactNode } from "react";
 import { Animated, StyleSheet, TouchableOpacity } from "react-native";
 import Iconify from "../Iconify";
 import Text from "../Text";
@@ -49,7 +49,7 @@ export function IconItem(menu: TMenu, hidden: boolean = false) {
   return ({ accessibilityState, onPress }: BottomTabBarButtonProps) => {
     const isActive = accessibilityState?.selected;
     if (hidden) {
-      return <></>;
+      return <Fragment />;
     }
     return (
       <TouchableOpacity

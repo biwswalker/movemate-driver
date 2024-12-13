@@ -8,6 +8,7 @@ export default function RegisterLayout() {
       <Stack.Screen name="documents" />
       <Stack.Screen name="preview" />
       <Stack.Screen name="success" />
+      <Stack.Screen name="re-register" />
     </Stack>
   );
 }

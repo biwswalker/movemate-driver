@@ -125,6 +125,9 @@ query GetAvailableShipment(
         latitude
         longitude
       }
+      placeProvince
+      placeDistrict
+      placeSubDistrict
     }
     vehicleId {
       _id
@@ -424,6 +427,9 @@ query GetAvailableShipmentByTrackingNumber($tracking: String!) {
         latitude
         longitude
       }
+      placeProvince
+      placeDistrict
+      placeSubDistrict
     }
     vehicleId {
       _id
@@ -518,6 +524,8 @@ query GetAvailableShipmentByTrackingNumber($tracking: String!) {
       postcode
       phoneNumber
       remark
+      provider
+      trackingNumber
     }
     discountId {
       _id
@@ -720,6 +728,119 @@ query GetAvailableShipmentByTrackingNumber($tracking: String!) {
       paymentTime
       createdAt
       updatedAt
+    }
+    agentDriver {
+      _id
+      fullname
+      userNumber
+      userRole
+      userType
+      remark
+      status
+      profileImage {
+        _id
+        filename
+      }
+    }
+  }
+}
+
+query GetTodayShipment {
+  getTodayShipment {
+    _id
+    trackingNumber
+    status
+    adminAcceptanceStatus
+    driverAcceptanceStatus
+    displayDistance
+    displayTime
+    distance
+    returnDistance
+    isRoundedReturn
+    isBookingWithDate
+    bookingDateTime
+    refId
+    remark
+    createdAt
+    updatedAt
+    deliveredDate
+    cancellationReason
+    cancellationDetail
+    destinations {
+      placeId
+      name
+      detail
+      contactName
+      contactNumber
+      customerRemark
+      location {
+        latitude
+        longitude
+      }
+      placeProvince
+      placeDistrict
+      placeSubDistrict
+    }
+    vehicleId {
+      _id
+      type
+      isPublic
+      isLarger
+      name
+      width
+      length
+      height
+      maxCapacity
+      maxDroppoint
+      details
+      image {
+        _id
+        fileId
+        filename
+        mimetype
+        createdAt
+        updatedAt
+      }
+    }
+    podDetail {
+      fullname
+      address
+      province
+      district
+      subDistrict
+      postcode
+      phoneNumber
+      remark
+      provider
+      trackingNumber
+    }
+    currentStepSeq
+    steps {
+      _id
+      step
+      seq
+      meta
+      stepName
+      customerMessage
+      driverMessage
+      stepStatus
+      images {
+        _id
+        filename
+      }
+    }
+    driver {
+      _id
+      fullname
+      userNumber
+      userRole
+      userType
+      username
+      status
+      profileImage {
+        _id
+        filename
+      }
     }
     agentDriver {
       _id

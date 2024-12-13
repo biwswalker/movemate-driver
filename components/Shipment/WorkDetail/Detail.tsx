@@ -39,7 +39,7 @@ export default function Detail({ shipment }: OverviewDetailProps) {
   );
 
   return (
-    <>
+    <Fragment>
       <View
         style={[detailStyles.dividerContainer, { marginTop: normalize(16) }]}
       >
@@ -83,7 +83,7 @@ export default function Detail({ shipment }: OverviewDetailProps) {
         </View>
       )}
 
-      {agentDriver && (
+      {!isBusiness && agentDriver && (
         <View
           style={[
             detailStyles.accountContainer,
@@ -115,7 +115,7 @@ export default function Detail({ shipment }: OverviewDetailProps) {
         </View>
       )}
 
-      {!isHiddenInfo && (
+      {/* {!isHiddenInfo && (
         <View style={[detailStyles.accountContainer]}>
           <View style={detailStyles.accountAvatarWrapper}>
             {customer?.profileImage ? (
@@ -140,7 +140,8 @@ export default function Detail({ shipment }: OverviewDetailProps) {
             </Text>
           </View>
         </View>
-      )}
+      )} */}
+
       {/*  */}
       <View style={detailStyles.cardWrapper}>
         {/* Locations */}
@@ -161,7 +162,7 @@ export default function Detail({ shipment }: OverviewDetailProps) {
             </View>
             <Text varient="subtitle2" color="primary">
               {isHiddenInfo
-                ? origin?.detail
+                ? origin?.placeProvince || origin?.detail
                 : `${origin?.name} ${origin?.detail}`}
             </Text>
           </View>
@@ -189,7 +190,7 @@ export default function Detail({ shipment }: OverviewDetailProps) {
                 </View>
                 <Text varient="subtitle2" color="primary">
                   {isHiddenInfo
-                    ? destination?.detail
+                    ? destination?.placeProvince || destination?.detail
                     : `${destination?.name} ${destination?.detail}`}
                 </Text>
               </View>
@@ -232,7 +233,7 @@ export default function Detail({ shipment }: OverviewDetailProps) {
           </Text>
         </View>
       </View>
-    </>
+    </Fragment>
   );
 }
 

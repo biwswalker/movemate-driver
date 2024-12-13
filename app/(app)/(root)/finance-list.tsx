@@ -3,7 +3,9 @@ import NavigationBar from "@/components/NavigationBar";
 import Text from "@/components/Text";
 import colors from "@constants/colors";
 import {
+  ERefType,
   ETransactionOwner,
+  ETransactionStatus,
   Transaction,
   useGetTransactionQuery,
 } from "@/graphql/generated/graphql";
@@ -14,17 +16,21 @@ import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import { router } from "expo-router";
 import { isEmpty } from "lodash";
-import { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Fragment, useMemo, useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const today = new Date().toISOString();
 export default function FinanceList() {
   const [hasMore, setHasMore] = useState(false);
   const { data, loading, fetchMore } = useGetTransactionQuery({
-    variables: { limit: 10, skip: 0, transactionDate: today },
+    variables: {
+      limit: 10,
+      skip: 0,
+      sortField: "createdAt",
+      sortAscending: false,
+    },
     onError: (error) => {
-      console.log("error: ", error);
+      console.log("error: ", JSON.stringify(error, undefined, 2));
     },
   });
 
@@ -98,7 +104,7 @@ export default function FinanceList() {
         </View>
       );
     } else {
-      return <></>;
+      return <Fragment />;
     }
   }
 
@@ -140,19 +146,24 @@ const styles = StyleSheet.create({
 });
 
 function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
+  function handleViewTransaction() {
+    router.push({
+      pathname: "/finance-detail",
+      params: { transactionId: item._id },
+    });
+  }
+
   const isAgentDriverShipment =
     item.ownerType === ETransactionOwner.BUSINESS_DRIVER;
+  const isEarned = item.refType === ERefType.EARNING;
+
+  const isPending = item.status === ETransactionStatus.PENDING;
   return (
-    <View style={finStyle.container}>
+    <Pressable style={finStyle.container} onPress={handleViewTransaction}>
       <View style={finStyle.trackingNumberWrapper}>
         <Text varient="body2">{item.description}</Text>
       </View>
-      <View
-        style={[
-          finStyle.trackingNumberWrapper,
-          { alignItems: "center", paddingTop: normalize(4) },
-        ]}
-      >
+      <View style={[finStyle.trackingNumberWrapper, { alignItems: "center" }]}>
         <Text varient="caption" color="secondary">
           {format(item.createdAt, "EEEE dd MMM yyyy HH:mm", { locale: th })}
         </Text>
@@ -163,13 +174,17 @@ function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
             flexShrink: 0,
             color: isAgentDriverShipment
               ? colors.text.secondary
-              : colors.success.dark,
+              : isEarned
+                ? colors.success.dark
+                : isPending
+                  ? colors.warning.dark
+                  : colors.primary.main,
           }}
         >
           {isAgentDriverShipment ? "-" : fNumber(item.amount, "0,0.0")}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

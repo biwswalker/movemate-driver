@@ -1,8 +1,11 @@
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import {
+  DefaultTheme,
+  // NavigationContainer,
+  ThemeProvider,
+} from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
 import "react-native-reanimated";
 import ApolloProvider from "@/graphql/apollo-provider";
 import { PaperProvider } from "react-native-paper";
@@ -10,7 +13,6 @@ import RNPaperConfig from "@/configs/RNPaper";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AuthProvider } from "@/contexts/AuthContext";
-import { PermissionsAndroid } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { SnackbarProvider } from "@/contexts/SnackbarContext";
 import { SnackbarV2Provider } from "@/contexts/SnackbarV2Context";
@@ -55,14 +57,16 @@ export default function RootLayout() {
             <ThemeProvider value={DefaultTheme}>
               <SnackbarProvider>
                 <SnackbarV2Provider>
-                  <ActionSheetProvider>
-                    <BottomSheetModalProvider>
-                      <SafeAreaProvider>
-                        <StatusBar style="dark" />
-                        <Slot />
-                      </SafeAreaProvider>
-                    </BottomSheetModalProvider>
-                  </ActionSheetProvider>
+                  {/* <NavigationContainer> */}
+                    <ActionSheetProvider>
+                      <BottomSheetModalProvider>
+                        <SafeAreaProvider>
+                          <StatusBar style="dark" />
+                          <Slot />
+                        </SafeAreaProvider>
+                      </BottomSheetModalProvider>
+                    </ActionSheetProvider>
+                  {/* </NavigationContainer> */}
                 </SnackbarV2Provider>
               </SnackbarProvider>
             </ThemeProvider>

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { Fragment, useMemo } from "react";
 import Text from "@components/Text";
 import RHFUploadButton from "@components/HookForm/RHFUploadButton";
 import FormProvider from "@components/HookForm/FormProvider";
@@ -93,7 +93,13 @@ export default function RegisterUploadsScreen() {
       .test("require-file", "อัพโหลดสำเนาใบขับขี่", (value) =>
         isBusinessRegistration ? true : !isEmpty(value)
       ),
-    copyBookBank: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
+    copyBookBank: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
+      .test(
+        "require-file",
+        "อัพโหลดสำเนาหน้าบัญชีธนาคาร",
+        (value) => !isEmpty(value)
+      ),
     copyHouseRegistration: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     insurancePolicy: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     criminalRecordCheckCert: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
@@ -166,7 +172,7 @@ export default function RegisterUploadsScreen() {
         >
           <View style={styles.documentList}>
             {isBusinessRegistration && (
-              <>
+              <Fragment>
                 <RHFUploadButton
                   file={values.businessRegistrationCertificate}
                   name="businessRegistrationCertificate"
@@ -182,52 +188,57 @@ export default function RegisterUploadsScreen() {
                   name="certificateValueAddedTaxRegistration"
                   label="ภพ 20"
                 />
-              </>
+                <RHFUploadButton
+                  file={values.copyBookBank}
+                  name="copyBookBank"
+                  label="สำเนาหน้าบัญชีธนาคาร (บังคับ)"
+                />
+              </Fragment>
             )}
-            <View>
-              <Text>
-                รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
-              </Text>
-            </View>
-            <View style={styles.rowWrapper}>
-              <RHFUploadButton
-                file={values.frontOfVehicle}
-                name="frontOfVehicle"
-                label="ด้านหน้ารถ"
-                isImagePreview
-                actionMenus={["CAMERA", "GALLERY"]}
-              />
-              <RHFUploadButton
-                file={values.backOfVehicle}
-                name="backOfVehicle"
-                label="ด้านหลังรถ"
-                isImagePreview
-                actionMenus={["CAMERA", "GALLERY"]}
-              />
-            </View>
-            <View style={styles.rowWrapper}>
-              <RHFUploadButton
-                file={values.leftOfVehicle}
-                name="leftOfVehicle"
-                label="ด้านข้าง ซ้ายรถ"
-                isImagePreview
-                actionMenus={["CAMERA", "GALLERY"]}
-              />
-              <RHFUploadButton
-                file={values.rigthOfVehicle}
-                name="rigthOfVehicle"
-                label="ด้านข้าง ขวารถ"
-                isImagePreview
-                actionMenus={["CAMERA", "GALLERY"]}
-              />
-            </View>
-            <RHFUploadButton
-              file={values.copyVehicleRegistration}
-              name="copyVehicleRegistration"
-              label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
-            />
             {!isBusinessRegistration && (
-              <>
+              <Fragment>
+                <View>
+                  <Text>
+                    รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
+                  </Text>
+                </View>
+                <View style={styles.rowWrapper}>
+                  <RHFUploadButton
+                    file={values.frontOfVehicle}
+                    name="frontOfVehicle"
+                    label="ด้านหน้ารถ"
+                    isImagePreview
+                    actionMenus={["CAMERA", "GALLERY"]}
+                  />
+                  <RHFUploadButton
+                    file={values.backOfVehicle}
+                    name="backOfVehicle"
+                    label="ด้านหลังรถ"
+                    isImagePreview
+                    actionMenus={["CAMERA", "GALLERY"]}
+                  />
+                </View>
+                <View style={styles.rowWrapper}>
+                  <RHFUploadButton
+                    file={values.leftOfVehicle}
+                    name="leftOfVehicle"
+                    label="ด้านข้าง ซ้ายรถ"
+                    isImagePreview
+                    actionMenus={["CAMERA", "GALLERY"]}
+                  />
+                  <RHFUploadButton
+                    file={values.rigthOfVehicle}
+                    name="rigthOfVehicle"
+                    label="ด้านข้าง ขวารถ"
+                    isImagePreview
+                    actionMenus={["CAMERA", "GALLERY"]}
+                  />
+                </View>
+                <RHFUploadButton
+                  file={values.copyVehicleRegistration}
+                  name="copyVehicleRegistration"
+                  label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
+                />
                 <RHFUploadButton
                   file={values.copyIDCard}
                   name="copyIDCard"
@@ -238,23 +249,25 @@ export default function RegisterUploadsScreen() {
                   name="copyDrivingLicense"
                   label={`สำเนาใบขับขี่${isBusinessRegistration ? "" : " (บังคับ)"}`}
                 />
-              </>
+                <RHFUploadButton
+                  file={values.copyBookBank}
+                  name="copyBookBank"
+                  label="สำเนาหน้าบัญชีธนาคาร (บังคับ)"
+                />
+              </Fragment>
             )}
-            <RHFUploadButton
-              file={values.copyBookBank}
-              name="copyBookBank"
-              label="สำเนาหน้าบัญชีธนาคาร"
-            />
             <RHFUploadButton
               file={values.copyHouseRegistration}
               name="copyHouseRegistration"
               label="สำเนาทะเบียนบ้าน"
             />
-            <RHFUploadButton
-              file={values.insurancePolicy}
-              name="insurancePolicy"
-              label="กรมธรรม์ประกันรถ"
-            />
+            {!isBusinessRegistration && (
+              <RHFUploadButton
+                file={values.insurancePolicy}
+                name="insurancePolicy"
+                label="กรมธรรม์ประกันรถ"
+              />
+            )}
             <RHFUploadButton
               file={values.criminalRecordCheckCert}
               name="criminalRecordCheckCert"

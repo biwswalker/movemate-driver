@@ -1,6 +1,6 @@
 import colors from "@constants/colors";
 import { SafeAreaView } from "react-native-safe-area-context";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Image, Platform, StyleSheet, View } from "react-native";
 import TabCarousel, { TabItem } from "@components/TabCarousel";
 import Text from "@components/Text";
@@ -8,9 +8,10 @@ import { fDateTime } from "@utils/formatTime";
 import { normalize } from "@utils/normalizeSize";
 import Button from "@components/Button";
 import Iconify from "@components/Iconify";
-import { find, head, isEmpty, map, tail } from "lodash";
+import { find, get, head, includes, isEmpty, map, tail } from "lodash";
 import hexToRgba from "hex-to-rgba";
 import {
+  EDriverType,
   EShipmentMatchingCriteria,
   EShipmentStatus,
   EStepDefinition,
@@ -101,71 +102,73 @@ export default function HomeScreen() {
   }, [searchParam]);
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.wrapper}>
-        <View style={styles.contentWrapper}>
-          {user?.status === EUserStatus.PENDING && <PendingApproval />}
-          {user?.status === EUserStatus.DENIED && <DeniedApproval />}
-          <View style={styles.tabMenuWrapper}>
-            <TabCarousel<EShipmentMatchingCriteria>
-              ref={tabsRef}
-              data={menus}
-              value={activeMenu}
-              onChange={handleChangeTabMenu}
-              width={normalize(132)}
-              height={36}
-            />
-            <View
-              style={[StyleSheet.absoluteFillObject, styles.gradientWrapper]}
-            >
-              <LinearGradient
-                colors={[
-                  hexToRgba(colors.common.white, 0),
-                  hexToRgba(colors.common.white, 1),
-                ]}
-                style={styles.gradient}
-                start={{ x: 1, y: 0 }}
-                end={{ x: 0, y: 0 }}
+    <Fragment>
+      <View style={styles.container}>
+        <SafeAreaView style={styles.wrapper}>
+          <View style={styles.contentWrapper}>
+            {user?.status === EUserStatus.PENDING && <PendingApproval />}
+            {user?.status === EUserStatus.DENIED && <DeniedApproval />}
+            <View style={styles.tabMenuWrapper}>
+              <TabCarousel<EShipmentMatchingCriteria>
+                ref={tabsRef}
+                data={menus}
+                value={activeMenu}
+                onChange={handleChangeTabMenu}
+                width={normalize(132)}
+                height={36}
               />
-              <View style={[styles.gradient, { flex: 2 }]} />
-              <LinearGradient
-                colors={[
-                  hexToRgba(colors.common.white, 0),
-                  hexToRgba(colors.common.white, 1),
-                ]}
-                style={styles.gradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              />
-            </View>
-          </View>
-          {user?.status === EUserStatus.ACTIVE ? (
-            <Shipments status={activeMenu} />
-          ) : (
-            <View style={shipmentStyle.footerEmptyWrapper}>
-              <Image
-                source={require("@assets/images/notfound-shipment.png")}
-                style={{ height: normalize(144), objectFit: "contain" }}
-              />
-              <Text
-                varient="h4"
-                style={[
-                  styles.textCenter,
-                  { color: colors.primary.darker, paddingTop: normalize(16) },
-                ]}
+              <View
+                style={[StyleSheet.absoluteFillObject, styles.gradientWrapper]}
               >
-                ไม่พบงานขนส่ง
-              </Text>
-              <Text
-                style={[styles.textCenter, { paddingTop: normalize(4) }]}
-                varient="body1"
-                color="secondary"
-              >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nกรุณารอการตรวจสอบข้อมูลจกแอดมิน`}</Text>
+                <LinearGradient
+                  colors={[
+                    hexToRgba(colors.common.white, 0),
+                    hexToRgba(colors.common.white, 1),
+                  ]}
+                  style={styles.gradient}
+                  start={{ x: 1, y: 0 }}
+                  end={{ x: 0, y: 0 }}
+                />
+                <View style={[styles.gradient, { flex: 2 }]} />
+                <LinearGradient
+                  colors={[
+                    hexToRgba(colors.common.white, 0),
+                    hexToRgba(colors.common.white, 1),
+                  ]}
+                  style={styles.gradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                />
+              </View>
             </View>
-          )}
-        </View>
-      </SafeAreaView>
-    </View>
+            {user?.status === EUserStatus.ACTIVE ? (
+              <Shipments status={activeMenu} />
+            ) : (
+              <View style={shipmentStyle.footerEmptyWrapper}>
+                <Image
+                  source={require("@assets/images/notfound-shipment.png")}
+                  style={{ height: normalize(144), objectFit: "contain" }}
+                />
+                <Text
+                  varient="h4"
+                  style={[
+                    styles.textCenter,
+                    { color: colors.primary.darker, paddingTop: normalize(16) },
+                  ]}
+                >
+                  ไม่พบงานขนส่ง
+                </Text>
+                <Text
+                  style={[styles.textCenter, { paddingTop: normalize(4) }]}
+                  varient="body1"
+                  color="secondary"
+                >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nกรุณารอการตรวจสอบข้อมูลจกแอดมิน`}</Text>
+              </View>
+            )}
+          </View>
+        </SafeAreaView>
+      </View>
+    </Fragment>
   );
 }
 
@@ -343,7 +346,10 @@ function Shipments({ status }: ShipmentsProps) {
   const { user } = useAuth();
   const isFocused = useIsFocused();
 
-  const isBusinessDriver = user?.userType === EUserType.BUSINESS;
+  const driverTypes = get(user, "driverDetail.driverType", []);
+  const isAgent = user?.userType === EUserType.BUSINESS;
+  const isBusinessDriver = includes(driverTypes, EDriverType.BUSINESS_DRIVER); // isBusinessDriver != isAgent
+
   const [hasMore, setHasMore] = useState(false);
   const { data, refetch, fetchMore, loading } = useGetAvailableShipmentQuery({
     variables: {
@@ -408,12 +414,25 @@ function Shipments({ status }: ShipmentsProps) {
     const pickupLocation = head(item.destinations);
     const dropoffLocations = tail(item.destinations);
 
+    const isHiddenInfo = includes(
+      [
+        EShipmentStatus.DELIVERED,
+        EShipmentStatus.CANCELLED,
+        EShipmentStatus.REFUND,
+      ],
+      item.status
+    );
+
     const currentLog = find(item.steps, ["seq", item.currentStepSeq]);
 
     const isFirstProcess =
       index === 0 &&
       (item.status === EShipmentStatus.PROGRESSING ||
         item.status === EShipmentStatus.IDLE);
+
+    /**
+     * TODO: Asign driver --->
+     */
     const assignDriver = currentLog?.step === EStepDefinition.DRIVER_ACCEPTED;
     const statusColor = assignDriver
       ? colors.warning
@@ -434,7 +453,7 @@ function Shipments({ status }: ShipmentsProps) {
     const dropofftexts =
       dropoffLocations.length > 1
         ? `ส่ง ${dropoffLocations.length} จุด`
-        : `ถึง ${firstdropoff?.detail}`;
+        : `ถึง ${isHiddenInfo ? firstdropoff?.placeProvince || firstdropoff?.detail : firstdropoff?.name}`;
 
     return (
       <View
@@ -475,15 +494,19 @@ function Shipments({ status }: ShipmentsProps) {
             >
               ราคา
             </Text> */}
-            <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-              <Text varient="h3">
-                {fCurrency(item.payment.invoice?.totalCost || 0)}
-              </Text>
-              <Text varient="body2" style={{ lineHeight: normalize(26) }}>
-                {" "}
-                บาท
-              </Text>
-            </View>
+            {item.agentDriver && !isAgent ? (
+              <Fragment />
+            ) : (
+              <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+                <Text varient="h3">
+                  {fCurrency(item.payment.invoice?.totalCost || 0)}
+                </Text>
+                <Text varient="body2" style={{ lineHeight: normalize(26) }}>
+                  {" "}
+                  บาท
+                </Text>
+              </View>
+            )}
             {/* <Text varient="body2" color="disabled">เริ่มงาน</Text>
             <Text varient="body2" color="secondary">
               {fDateTime(item.bookingDateTime, "dd/MM/yyyy p")}
@@ -491,7 +514,7 @@ function Shipments({ status }: ShipmentsProps) {
           </View>
         </View>
         <View style={shipmentStyle.detailWrapper}>
-          {item.agentDriver && !isBusinessDriver && (
+          {item.agentDriver && !isAgent && (
             <View style={shipmentStyle.descriptionWrapper}>
               <Iconify
                 icon="fluent:person-circle-32-regular"
@@ -508,7 +531,7 @@ function Shipments({ status }: ShipmentsProps) {
               </View>
             </View>
           )}
-          {item.driver && isBusinessDriver && (
+          {item.driver && isAgent && (
             <View style={shipmentStyle.descriptionWrapper}>
               <Iconify
                 icon="fluent:person-circle-32-regular"
@@ -525,7 +548,7 @@ function Shipments({ status }: ShipmentsProps) {
               </View>
             </View>
           )}
-          {!item.driver && isBusinessDriver && (
+          {!item.driver && isAgent && (
             <View style={shipmentStyle.descriptionWrapper}>
               <Iconify
                 icon="fluent:person-circle-32-regular"
@@ -560,7 +583,10 @@ function Shipments({ status }: ShipmentsProps) {
               size={16}
             />
             <Text varient="body2" color="secondary" numberOfLines={1}>
-              จาก {pickupLocation?.detail}
+              จาก{" "}
+              {isHiddenInfo
+                ? pickupLocation?.placeProvince || pickupLocation?.detail
+                : pickupLocation?.name}
             </Text>
           </View>
           <View style={shipmentStyle.descriptionWrapper}>
@@ -661,7 +687,7 @@ function Shipments({ status }: ShipmentsProps) {
         </View>
       );
     } else {
-      return <></>;
+      return <Fragment />;
     }
   }
 

@@ -19,6 +19,9 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
+import PodPreparation, {
+  PODPreparationRef,
+} from "@/components/Modals/pod-preparation";
 
 const styles = StyleSheet.create({
   container: {
@@ -108,6 +111,7 @@ export interface UploadButtonProps {
   onRemove?: () => void;
   disabled?: boolean;
   actionMenus?: ActionType[];
+  podPreparation?: boolean;
 }
 
 export default function UploadButton({
@@ -122,8 +126,10 @@ export default function UploadButton({
   onRemove,
   helperText,
   disabled,
+  podPreparation = false,
   actionMenus = ["CAMERA", "FILE", "GALLERY", "CANCEL"],
 }: UploadButtonProps) {
+  const podRef = useRef<PODPreparationRef>(null);
   const { showSnackbar, DropdownType, Position } = useSnackbarV2();
   const { showActionSheetWithOptions } = useActionSheet();
 
@@ -254,15 +260,28 @@ export default function UploadButton({
           const pressMenu: MenuAction = preOptions[selectedIndex!];
           switch (pressMenu.value) {
             case "CAMERA":
-              handleTakePhoto();
+              if (podPreparation) {
+                handleOnOpenPrecamera(handleTakePhoto);
+              } else {
+                handleTakePhoto();
+              }
               break;
             case "FILE":
-              handleSelectFile();
+              if (podPreparation) {
+                handleOnOpenPrecamera(handleSelectFile);
+              } else {
+                handleSelectFile();
+              }
               break;
             case "GALLERY":
-              handleChoosePhoto();
+              if (podPreparation) {
+                handleOnOpenPrecamera(handleChoosePhoto);
+              } else {
+                handleChoosePhoto();
+              }
               break;
             case "CANCEL":
+              break;
             // Canceled
           }
         }
@@ -270,9 +289,21 @@ export default function UploadButton({
     );
   }
 
+  function handleOnOpenPrecamera(callback: VoidFunction) {
+    if (podRef.current) {
+      podRef.current.present(callback);
+    }
+  }
+
+  function handleOnClosePrecamera() {
+    if (podRef.current) {
+      podRef.current.close();
+    }
+  }
+
   if (isImagePreview) {
     return (
-      <>
+      <Fragment>
         <View style={[styles.container, containerStyle]}>
           {uri ? (
             <View
@@ -329,7 +360,8 @@ export default function UploadButton({
             </Text>
           )}
         </View>
-      </>
+        <PodPreparation ref={podRef} onContinue={handleOnClosePrecamera} />
+      </Fragment>
     );
   }
 
@@ -383,7 +415,7 @@ export default function UploadButton({
     );
   }
   return (
-    <>
+    <Fragment>
       <View style={[styles.container, containerStyle]}>
         <TouchableOpacity onPress={handleOpenActionSheet}>
           <View
@@ -407,7 +439,7 @@ export default function UploadButton({
           </View>
         </TouchableOpacity>
       </View>
-    </>
+    </Fragment>
   );
 }
 

@@ -3,7 +3,6 @@ query GetTransaction(
   $sortField: [String!]
   $sortAscending: Boolean
   $skip: Int
-  $transactionDate: DateTimeISO!
 ) {
   getTransaction(
     limit: $limit
@@ -16,6 +15,8 @@ query GetTransaction(
     ownerType
     refId
     refType
+    amountBeforeTax
+    amountTax
     amount
     transactionType
     description
@@ -23,12 +24,62 @@ query GetTransaction(
     createdAt
     updatedAt
   }
-  calculateTransaction {
-    totalPending
-    totalIncome
-    totalOutcome
-    totalOverall
-  }
   totalTransaction
-  calculateMonthlyTransaction(date: $transactionDate)
+  calculateTransaction {
+    monthly {
+      amount
+      count
+    }
+    pending {
+      amount
+      count
+    }
+    paid {
+      amount
+      count
+    }
+    all {
+      amount
+      count
+    }
+  }
+}
+
+query GetDriverTransactionDetail($transactionId: String!) {
+  getDriverTransactionDetail(transactionId: $transactionId) {
+    transaction {
+      _id
+      refType
+      ownerType
+      amountBeforeTax
+      amountTax
+      amount
+      status
+      description
+      createdAt
+      updatedAt
+    }
+    shipment {
+      _id
+      trackingNumber
+    }
+    driverPayment {
+      _id
+      paymentDate
+      paymentTime
+      subtotal
+      tax
+      total
+      createdAt
+      updatedAt
+      transactions {
+        description
+        amount
+        updatedAt
+      }
+      imageEvidence {
+        filename
+      }
+    }
+  }
 }

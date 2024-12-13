@@ -16,7 +16,7 @@ import { addMinutes } from "date-fns";
 import { router } from "expo-router";
 import hexToRgba from "hex-to-rgba";
 import { head, isEmpty, map, tail } from "lodash";
-import { useCallback, useMemo, useState } from "react";
+import { Fragment, useCallback, useMemo, useState } from "react";
 import { Image, Platform, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -257,7 +257,7 @@ export default function ShipmentList() {
         </View>
       );
     } else {
-      return <></>;
+      return <Fragment />;
     }
   }
 

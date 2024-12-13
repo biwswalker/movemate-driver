@@ -4,6 +4,7 @@ import { DoneConfirmDatetime } from "./SectionConfirmDatetimeStep";
 import { DonePOD } from "./SectionPODStep";
 import { Step } from "./Main";
 import { DoneOnLocation } from "./SectionOnLocation";
+import { Fragment } from "react";
 
 export interface CompletedStepsProps {
   shipment: Shipment;
@@ -34,6 +35,6 @@ export default function CompletedSteps(props: CompletedStepsProps) {
     case EStepDefinition.POD:
       return <DonePOD {...props} />;
     default:
-      return <></>;
+      return <Fragment />;
   }
 }

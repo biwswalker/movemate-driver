@@ -1,6 +1,7 @@
 import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
 import { find, includes, last, map } from "lodash";
 import { Step } from "./Main";
+import { Fragment } from "react";
 
 interface IdleStepsProps {
   shipment: Shipment;
@@ -35,22 +36,22 @@ export default function IdleSteps(props: IdleStepsProps) {
     case EStepDefinition.POD:
       return <POD {...props} />;
     default:
-      return <></>;
+      return <Fragment />;
   }
 }
 
 function ConfirmDatetime({ shipment, refetch, step, index }: IdleStepsProps) {
-  return <></>;
+  return <Fragment />;
 }
 
 function ArrivalLocation({ shipment, refetch, step, index }: IdleStepsProps) {
-  return <></>;
+  return <Fragment />;
 }
 
 function PickAndDrop({ shipment, refetch, step, index }: IdleStepsProps) {
-  return <></>;
+  return <Fragment />;
 }
 
 function POD({ shipment, refetch, step, index }: IdleStepsProps) {
-  return <></>;
+  return <Fragment />;
 }

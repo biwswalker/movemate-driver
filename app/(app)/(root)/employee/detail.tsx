@@ -4,12 +4,19 @@ import Iconify from "@/components/Iconify";
 import SheetBackdrop from "@/components/Sheets/SheetBackdrop";
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
-import { useGetUserQuery, User } from "@/graphql/generated/graphql";
+import {
+  EDriverStatus,
+  EUserStatus,
+  EUserValidationStatus,
+  useGetUserQuery,
+  User,
+} from "@/graphql/generated/graphql";
 import { imagePath } from "@/utils/file";
 import { normalize } from "@/utils/normalizeSize";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import {
   forwardRef,
+  Fragment,
   useCallback,
   useImperativeHandle,
   useMemo,
@@ -21,6 +28,10 @@ import ConfirmRemoveEmployeee, {
   ConfirmRemoveEmployeeModalRef,
 } from "@components/Modals/confirm-remove-employee";
 import DriverShipments, { DriverShipmentModalRef } from "./shipments";
+import { includes } from "lodash";
+import useAuth from "@/hooks/useAuth";
+import hexToRgba from "hex-to-rgba";
+import { router } from "expo-router";
 
 interface DriverDetailProps {
   userId: string;
@@ -33,6 +44,7 @@ export interface DriverDetailModalRef {
 }
 
 function DriverDetail({ userId, onClose }: DriverDetailProps) {
+  const { user: me } = useAuth();
   const shipmentModalRef = useRef<DriverShipmentModalRef>(null);
   const confirmRemoveModalRef = useRef<ConfirmRemoveEmployeeModalRef>(null);
   const { data, loading } = useGetUserQuery({ variables: { id: userId } });
@@ -55,13 +67,64 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
     }
   }
 
+  function handleOpenReRegister() {
+    onClose()
+    const param = JSON.stringify({ id: user?._id });
+    router.push({ pathname: '/employee/re-register/re-register', params: { param } });
+  }
+
   function handleConfirmRemove() {
     if (confirmRemoveModalRef.current) {
       confirmRemoveModalRef.current.present();
     }
   }
+
+  function handleRemoved() {
+    onClose()
+  }
+
+  const isRequesting = includes(user.requestedParents, me?._id);
+
+  const accountStatus = () => {
+    switch (user.status) {
+      case EUserStatus.ACTIVE:
+        return { label: "ปกติ", color: colors.success.main };
+      case EUserStatus.BANNED:
+        return { label: "ห้ามใช้งาน", color: colors.error.main };
+      case EUserStatus.DENIED:
+        return { label: "ปฎิเสธบัญชี", color: colors.error.main };
+      case EUserStatus.INACTIVE:
+        return { label: "ระงับใช้งาน", color: colors.warning.darker };
+      case EUserStatus.PENDING:
+        return { label: "รอตรวจสอบบัญชี", color: colors.warning.main };
+      default:
+        return { label: "", color: colors.divider };
+    }
+  };
+
+  const drivingStatus = () => {
+    if (user.status === EUserStatus.ACTIVE) {
+      switch (user.drivingStatus) {
+        case EDriverStatus.IDLE:
+          return { label: "ว่าง", color: colors.success.main };
+        case EDriverStatus.WORKING:
+          return { label: "ดำเนินการขนส่งอยู่", color: colors.info.main };
+        case EDriverStatus.BUSY:
+          return { label: "ไม่ว่าง", color: colors.warning.main };
+        default:
+          return { label: "", color: colors.divider };
+      }
+    } else {
+      return { label: "-", color: colors.text.secondary };
+    }
+  };
+
+  const { color: statusColor, label: statusLabel } = accountStatus();
+  const { color: drivingStatusColor, label: drivingStatusLabel } =
+    drivingStatus();
+
   return (
-    <>
+    <Fragment>
       <View style={styles.container}>
         <View style={styles.wrapper}>
           <View style={styles.driverInfoWrapper}>
@@ -103,19 +166,42 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
             </View>
           </View>
           <View style={styles.actionWrapper}>
-            <Button
-              fullWidth
-              StartIcon={
-                <Iconify
-                  icon="solar:box-bold-duotone"
-                  color={colors.text.primary}
-                />
-              }
-              title="รายการขนส่ง"
-              varient="soft"
-              color="inherit"
-              onPress={handleOpenShipment}
-            />
+            {isRequesting ? (
+              <View>
+                <View style={styles.waitingForRequestWrapper}>
+                  <Text style={styles.waitingForRequestText}>
+                    กำลังรอการตอบรับจากคนขับ
+                  </Text>
+                </View>
+              </View>
+            ) : user.status === EUserStatus.ACTIVE ? (
+              <Button
+                fullWidth
+                StartIcon={
+                  <Iconify
+                    icon="solar:box-bold-duotone"
+                    color={colors.info.dark}
+                  />
+                }
+                title="รายการขนส่ง"
+                varient="soft"
+                color="info"
+                onPress={handleOpenShipment}
+              />
+            ) : user.validationStatus === EUserValidationStatus.DENIED ? (
+              <Button
+                fullWidth
+                StartIcon={
+                  <Iconify icon="gg:details-less" color={colors.warning.dark} />
+                }
+                title="ดำเนินการแก้ไขบัญชี"
+                varient="soft"
+                color="warning"
+                onPress={handleOpenReRegister}
+              />
+            ) : (
+              <Fragment />
+            )}
           </View>
           <View style={styles.detailWrapper}>
             <View style={styles.detailRowWrapper}>
@@ -146,23 +232,38 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
                 <Text varient="body2">สถานะบัญชี</Text>
                 <Text
                   varient="body1"
-                  color="secondary"
-                  style={{ lineHeight: normalize(20) }}
+                  style={{ lineHeight: normalize(20), color: statusColor }}
                 >
-                  {user.status}
+                  {statusLabel}
                 </Text>
               </View>
               <View style={styles.detail}>
                 <Text varient="body2">สถานะขับรถ</Text>
                 <Text
                   varient="body1"
-                  color="secondary"
-                  style={{ lineHeight: normalize(20) }}
+                  style={{
+                    lineHeight: normalize(20),
+                    color: drivingStatusColor,
+                  }}
                 >
-                  {user.drivingStatus}
+                  {drivingStatusLabel}
                 </Text>
               </View>
             </View>
+            {user.validationRejectedMessage && (
+              <View style={styles.detailRowWrapper}>
+                <View style={styles.detail}>
+                  <Text varient="body2">เหตุผลปฏิเสธบัญชี</Text>
+                  <Text
+                    varient="body1"
+                    color="secondary"
+                    style={{ lineHeight: normalize(20) }}
+                  >
+                    {user.validationRejectedMessage}
+                  </Text>
+                </View>
+              </View>
+            )}
             <View style={styles.detailRowWrapper}>
               <View style={styles.detail}>
                 <Text varient="body2">ที่อยู่</Text>
@@ -188,9 +289,9 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
           </View>
         </View>
       </View>
-      <ConfirmRemoveEmployeee user={user} ref={confirmRemoveModalRef} />
+      <ConfirmRemoveEmployeee user={user} ref={confirmRemoveModalRef} onRemoved={handleRemoved} />
       <DriverShipments ref={shipmentModalRef} />
-    </>
+    </Fragment>
   );
 }
 
@@ -234,6 +335,16 @@ const styles = StyleSheet.create({
   actionWrapper: {
     paddingTop: normalize(24),
     alignItems: "center",
+  },
+  waitingForRequestWrapper: {
+    backgroundColor: hexToRgba(colors.warning.main, 0.08),
+    borderRadius: normalize(6),
+    alignSelf: "center",
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(4),
+  },
+  waitingForRequestText: {
+    color: colors.warning.dark,
   },
 });
 

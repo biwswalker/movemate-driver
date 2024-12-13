@@ -1,4 +1,4 @@
-import React, { ReactNode, useRef } from "react";
+import React, { Fragment, ReactNode, useRef } from "react";
 import {
   StyleSheet,
   TouchableOpacityProps,
@@ -101,7 +101,7 @@ export default function Button({
   disabled = false,
   fullWidth = false,
   size = "medium",
-  onPress,
+  onPress = () => {},
   style,
   title,
   loading,
@@ -287,7 +287,7 @@ function RippleButton({
   text,
   textSize,
   style,
-  onPress,
+  onPress = () => {},
   loading = false,
   color,
   duration = 1000,
@@ -329,9 +329,9 @@ function RippleButton({
     })
     .onStart(() => {
       console.log("onStart: ->");
+      runOnJS(onPress)();
       rippleOpacity.value = withTiming(0);
       containerScale.value = withSequence(withSpring(1.02), withSpring(1));
-      if (typeof onPress === "function") runOnJS(onPress)();
     })
     .onFinalize(() => {
       rippleOpacity.value = withTiming(0);
@@ -374,13 +374,13 @@ function RippleButton({
             {loading ? (
               <ActivityIndicator size="small" color={textColor} />
             ) : (
-              <>
+              <Fragment>
                 {StartIcon && StartIcon}
                 <Text style={textStyle} varient={textVarient}>
                   {text}
                 </Text>
                 {EndIcon && EndIcon}
-              </>
+              </Fragment>
             )}
           </View>
           <Reanimated.View style={rStyle} />

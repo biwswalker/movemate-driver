@@ -1,5 +1,5 @@
 import hexToRgba from "hex-to-rgba";
-import React, { forwardRef, ReactNode, Ref, useEffect } from "react";
+import React, { forwardRef, Fragment, ReactNode, Ref, useEffect } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
 import {
   TextInput as RNPTextInput,
@@ -86,7 +86,7 @@ export default forwardRef(function TextInput(
       ) : typeof helperText === "function" ? (
         helperText(props.error || false)
       ) : (
-        <></>
+        <Fragment />
       )}
     </Pressable>
   );

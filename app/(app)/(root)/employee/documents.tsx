@@ -23,13 +23,37 @@ export default function RegisterUploadsScreen() {
   const searchParam = useLocalSearchParams<{ param: string }>();
   const params = JSON.parse(searchParam.param || "{}") as EmployeeRegisterParam;
 
+  console.log('paaaaaaarammm: ', params)
+
   // TODO: Add with handle business customer registration
   const RegisterUploadSchema = Yup.object().shape({
-    frontOfVehicle: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
-    backOfVehicle: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
-    leftOfVehicle: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
-    rigthOfVehicle: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
-    copyVehicleRegistration: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
+    frontOfVehicle: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
+      .test("require-file", "อัพโหลดรูปด้านหน้ารถ", (value) => !isEmpty(value)),
+    backOfVehicle: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
+      .test("require-file", "อัพโหลดรูปด้านหลังรถ", (value) => !isEmpty(value)),
+    leftOfVehicle: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
+      .test(
+        "require-file",
+        "อัพโหลดรูปด้านข้างซ้ายรถ",
+        (value) => !isEmpty(value)
+      ),
+    rigthOfVehicle: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
+      .test(
+        "require-file",
+        "อัพโหลดรูปด้านข้างขวารถ",
+        (value) => !isEmpty(value)
+      ),
+    copyVehicleRegistration: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
+      .test(
+        "require-file",
+        "อัพโหลดเอกสารสำเนาทะเบียนรถ",
+        (value) => !isEmpty(value)
+      ),
     copyIDCard: Yup.mixed()
       .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
       .test(
@@ -99,19 +123,9 @@ export default function RegisterUploadsScreen() {
           containerStyle={styles.sectionContainer}
         >
           <View style={styles.documentList}>
-            <RHFUploadButton
-              file={values.copyIDCard}
-              name="copyIDCard"
-              label={`สำเนาบัตรประชาชน (บังคับ)`}
-            />
-            <RHFUploadButton
-              file={values.copyDrivingLicense}
-              name="copyDrivingLicense"
-              label={`สำเนาใบขับขี่ (บังคับ)`}
-            />
-            {/* <View>
+            <View>
               <Text>
-                รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
+                รูปถ่ายรถยนต์ (บังคับ)
               </Text>
             </View>
             <View style={styles.rowWrapper}>
@@ -149,9 +163,20 @@ export default function RegisterUploadsScreen() {
             <RHFUploadButton
               file={values.copyVehicleRegistration}
               name="copyVehicleRegistration"
-              label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
+              label={`สำเนาทะเบียนรถ (บังคับ)`}
             />
             <RHFUploadButton
+              file={values.copyIDCard}
+              name="copyIDCard"
+              label={`สำเนาบัตรประชาชน (บังคับ)`}
+            />
+            <RHFUploadButton
+              file={values.copyDrivingLicense}
+              name="copyDrivingLicense"
+              label={`สำเนาใบขับขี่ (บังคับ)`}
+            />
+
+            {/* <RHFUploadButton
               file={values.copyBookBank}
               name="copyBookBank"
               label="สำเนาหน้าบัญชีธนาคาร"
@@ -161,11 +186,11 @@ export default function RegisterUploadsScreen() {
               name="copyHouseRegistration"
               label="สำเนาทะเบียนบ้าน"
             />
-            {/* <RHFUploadButton
+            <RHFUploadButton
               file={values.insurancePolicy}
               name="insurancePolicy"
               label="กรมธรรม์ประกันรถ"
-            /> */}
+            />
             <RHFUploadButton
               file={values.criminalRecordCheckCert}
               name="criminalRecordCheckCert"
@@ -206,5 +231,9 @@ const styles = StyleSheet.create({
   },
   submitStyle: {
     paddingTop: normalize(32),
+  },
+  rowWrapper: {
+    flexDirection: "row",
+    gap: 8,
   },
 });

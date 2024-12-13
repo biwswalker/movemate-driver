@@ -16,6 +16,7 @@ import { createClient } from "graphql-ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { onError } from "@apollo/client/link/error";
 import SplashScreen from "@/components/SplashScreen";
+import { ERegistration } from "./generated/graphql";
 
 const httpLink = new HttpLink({
   uri: `${process.env.EXPO_PUBLIC_API_URL}/graphql`,
@@ -49,7 +50,7 @@ const authLink = setContext(
     return {
       headers: {
         ...headers,
-        platform: "app",
+        platform: ERegistration.APP,
         original: "movemate-driver",
         ...(existingAuthorization
           ? { authorization: existingAuthorization }

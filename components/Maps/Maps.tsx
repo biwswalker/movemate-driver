@@ -5,6 +5,7 @@ import React, {
   useRef,
   createContext,
   useContext,
+  Fragment,
 } from "react";
 import { Platform, StyleSheet } from "react-native";
 import MapView, {
@@ -74,7 +75,7 @@ export default function Map({ children }: MapProps) {
   }
 
   if (!notgranted) {
-    return <></>;
+    return <Fragment />;
   }
 
   return (

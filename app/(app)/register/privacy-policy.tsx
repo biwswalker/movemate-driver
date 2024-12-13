@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   underlineText: {
-    textDecorationLine: "underline",
+    // textDecorationLine: "underline",
   },
 });
 

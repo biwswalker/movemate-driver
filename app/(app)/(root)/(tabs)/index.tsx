@@ -1,6 +1,6 @@
 import colors from "@constants/colors";
 import { SafeAreaView } from "react-native-safe-area-context";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { Fragment, useCallback, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import AccountHeader from "@components/AccountHeader";
 import { normalize } from "@utils/normalizeSize";
@@ -14,24 +14,39 @@ import NewShipments, {
 import TodayCard, {
   DeniedApproval,
   PendingApproval,
+  TodayShipmentsRef,
 } from "@/components/Shipment/TodayCard";
 import { includes } from "lodash";
-import { EDriverType, EUserStatus } from "@/graphql/generated/graphql";
+import {
+  EDriverType,
+  EUserStatus,
+  EUserValidationStatus,
+} from "@/graphql/generated/graphql";
 import UsersHeader from "@/components/UsersHeader";
 import Text from "@/components/Text";
 import Button from "@/components/Button";
 import hexToRgba from "hex-to-rgba";
+import EmploymentApproval, {
+  EmploymentApprovalRef,
+} from "@/components/EmploymentApproval";
 
 export default function HomeScreen() {
-  const { user, refetchMe } = useAuth();
+  const { user, refetchMe, isAvailableWork } = useAuth();
+
+  // Get all driver include Parents
+
   const [refreshing, setRefreshing] = useState(false);
   const newShipmentsRef = useRef<NewShipmentsRef>(null);
+  const todayShipmentsRef = useRef<TodayShipmentsRef>(null);
+  const employmentRequestRef = useRef<EmploymentApprovalRef>(null);
 
   const userStatus = useMemo(() => user?.status, [user]);
   const driverTypes = useMemo(
     () => user?.driverDetail?.driverType || [],
     [user]
   );
+
+  const isAgent = includes(driverTypes, EDriverType.BUSINESS);
 
   const isOnlyBusinessDriver =
     driverTypes.length > 1
@@ -50,6 +65,16 @@ export default function HomeScreen() {
       if (newShipmentsRef.current && !isOnlyBusinessDriver) {
         newShipmentsRef.current.onRestartListening();
       }
+
+      if (todayShipmentsRef.current) {
+        todayShipmentsRef.current.refetch();
+      }
+
+      if (employmentRequestRef.current) {
+        employmentRequestRef.current.refetch();
+      }
+
+      // Refetch Request
     } catch (error) {
       console.log("error: ", JSON.stringify(error, undefined, 2));
     } finally {
@@ -80,11 +105,18 @@ export default function HomeScreen() {
             />
           }
         >
-          {includes(driverTypes, EDriverType.BUSINESS) && (
-            <UsersHeader containerStyle={styles.userHeaderStyle} />
-          )}
+          {includes(driverTypes, EDriverType.BUSINESS) &&
+            user?.validationStatus === EUserValidationStatus.APPROVE && (
+              <UsersHeader containerStyle={styles.userHeaderStyle} />
+            )}
+          <EmploymentApproval
+            ref={employmentRequestRef}
+            containerStyle={styles.employmentApprovalContainer}
+          />
           {user?.status === EUserStatus.ACTIVE &&
-            !includes(driverTypes, EDriverType.BUSINESS) && <TodayCard />}
+            !includes(driverTypes, EDriverType.BUSINESS) && (
+              <TodayCard ref={todayShipmentsRef} />
+            )}
           <View style={styles.contentWrapper}>
             {includes([EUserStatus.ACTIVE], user?.status) &&
               !isOnlyBusinessDriver && (
@@ -117,7 +149,51 @@ export default function HomeScreen() {
             {user?.status === EUserStatus.PENDING ? (
               <PendingApproval />
             ) : user?.status === EUserStatus.ACTIVE ? (
-              isOnlyBusinessDriver ? (
+              isAgent && !isAvailableWork ? (
+                <View style={styles.onlyBusinessDriverWrapper}>
+                  <Iconify
+                    icon="lets-icons:user-add-duotone"
+                    color={hexToRgba(colors.primary.main, 0.32)}
+                    size={normalize(124)}
+                  />
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: normalize(6),
+                      paddingHorizontal: normalize(16),
+                      paddingTop: normalize(16),
+                      paddingBottom: normalize(8),
+                    }}
+                  >
+                    <Text color="secondary">
+                      {" "}
+                      ยินดีต้อนรับสู่
+                      <Text
+                        varient="subtitle1"
+                        style={{ color: colors.primary.dark }}
+                      >
+                        {" "}
+                        Movemate Driver{" "}
+                      </Text>
+                      ขณะนี้คุณยังไม่สามารถเห็นงานขนส่ง
+                      เนื่องจากคุณไม่มีคนขับรถในสังกัด
+                    </Text>
+                  </View>
+                  <Button
+                    title="เพิ่มรายชื่อพนักงานขับรถ"
+                    varient="soft"
+                    onPress={() => {
+                      router.push("/employee/employees");
+                    }}
+                    EndIcon={
+                      <Iconify
+                        icon="mingcute:arrow-right-line"
+                        color={colors.primary.dark}
+                      />
+                    }
+                  />
+                </View>
+              ) : isOnlyBusinessDriver ? (
                 <View style={styles.onlyBusinessDriverWrapper}>
                   <Iconify
                     icon="solar:sticker-smile-circle-2-bold-duotone"
@@ -161,11 +237,13 @@ export default function HomeScreen() {
                 />
               )
             ) : user?.status === EUserStatus.INACTIVE ? (
-              <></>
+              <Fragment />
             ) : user?.status === EUserStatus.DENIED ? (
-              <DeniedApproval />
+              <DeniedApproval
+                reasonMessage={user.validationRejectedMessage || "-"}
+              />
             ) : (
-              <></>
+              <Fragment />
             )}
           </View>
         </ScrollView>
@@ -223,8 +301,9 @@ const styles = StyleSheet.create({
     marginBottom: normalize(16),
   },
   onlyBusinessDriverWrapper: {
-    paddingVertical: normalize(32),
+    paddingVertical: normalize(16),
     alignItems: "center",
+    gap: normalize(8),
   },
   gradient: {
     flex: 1,
@@ -236,5 +315,8 @@ const styles = StyleSheet.create({
   userHeaderStyle: {
     marginHorizontal: normalize(16),
     marginTop: normalize(8),
+  },
+  employmentApprovalContainer: {
+    marginHorizontal: normalize(16),
   },
 });

@@ -21,7 +21,7 @@ import {
   useSentPodDocumentMutation,
 } from "@/graphql/generated/graphql";
 import Button from "@/components/Button";
-import { useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { fileUploadAPI } from "@/services/upload";
 import UploadButton from "@/components/UploadButton";
 import { imagePath } from "@/utils/file";
@@ -103,6 +103,7 @@ export function ProgressPOD({
         title: "ข้อมูลไม่ครบ",
         type: DropdownAlertType.Warn,
       });
+      return;
     }
     if (!trackingNumber) {
       const message = "กรุณากรอกหมายเลขติดตาม";
@@ -111,8 +112,9 @@ export function ProgressPOD({
         title: "ข้อมูลไม่ครบ",
         type: DropdownAlertType.Warn,
       });
+      return;
     }
-    if (usedFiles.length > 1) {
+    if (usedFiles.length > 0) {
       const images = await Promise.all(
         map(usedFiles, (file) => reformUpload(file))
       );
@@ -129,7 +131,7 @@ export function ProgressPOD({
         onError: handleConfirmError,
       });
     } else {
-      const message = "ไม่สามารถยืนยันขึ้นสินค้าได้ กรุณาแนบรูปขึ้นต่ำ 2 รูป";
+      const message = "ไม่สามารถยืนยันขึ้นสินค้าได้ กรุณาแนบรูปขึ้นต่ำ 1 รูป";
       showSnackbar({
         message,
         title: "ข้อมูลไม่ครบ",
@@ -156,57 +158,60 @@ export function ProgressPOD({
   }
 
   return (
-    <Animated.ScrollView style={styles.wrapper}>
-      {/* Direction detail */}
-      <Text varient="body2" color="secondary">
-        รูปภาพหลักฐานการส่ง
-      </Text>
-      <View style={styles.contactWrapper}>
-        {map(files, (file, index) => {
-          return (
-            <UploadButton
-              key={`${file?.name}-${index}`}
-              file={file}
-              actionMenus={["CAMERA", "GALLERY"]}
-              onFileChange={(file) => handleFileChange(file, index)}
-              onRemove={() => handleFileRemove(index)}
-              isImagePreview
-              containerStyle={{ maxWidth: normalize(88) }}
-            />
-          );
-        })}
-      </View>
-      <View>
-        <SelectDropdown
-          label="บริษัทขนส่ง"
-          options={SENDER_PROVIDER}
-          labelField="label"
-          valueField="value"
-          value={provider}
-          dropdownPosition="top"
-          onChanged={(provider) => {
-            setProvider(provider.value);
-          }}
-        />
-        <TextInput
-          label="หมายเลขติดตาม"
-          value={trackingNumber}
-          onChangeText={(text) => {
-            setTrackingNumber(text);
-          }}
-        />
-      </View>
-      <View style={styles.actionsWrapper}>
-        <Button
-          size="large"
-          varient="soft"
-          title={`ยืนยัน${definition?.driverMessage}`}
-          fullWidth
-          loading={loading}
-          onPress={handleConfirm}
-        />
-      </View>
-    </Animated.ScrollView>
+    <Fragment>
+      <Animated.ScrollView style={styles.wrapper}>
+        {/* Direction detail */}
+        <Text varient="body2" color="secondary">
+          รูปภาพหลักฐานการส่ง
+        </Text>
+        <View style={styles.contactWrapper}>
+          {map(files, (file, index) => {
+            return (
+              <UploadButton
+                key={`${file?.name}-${index}`}
+                file={file}
+                actionMenus={["CAMERA", "GALLERY"]}
+                onFileChange={(file) => handleFileChange(file, index)}
+                onRemove={() => handleFileRemove(index)}
+                isImagePreview
+                podPreparation={index === 0}
+                containerStyle={{ maxWidth: normalize(88) }}
+              />
+            );
+          })}
+        </View>
+        <View>
+          <SelectDropdown
+            label="บริษัทขนส่ง"
+            options={SENDER_PROVIDER}
+            labelField="label"
+            valueField="value"
+            value={provider}
+            dropdownPosition="top"
+            onChanged={(provider) => {
+              setProvider(provider.value);
+            }}
+          />
+          <TextInput
+            label="หมายเลขติดตาม"
+            value={trackingNumber}
+            onChangeText={(text) => {
+              setTrackingNumber(text);
+            }}
+          />
+        </View>
+        <View style={styles.actionsWrapper}>
+          <Button
+            size="large"
+            varient="soft"
+            title={`ยืนยัน${definition?.driverMessage}`}
+            fullWidth
+            loading={loading}
+            onPress={handleConfirm}
+          />
+        </View>
+      </Animated.ScrollView>
+    </Fragment>
   );
 }
 
@@ -224,7 +229,7 @@ export function DonePOD({ step, shipment }: ProgressingStepsProps) {
   return (
     <View style={styles.wrapper}>
       {!isHiddenInfo && (
-        <>
+        <Fragment>
           <Text varient="body2" color="disabled">
             รูปภาพหลักฐานการส่ง
           </Text>
@@ -239,7 +244,7 @@ export function DonePOD({ step, shipment }: ProgressingStepsProps) {
               );
             })}
           </View>
-        </>
+        </Fragment>
       )}
       {podDetail && (
         <View style={styles.addressContent}>

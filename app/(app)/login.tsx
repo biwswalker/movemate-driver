@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import colors from "@constants/colors";
 import { normBaseW } from "@/utils/normalizeSize";
 import hexToRgba from "hex-to-rgba";
@@ -58,12 +58,13 @@ export default function Login() {
   } = methods;
 
   useEffect(() => {
+    reset()
     return () => {
       clearAuthError();
       reset();
     };
   }, []);
-
+  
   useEffect(() => {
     if (authError) {
       setError("afterSubmit", {

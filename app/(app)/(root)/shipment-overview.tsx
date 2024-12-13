@@ -233,7 +233,7 @@ function ConfirmDialog({ open, setOpen, shipment }: IConfirmDialogProps) {
             <Text>
               ราคา{" "}
               <Text varient="subtitle1">
-                {fCurrency(get(shipment, "payment.calculation.totalCost", 0))}
+                {fCurrency(get(shipment, "payment.invoice.totalCost", 0))}
               </Text>{" "}
               บาท ({fNumber(shipment?.displayDistance / 1000, "0,0.0")} กม.)
             </Text>

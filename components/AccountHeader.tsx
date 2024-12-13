@@ -15,6 +15,7 @@ import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { normalize } from "@/utils/normalizeSize";
 import { router } from "expo-router";
+import { EUserValidationStatus } from "@/graphql/generated/graphql";
 
 const styles = StyleSheet.create({
   accountContainer: {
@@ -55,6 +56,8 @@ export default function AccountHeader({
 }: AccountHeaderProps) {
   const { user, notificationCount } = useAuth();
 
+  const validated = user?.validationStatus === EUserValidationStatus.APPROVE
+
   function handleViewNotifications() {
     router.push("/notifications");
   }
@@ -80,7 +83,7 @@ export default function AccountHeader({
           {user?.fullname}
         </Text>
         <Text varient="body2" color="secondary">
-          {user?.userNumber}
+          {validated ? user?.userNumber : '-'}
         </Text>
       </View>
       <View style={styles.accountActionWrapper}>

@@ -5,6 +5,7 @@ import { ProgressPOD } from "./SectionPODStep";
 import { Refund } from "./SectionRefundStep";
 import { Step } from "./Main";
 import { OnLocation } from "./SectionOnLocation";
+import { Fragment } from "react";
 
 export interface ProgressingStepsProps {
   shipment: Shipment;
@@ -37,6 +38,6 @@ export default function ProgressingSteps(props: ProgressingStepsProps) {
     case EStepDefinition.REFUND:
       return <Refund {...props} />;
     default:
-      return <></>;
+      return <Fragment />;
   }
 }

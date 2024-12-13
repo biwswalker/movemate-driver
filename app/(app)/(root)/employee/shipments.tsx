@@ -10,6 +10,7 @@ import { normalize } from "@/utils/normalizeSize";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import {
   forwardRef,
+  Fragment,
   useCallback,
   useImperativeHandle,
   useMemo,
@@ -51,7 +52,7 @@ function DriverShipments({ userId, onClose }: DriverShipmentProps) {
   //   }
 
   return (
-    <>
+    <Fragment>
       <View style={styles.container}>
         <View style={styles.wrapper}>
           <View style={styles.driverInfoWrapper}>
@@ -103,7 +104,7 @@ function DriverShipments({ userId, onClose }: DriverShipmentProps) {
       </View>
       {/* TODO: Filter */}
       {/* <ConfirmRemoveEmployeee user={user} ref={confirmRemoveModalRef} /> */}
-    </>
+    </Fragment>
   );
 }
 

@@ -10,12 +10,16 @@ import { normalize } from "@/utils/normalizeSize";
 import { fData } from "@/utils/number";
 import Yup from "@/utils/yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { includes, isEmpty } from "lodash";
-import { useEffect, useMemo } from "react";
+import { get, includes, isEmpty } from "lodash";
+import { Fragment, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EDriverType } from "@/graphql/generated/graphql";
+import {
+  EDriverType,
+  EUserStatus,
+  EUserValidationStatus,
+} from "@/graphql/generated/graphql";
 
 interface FormValue {
   frontOfVehicle: FileInput | string;
@@ -38,10 +42,25 @@ const MAXIMUM_FILE_SIZE_TEXT = `ขนาดไฟล์ไม่เกิน ${
 
 export default function ProfileDocument() {
   const { user } = useAuth();
+
+  const isApproved =
+    user?.status === EUserStatus.ACTIVE &&
+    user.validationStatus === EUserValidationStatus.APPROVE;
+
   const documents = useMemo(() => user?.driverDetail?.documents, [user]);
   const isBusinessRegistration = useMemo(() => {
     if (user?.driverDetail) {
       return includes(user.driverDetail.driverType, EDriverType.BUSINESS);
+    }
+    return false;
+  }, [user]);
+
+  const isOnlyBusinessDriver = useMemo(() => {
+    const driverTypes = get(user, "driverDetail.driverType", []);
+    if (user?.driverDetail) {
+      if (driverTypes.length <= 1) {
+        return includes(driverTypes, EDriverType.BUSINESS_DRIVER);
+      }
     }
     return false;
   }, [user]);
@@ -84,7 +103,11 @@ export default function ProfileDocument() {
       .test("require-file", "อัพโหลดสำเนาใบขับขี่", (value) =>
         isBusinessRegistration ? true : !isEmpty(value)
       ),
-    copyBookBank: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
+    copyBookBank: Yup.mixed()
+      .maxFileSize(MAXIMUM_FILE_SIZE_TEXT)
+      .test("require-file", "อัพโหลดสำเนาหน้าบัญชีธนาคาร", (value) =>
+        isOnlyBusinessDriver ? true : !isEmpty(value)
+      ),
     copyHouseRegistration: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     insurancePolicy: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
     criminalRecordCheckCert: Yup.mixed().maxFileSize(MAXIMUM_FILE_SIZE_TEXT),
@@ -149,6 +172,7 @@ export default function ProfileDocument() {
   const methods = useForm<FormValue>({
     resolver: yupResolver(RegisterUploadSchema) as any,
     defaultValues,
+    disabled: !isApproved,
   });
 
   const { handleSubmit, reset, watch } = methods;
@@ -185,7 +209,7 @@ export default function ProfileDocument() {
           >
             <View style={styles.documentList}>
               {isBusinessRegistration && (
-                <>
+                <Fragment>
                   <RHFUploadButton
                     file={values.businessRegistrationCertificate}
                     name="businessRegistrationCertificate"
@@ -201,52 +225,58 @@ export default function ProfileDocument() {
                     name="certificateValueAddedTaxRegistration"
                     label="ภพ 20"
                   />
-                </>
+                  <RHFUploadButton
+                    file={values.copyBookBank}
+                    name="copyBookBank"
+                    label="สำเนาหน้าบัญชีธนาคาร (บังคับ)"
+                  />
+                </Fragment>
               )}
-              <View>
-                <Text>
-                  รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
-                </Text>
-              </View>
-              <View style={styles.rowWrapper}>
-                <RHFUploadButton
-                  file={values.frontOfVehicle}
-                  name="frontOfVehicle"
-                  label="ด้านหน้ารถ"
-                  isImagePreview
-                  actionMenus={["CAMERA", "GALLERY"]}
-                />
-                <RHFUploadButton
-                  file={values.backOfVehicle}
-                  name="backOfVehicle"
-                  label="ด้านหลังรถ"
-                  isImagePreview
-                  actionMenus={["CAMERA", "GALLERY"]}
-                />
-              </View>
-              <View style={styles.rowWrapper}>
-                <RHFUploadButton
-                  file={values.leftOfVehicle}
-                  name="leftOfVehicle"
-                  label="ด้านข้าง ซ้ายรถ"
-                  isImagePreview
-                  actionMenus={["CAMERA", "GALLERY"]}
-                />
-                <RHFUploadButton
-                  file={values.rigthOfVehicle}
-                  name="rigthOfVehicle"
-                  label="ด้านข้าง ขวารถ"
-                  isImagePreview
-                  actionMenus={["CAMERA", "GALLERY"]}
-                />
-              </View>
-              <RHFUploadButton
-                file={values.copyVehicleRegistration}
-                name="copyVehicleRegistration"
-                label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
-              />
+
               {!isBusinessRegistration && (
-                <>
+                <Fragment>
+                  <View>
+                    <Text>
+                      รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
+                    </Text>
+                  </View>
+                  <View style={styles.rowWrapper}>
+                    <RHFUploadButton
+                      file={values.frontOfVehicle}
+                      name="frontOfVehicle"
+                      label="ด้านหน้ารถ"
+                      isImagePreview
+                      actionMenus={["CAMERA", "GALLERY"]}
+                    />
+                    <RHFUploadButton
+                      file={values.backOfVehicle}
+                      name="backOfVehicle"
+                      label="ด้านหลังรถ"
+                      isImagePreview
+                      actionMenus={["CAMERA", "GALLERY"]}
+                    />
+                  </View>
+                  <View style={styles.rowWrapper}>
+                    <RHFUploadButton
+                      file={values.leftOfVehicle}
+                      name="leftOfVehicle"
+                      label="ด้านข้าง ซ้ายรถ"
+                      isImagePreview
+                      actionMenus={["CAMERA", "GALLERY"]}
+                    />
+                    <RHFUploadButton
+                      file={values.rigthOfVehicle}
+                      name="rigthOfVehicle"
+                      label="ด้านข้าง ขวารถ"
+                      isImagePreview
+                      actionMenus={["CAMERA", "GALLERY"]}
+                    />
+                  </View>
+                  <RHFUploadButton
+                    file={values.copyVehicleRegistration}
+                    name="copyVehicleRegistration"
+                    label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
+                  />
                   <RHFUploadButton
                     file={values.copyIDCard}
                     name="copyIDCard"
@@ -257,13 +287,15 @@ export default function ProfileDocument() {
                     name="copyDrivingLicense"
                     label={`สำเนาใบขับขี่${isBusinessRegistration ? "" : " (บังคับ)"}`}
                   />
-                </>
+                  {!isOnlyBusinessDriver && (
+                    <RHFUploadButton
+                      file={values.copyBookBank}
+                      name="copyBookBank"
+                      label="สำเนาหน้าบัญชีธนาคาร (บังคับ)"
+                    />
+                  )}
+                </Fragment>
               )}
-              <RHFUploadButton
-                file={values.copyBookBank}
-                name="copyBookBank"
-                label="สำเนาหน้าบัญชีธนาคาร"
-              />
               <RHFUploadButton
                 file={values.copyHouseRegistration}
                 name="copyHouseRegistration"
@@ -316,6 +348,7 @@ const styles = StyleSheet.create({
   },
   documentList: {
     gap: normalize(12),
+    paddingBottom: normalize(16),
   },
   sectionTitleWrapper: {
     // paddingTop: normalize(48),

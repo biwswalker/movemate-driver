@@ -1,17 +1,25 @@
 import Text from "@/components/Text";
 import colors from "@constants/colors";
-import { Shipment } from "@/graphql/generated/graphql";
+import { EDriverType, EUserType, Shipment } from "@/graphql/generated/graphql";
 import { fDateTime, fSecondsToDuration } from "@/utils/formatTime";
 import { normalize } from "@/utils/normalizeSize";
 import { fCurrency, fNumber } from "@/utils/number";
 import { StyleSheet, View } from "react-native";
-import { get } from "lodash";
+import { get, includes } from "lodash";
+import useAuth from "@/hooks/useAuth";
+import { Fragment } from "react";
 
 interface OverviewProps {
   shipment: Shipment;
 }
 
 export default function Overview({ shipment }: OverviewProps) {
+  const { user } = useAuth();
+
+  const isAgent = user?.userType === EUserType.BUSINESS;
+  // const driverTypes = get(user, "driverDetail.driverType", []);
+  // const isBusinessDriver = includes(driverTypes, EDriverType.BUSINESS_DRIVER); // isBusinessDriver != isAgent
+
   return (
     <View style={overviewStyles.container}>
       <View style={overviewStyles.titleContainer}>
@@ -44,26 +52,30 @@ export default function Overview({ shipment }: OverviewProps) {
             })}
           </Text>
         </View>
-        <View>
-          <Text varient="caption" color="disabled">
-            ราคาสุทธิ
-          </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              gap: normalize(2),
-              alignItems: "flex-end",
-            }}
-          >
-            <Text varient="h4" style={overviewStyles.pricingText}>
-              {fCurrency(get(shipment, "payment.invoice.totalCost", 0))}
+        {shipment?.agentDriver && !isAgent ? (
+          <Fragment />
+        ) : (
+          <View>
+            <Text varient="caption" color="disabled">
+              ราคาสุทธิ
             </Text>
-            <Text varient="body2" style={{ lineHeight: normalize(32) }}>
-              {" "}
-              บาท
-            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                gap: normalize(2),
+                alignItems: "flex-end",
+              }}
+            >
+              <Text varient="h4" style={overviewStyles.pricingText}>
+                {fCurrency(get(shipment, "payment.invoice.totalCost", 0))}
+              </Text>
+              <Text varient="body2" style={{ lineHeight: normalize(32) }}>
+                {" "}
+                บาท
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
       </View>
     </View>
   );

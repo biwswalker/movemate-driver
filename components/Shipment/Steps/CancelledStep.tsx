@@ -2,6 +2,7 @@ import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/g
 import { find, includes, last, map } from "lodash";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Step } from "./Main";
+import { Fragment } from "react";
 
 export interface CancelledStepsProps {
   shipment: Shipment;
@@ -33,7 +34,7 @@ export default function CancelledSteps(props: CancelledStepsProps) {
     case EStepDefinition.POD:
       return <POD {...props} />;
     default:
-      return <></>;
+      return <Fragment />;
   }
 }
 

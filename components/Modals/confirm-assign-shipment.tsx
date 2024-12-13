@@ -1,5 +1,6 @@
 import React, {
   forwardRef,
+  Fragment,
   useCallback,
   useImperativeHandle,
   useMemo,
@@ -128,7 +129,7 @@ const ConfirmAssignShipmentModal = forwardRef<
           );
         }
 
-        return <></>;
+        return <Fragment />;
       }}
     </BottomSheetModal>
   );

@@ -1,14 +1,13 @@
-import React, { ReactNode, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
-import Text, { getFontVarient } from './Text';
-import hexToRgba from 'hex-to-rgba';
-import colors from '@constants/colors';
-
+import React, { Fragment, ReactNode, useMemo, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
+import Text, { getFontVarient } from "./Text";
+import hexToRgba from "hex-to-rgba";
+import colors from "@constants/colors";
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     marginVertical: 8,
   },
   dropdown: {
@@ -21,20 +20,20 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   label: {
-    position: 'absolute',
+    position: "absolute",
     left: 8,
     top: 10,
     zIndex: 999,
     paddingHorizontal: 8,
-    ...getFontVarient('caption'),
+    ...getFontVarient("caption"),
     color: colors.text.disabled,
   },
   placeholderStyle: {
-    ...getFontVarient('body1'),
+    ...getFontVarient("body1"),
     color: colors.text.disabled,
   },
   selectedTextStyle: {
-    ...getFontVarient('body1'),
+    ...getFontVarient("body1"),
     transform: [{ translateY: 8 }],
     color: colors.text.primary,
   },
@@ -43,7 +42,7 @@ const styles = StyleSheet.create({
     height: 20,
   },
   itemTextStyle: {
-    ...getFontVarient('body1'),
+    ...getFontVarient("body1"),
   },
   helperText: {
     color: colors.text.secondary,
@@ -65,20 +64,20 @@ export interface DropdownInputProps<T = any> {
   disabled?: boolean;
   onChanged?: (value: T) => void;
   error?: boolean;
-  dropdownPosition?: 'auto' | 'top' | 'bottom';
+  dropdownPosition?: "auto" | "top" | "bottom";
 }
 
 export default function SelectDropdown<T = any>({
   helperText,
   options,
   value,
-  label = '',
+  label = "",
   onChanged = () => {},
   valueField,
   labelField,
   disabled,
   error,
-  dropdownPosition = 'auto',
+  dropdownPosition = "auto",
 }: DropdownInputProps<T>) {
   const datas = useMemo(() => options || [], [options]);
   const [isFocus, setIsFocus] = useState(false);
@@ -99,7 +98,7 @@ export default function SelectDropdown<T = any>({
       {renderLabel()}
       <Dropdown
         dropdownPosition={dropdownPosition}
-        style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+        style={[styles.dropdown, isFocus && { borderColor: "blue" }]}
         placeholderStyle={styles.placeholderStyle}
         selectedTextStyle={styles.selectedTextStyle}
         iconStyle={styles.iconStyle}
@@ -115,14 +114,17 @@ export default function SelectDropdown<T = any>({
         disable={disabled}
         onChange={onChanged}
       />
-      {typeof helperText === 'string' ? (
-        <Text varient="caption" style={[styles.helperText, error && styles.helperTextError]}>
+      {typeof helperText === "string" ? (
+        <Text
+          varient="caption"
+          style={[styles.helperText, error && styles.helperTextError]}
+        >
           {helperText}
         </Text>
-      ) : typeof helperText === 'function' ? (
+      ) : typeof helperText !== "undefined" ? (
         helperText(error || false)
       ) : (
-        <></>
+        <Fragment />
       )}
     </View>
   );

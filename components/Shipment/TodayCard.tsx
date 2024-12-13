@@ -1,67 +1,169 @@
 import colors from "@constants/colors";
-import React, { useEffect, useRef } from "react";
+import React, {
+  forwardRef,
+  Fragment,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Animated, Dimensions, Easing, StyleSheet, View } from "react-native";
 import Text from "@components/Text";
 import { fDate } from "@utils/formatTime";
 import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
-import { get } from "lodash";
+import { find, get } from "lodash";
 import useAuth from "@/hooks/useAuth";
+import {
+  Shipment,
+  useGetTodayShipmentQuery,
+} from "@/graphql/generated/graphql";
+import { ActivityIndicator } from "react-native-paper";
+import { useIsFocused } from "@react-navigation/native";
+import hexToRgba from "hex-to-rgba";
+import Button from "../Button";
+import { router } from "expo-router";
 
-export default function TodayCard() {
-  // TODO: Get active work
-  const { user } = useAuth();
+export interface TodayShipmentsRef {
+  refetch: Function;
+}
 
-  // TODO: To support business recheck
-  const vehicleImages = get(
-    user,
-    "individualDriver.serviceVehicleType.image.filename",
-    ""
-  );
+interface TodayShipmentsProps {}
 
-  const screenWidth = Dimensions.get("screen").width;
-  const translateXAnim = useRef(new Animated.Value(0)).current;
+const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
+  (_, ref) => {
+    const isFocused = useIsFocused();
+    const { user } = useAuth();
 
-  function startAnimation() {
-    Animated.sequence([
-      Animated.timing(translateXAnim, {
-        toValue: 1,
-        duration: 500,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.spring(translateXAnim, { toValue: 0.96, useNativeDriver: true }),
-    ]).start();
-  }
+    const [mainLoading, setMainLoading] = useState(false);
 
-  const translateX = translateXAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [screenWidth, screenWidth - normalize(200)],
-  });
+    const { data, refetch, loading } = useGetTodayShipmentQuery({
+      notifyOnNetworkStatusChange: true,
+      onError: (error) => {
+        console.log("error: ", error);
+      },
+    });
 
-  useEffect(() => {
-    startAnimation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    function refetchShipment() {
+      refetch();
+    }
 
-  return (
-    <View style={todayCardStyles.todayContainer}>
-      <View style={todayCardStyles.todayWrapper}>
-        <Text varient="h5" style={todayCardStyles.todayText}>
-          งานวันนี้ {fDate(new Date(), "dd/MM/yyyy")}
-        </Text>
-        <Text style={todayCardStyles.todaySubtitleText}>ไม่พบงานขนส่ง</Text>
-        <View style={todayCardStyles.todayActionWrapper}>
-          {/* <ButtonIcon varient="soft" size="large" color="info" circle>
-              <Iconify
-                icon="ci:arrow-right-lg"
-                size={normalize(24)}
-                color={colors.info.main}
-              />
-            </ButtonIcon> */}
+    useImperativeHandle(ref, () => ({
+      refetch: refetchShipment,
+    }));
+
+    useEffect(() => {
+      if (isFocused) {
+        // refetchShipment();
+      }
+    }, [isFocused]);
+
+    useEffect(() => {
+      if (loading) {
+        setMainLoading(true);
+      } else {
+        setTimeout(() => setMainLoading(false), 600);
+      }
+    }, [loading]);
+
+    const shipment = useMemo(() => {
+      return get(data, "getTodayShipment", undefined) as Shipment | undefined;
+    }, [data?.getTodayShipment]);
+
+    // TODO: To support business recheck
+    const vehicleImages = get(
+      user,
+      "individualDriver.serviceVehicleType.image.filename",
+      ""
+    );
+
+    const screenWidth = Dimensions.get("screen").width;
+    const translateXAnim = useRef(new Animated.Value(0)).current;
+
+    function startAnimation() {
+      Animated.sequence([
+        Animated.timing(translateXAnim, {
+          toValue: 1,
+          duration: 500,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.spring(translateXAnim, {
+          toValue: 0.96,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+
+    const translateX = translateXAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [screenWidth, screenWidth - normalize(200)],
+    });
+
+    useEffect(() => {
+      startAnimation();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    function onViewShipment() {
+      router.push({
+        pathname: "/shipment-working",
+        params: { trackingNumber: shipment?.trackingNumber },
+      });
+    }
+    // const status
+    const currentStatus = find(shipment?.steps, [
+      "seq",
+      shipment?.currentStepSeq,
+    ]);
+
+    return (
+      <View style={todayCardStyles.todayContainer}>
+        <View style={todayCardStyles.todayWrapper}>
+          <Text varient="body1" style={todayCardStyles.todayText}>
+            งานวันนี้ {fDate(new Date(), "dd/MM/yyyy")}
+          </Text>
+          {mainLoading ? (
+            <View style={todayCardStyles.loadingWrapper}>
+              <ActivityIndicator size="small" color={colors.text.secondary} />
+            </View>
+          ) : shipment ? (
+            <View style={todayCardStyles.shipmentStatusContainer}>
+              <Text varient="body1" style={todayCardStyles.trackingNumber}>
+                {shipment.trackingNumber}
+              </Text>
+              {currentStatus && (
+                <Text
+                  varient="body2"
+                  numberOfLines={1}
+                  style={[{ color: colors.text.secondary }]}
+                >
+                  {currentStatus?.driverMessage}
+                </Text>
+              )}
+              <View style={todayCardStyles.todayActionWrapper}>
+                <Button
+                  fullWidth
+                  varient="contained"
+                  color="info"
+                  title="แสดงข้อมูลขนส่ง"
+                  onPress={onViewShipment}
+                  StartIcon={
+                    <Iconify
+                      icon="fluent:map-24-filled"
+                      size={normalize(24)}
+                      color={colors.common.white}
+                    />
+                  }
+                />
+              </View>
+            </View>
+          ) : (
+            <Text style={todayCardStyles.todaySubtitleText}>ไม่พบงานขนส่ง</Text>
+          )}
         </View>
-      </View>
-      {/* {vehicleImages && (
+        {/* {vehicleImages && (
           <Animated.View
             style={[
               todayCardStyles.truckImageContainer,
@@ -74,13 +176,16 @@ export default function TodayCard() {
             />
           </Animated.View>
         )} */}
-    </View>
-  );
-}
+      </View>
+    );
+  }
+);
+
+export default TodayCard;
 
 export function PendingApproval() {
   return (
-    <>
+    <Fragment>
       <Text varient="h6" style={todayCardStyles.textCenter}>
         ขณะนี้ยังไม่สามารถใช้ฟีเจอร์นี้ได้
       </Text>
@@ -120,14 +225,20 @@ export function PendingApproval() {
           </View>
         </View>
       </View>
-    </>
+    </Fragment>
   );
 }
 
-export function DeniedApproval() {
+export function DeniedApproval({ reasonMessage }: { reasonMessage: string }) {
+  function handleOnReSubmitForm() {
+    router.push("/re-register/re-register");
+  }
   return (
-    <>
-      <Text varient="h6" style={todayCardStyles.textCenter}>
+    <Fragment>
+      <Text
+        varient="h6"
+        style={[todayCardStyles.textCenter, { color: colors.error.dark }]}
+      >
         ไม่สามารถใช้ฟีเจอร์นี้ได้
       </Text>
       <Text
@@ -166,8 +277,32 @@ export function DeniedApproval() {
             </Text>
           </View>
         </View>
+        <View style={todayCardStyles.infoTextWrapper}>
+          <Iconify
+            icon="mage:message-dots-round-fill"
+            size={normalize(24)}
+            color={colors.text.secondary}
+            style={todayCardStyles.iconWrapper}
+          />
+          <View style={todayCardStyles.infoTexts}>
+            <Text varient="subtitle1">เหตุผลไม่อนุมัติ</Text>
+            <Text varient="body2" color="secondary">
+              {reasonMessage}
+            </Text>
+          </View>
+        </View>
+        <View
+          style={[todayCardStyles.infoTextWrapper, { alignSelf: "center" }]}
+        >
+          <Button
+            onPress={handleOnReSubmitForm}
+            title="ปรับปรุงเอกสารและข้อมูลส่วนตัว"
+            size="large"
+            varient="soft"
+          />
+        </View>
       </View>
-    </>
+    </Fragment>
   );
 }
 
@@ -192,6 +327,7 @@ const todayCardStyles = StyleSheet.create({
     color: colors.primary.lighter,
   },
   todayActionWrapper: {
+    width: "100%",
     marginTop: normalize(24),
     alignItems: "flex-start",
   },
@@ -214,6 +350,7 @@ const todayCardStyles = StyleSheet.create({
     padding: normalize(24),
     paddingVertical: normalize(16),
     gap: normalize(16),
+    marginBottom: normalize(80),
   },
   infoTextWrapper: {
     flexDirection: "row",
@@ -228,5 +365,25 @@ const todayCardStyles = StyleSheet.create({
   },
   linkText: {
     color: colors.master.dark,
+  },
+  loadingWrapper: {
+    paddingVertical: normalize(16),
+    alignItems: "center",
+  },
+  trackingNumber: {
+    color: colors.primary.lighter,
+  },
+  statusWrapper: {
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(4),
+    borderRadius: normalize(8),
+    backgroundColor: hexToRgba(colors.info.main, 0.32),
+  },
+  statusContainer: {
+    paddingTop: normalize(8),
+  },
+  shipmentStatusContainer: {
+    paddingTop: normalize(8),
+    alignItems: "flex-start",
   },
 });

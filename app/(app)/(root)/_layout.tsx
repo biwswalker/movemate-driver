@@ -8,9 +8,12 @@ import {
 } from "expo-notifications";
 
 enum ENavigationType {
+  INDEX = "index",
+  EMPLOYEE = "employee",
   SHIPMENT = "shipment",
   SHIPMENT_WORK = "shipment-work",
   FINANCE = "finance",
+  NOTIFICATION = "notification",
 }
 
 function useNotificationObserver() {
@@ -34,7 +37,12 @@ function useNotificationObserver() {
               params: { trackingNumber: data.trackingNumber },
             });
           }
-        } else if (data.navigation === ENavigationType.FINANCE) {
+        } else if (data.navigation === ENavigationType.NOTIFICATION) {
+        } else if (data.navigation === ENavigationType.EMPLOYEE) {
+          router.push("/employee/employees");
+          // if (data.driverId) { }
+        } else if (data.navigation === ENavigationType.INDEX) {
+          router.push("/");
         }
       }
     }
@@ -116,6 +124,10 @@ export default function RootLayout() {
         options={{ headerShown: false, presentation: "fullScreenModal" }}
       />
       <Stack.Screen
+        name="finance-detail"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="profile-detail"
         options={{ headerShown: false, presentation: "fullScreenModal" }}
       />
@@ -146,6 +158,10 @@ export default function RootLayout() {
       <Stack.Screen
         name="notifications"
         options={{ headerShown: false, presentation: "fullScreenModal" }}
+      />
+      <Stack.Screen
+        name="re-register"
+        options={{ headerShown: false }}
       />
     </Stack>
   );

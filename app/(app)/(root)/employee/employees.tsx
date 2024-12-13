@@ -5,6 +5,8 @@ import Text from "@/components/Text";
 import colors from "@constants/colors";
 import {
   EDriverStatus,
+  EUserCriterialType,
+  EUserRole,
   EUserStatus,
   useEmployeesQuery,
   User,
@@ -12,8 +14,8 @@ import {
 import { normalize } from "@/utils/normalizeSize";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { router } from "expo-router";
-import { isEmpty } from "lodash";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { get, includes, isEmpty, map, reduce } from "lodash";
+import { Fragment, useCallback, useEffect, useMemo, useRef } from "react";
 import { Image, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useAuth from "@/hooks/useAuth";
@@ -21,13 +23,18 @@ import { ActivityIndicator } from "react-native-paper";
 import { imagePath } from "@/utils/file";
 import Detail, { DriverDetailModalRef } from "./detail";
 import { useIsFocused } from "@react-navigation/native";
+import hexToRgba from "hex-to-rgba";
 
 export default function Employees() {
   const isFocused = useIsFocused();
   const detailRef = useRef<DriverDetailModalRef>(null);
   const { user } = useAuth();
   const { data, loading, called, refetch } = useEmployeesQuery({
-    variables: { parentId: user?._id },
+    variables: {
+      parentId: user?._id || "",
+      userRole: EUserRole.DRIVER,
+      userType: EUserCriterialType.INDIVIDUAL,
+    },
     onError: (error) => {
       console.log("error: ", error);
     },
@@ -99,7 +106,7 @@ export default function Employees() {
   }
 
   return (
-    <>
+    <Fragment>
       <View style={styles.container}>
         <SafeAreaView style={styles.wrapper}>
           <NavigationBar
@@ -126,7 +133,7 @@ export default function Employees() {
         </SafeAreaView>
       </View>
       <Detail ref={detailRef} />
-    </>
+    </Fragment>
   );
 }
 
@@ -136,10 +143,13 @@ interface UserItemProps {
 }
 
 function UserItem({ user, onPress }: UserItemProps) {
+  console.log('--> ', JSON.stringify(user, undefined, 2))
+  const { user: me } = useAuth();
   function handleViewDriver() {
     onPress();
   }
 
+  const isRequesting = includes(user.requestedParents, me?._id);
   const accountStatus = () => {
     switch (user.status) {
       case EUserStatus.ACTIVE:
@@ -203,6 +213,19 @@ function UserItem({ user, onPress }: UserItemProps) {
       <View style={styles.driverStatusWrapper}>
         <View style={styles.driverStatusTextWrapper}>
           <View style={styles.driverStatusText}>
+            <Text varient="subtitle2">ประเภทรถ</Text>
+            <Text varient="body2" color="secondary">
+              {reduce(
+                get(user, "driverDetail.serviceVehicleTypes", []),
+                (prev, vehicle) =>
+                  prev ? `${prev}, ${vehicle.name}` : vehicle.name,
+                ""
+              )}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.driverStatusTextWrapper}>
+          <View style={styles.driverStatusText}>
             <Text varient="subtitle2">สถานะบัญชี</Text>
             <Text varient="body2" style={[{ color: statusColor }]}>
               {statusLabel}
@@ -215,17 +238,31 @@ function UserItem({ user, onPress }: UserItemProps) {
             </Text>
           </View>
         </View>
+        {user.validationRejectedMessage && (
+          <View style={styles.rejectedRequestWrapper}>
+            <Text varient="caption" style={styles.rejectedRequestText}>
+              {user.validationRejectedMessage}
+            </Text>
+          </View>
+        )}
+        {isRequesting && (
+          <View style={styles.waitingForRequestWrapper}>
+            <Text varient="caption" style={styles.waitingForRequestText}>
+              กำลังรอการตอบรับจากคนขับ...
+            </Text>
+          </View>
+        )}
         <Button
           title="รายละเอียด"
-          color="success"
+          color="info"
           varient="soft"
           fullWidth
           onPress={handleViewDriver}
           StartIcon={
             <Iconify
-              icon="typcn:plus"
+              icon="gg:details-more"
               size={normalize(16)}
-              color={colors.success.dark}
+              color={colors.info.dark}
             />
           }
         />
@@ -267,7 +304,7 @@ const styles = StyleSheet.create({
     borderColor: colors.divider,
     backgroundColor: colors.common.white,
     gap: normalize(16),
-    marginBottom: normalize(16)
+    marginBottom: normalize(16),
   },
   driverInfoWrapper: {
     flexDirection: "row",
@@ -282,7 +319,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey[200],
     borderRadius: normalize(16),
     padding: normalize(12),
-    gap: normalize(16),
+    gap: normalize(12),
   },
   driverStatusTextWrapper: {
     flexDirection: "row",
@@ -293,5 +330,25 @@ const styles = StyleSheet.create({
   },
   emptyDataActions: {
     marginTop: normalize(16),
+  },
+  waitingForRequestWrapper: {
+    backgroundColor: hexToRgba(colors.warning.main, 0.08),
+    borderRadius: normalize(6),
+    alignSelf: "center",
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(4),
+  },
+  waitingForRequestText: {
+    color: colors.warning.dark,
+  },
+  rejectedRequestWrapper: {
+    backgroundColor: hexToRgba(colors.error.main, 0.08),
+    borderRadius: normalize(6),
+    alignSelf: "center",
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(4),
+  },
+  rejectedRequestText: {
+    color: colors.error.dark,
   },
 });

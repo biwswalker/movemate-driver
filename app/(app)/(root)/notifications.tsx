@@ -11,9 +11,8 @@ import { normalize } from "@/utils/normalizeSize";
 import colors from "@constants/colors";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { router } from "expo-router";
-import hexToRgba from "hex-to-rgba";
 import { isEmpty, map } from "lodash";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Image, StyleSheet, View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
 import { ActivityIndicator } from "react-native-paper";
@@ -118,7 +117,7 @@ export default function Notifications() {
         </View>
       );
     } else {
-      return <></>;
+      return <Fragment />;
     }
   }
 
@@ -232,8 +231,8 @@ const styles = StyleSheet.create({
     height: normalize(10),
     borderRadius: normalize(5),
     backgroundColor: colors.error.main,
-    position: 'absolute',
+    position: "absolute",
     top: normalize(12),
-    right: normalize(12)
+    right: normalize(12),
   },
 });

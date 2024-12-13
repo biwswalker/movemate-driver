@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo } from "react";
+import React, { Fragment, useEffect, useMemo } from "react";
 import {
   FlatList,
   ListRenderItemInfo,
+  Pressable,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -15,7 +16,10 @@ import { fNumber } from "@utils/number";
 import { format } from "date-fns";
 import { th } from "date-fns/locale/th";
 import {
+  DriverTransactionSummaryPayload,
+  ERefType,
   ETransactionOwner,
+  ETransactionStatus,
   EUserStatus,
   Transaction,
   useGetTransactionQuery,
@@ -26,13 +30,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 
-const today = new Date().toISOString();
-
 export default function Financial() {
   const isFocused = useIsFocused();
   const { user } = useAuth();
   const { data, refetch } = useGetTransactionQuery({
-    variables: { limit: 10, transactionDate: today },
+    variables: {
+      limit: 10,
+      sortField: "createdAt",
+      sortAscending: false,
+    },
     onError: (error) => {
       console.log("error: ", error);
     },
@@ -42,6 +48,10 @@ export default function Financial() {
     () => data?.getTransaction || [],
     [data?.getTransaction]
   );
+
+  const transactionSummarize = useMemo<
+    DriverTransactionSummaryPayload | undefined
+  >(() => data?.calculateTransaction, [data?.calculateTransaction]);
 
   useEffect(() => {
     if (isFocused) {
@@ -68,7 +78,7 @@ export default function Financial() {
           {user?.status === EUserStatus.DENIED && <DeniedApproval />}
         </View>
         <View style={styles.content}>
-          {data?.calculateTransaction && (
+          {transactionSummarize && (
             <View style={styles.summaryContainer}>
               <View style={styles.totalWrapper}>
                 <View
@@ -88,7 +98,7 @@ export default function Financial() {
                     รายได้เดือนนี้
                   </Text>
                   <Text varient="h5" style={{ color: colors.primary.dark }}>
-                    {fNumber(data.calculateMonthlyTransaction || 0, "0,0.0")}{" "}
+                    {fNumber(transactionSummarize.monthly.amount || 0, "0,0.0")}{" "}
                   </Text>
                 </View>
               </View>
@@ -106,10 +116,7 @@ export default function Financial() {
                     รอรับเงิน
                   </Text>
                   <Text varient="h5" style={{ color: colors.info.dark }}>
-                    {fNumber(
-                      data.calculateTransaction.totalPending || 0,
-                      "0,0.0"
-                    )}{" "}
+                    {fNumber(transactionSummarize.pending.amount || 0, "0,0.0")}{" "}
                   </Text>
                 </View>
                 <View style={[styles.innerBoxWrapper]}>
@@ -120,10 +127,7 @@ export default function Financial() {
                     ได้รับเงินแล้ว
                   </Text>
                   <Text varient="h5" style={{ color: colors.success.dark }}>
-                    {fNumber(
-                      data.calculateTransaction.totalOutcome || 0,
-                      "0,0.0"
-                    )}{" "}
+                    {fNumber(transactionSummarize.paid.amount || 0, "0,0.0")}{" "}
                   </Text>
                 </View>
               </View>
@@ -144,7 +148,7 @@ export default function Financial() {
             </TouchableOpacity>
           </View>
           {user?.status !== EUserStatus.DENIED && (
-            <>
+            <Fragment>
               <View style={styles.transactionWrapper}>
                 <View style={styles.transactionTitleWrapper}>
                   <Text
@@ -182,7 +186,7 @@ export default function Financial() {
                   paddingHorizontal: normalize(15),
                 }}
               />
-            </>
+            </Fragment>
           )}
         </View>
       </SafeAreaView>
@@ -248,10 +252,20 @@ const finStyle = StyleSheet.create({
 });
 
 function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
+  function handleViewTransaction() {
+    router.push({
+      pathname: "/finance-detail",
+      params: { transactionId: item._id },
+    });
+  }
   const isAgentDriverShipment =
     item.ownerType === ETransactionOwner.BUSINESS_DRIVER;
+  const isEarned = item.refType === ERefType.EARNING;
+
+  const isPending = item.status === ETransactionStatus.PENDING;
+
   return (
-    <View style={finStyle.container}>
+    <Pressable style={finStyle.container} onPress={handleViewTransaction}>
       <View style={finStyle.trackingNumberWrapper}>
         <Text varient="body2">{item.description}</Text>
       </View>
@@ -266,13 +280,17 @@ function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
             flexShrink: 0,
             color: isAgentDriverShipment
               ? colors.text.secondary
-              : colors.success.dark,
+              : isEarned
+                ? colors.success.dark
+                : isPending
+                  ? colors.warning.dark
+                  : colors.primary.main,
           }}
         >
           {isAgentDriverShipment ? "-" : fNumber(item.amount, "0,0.0")}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

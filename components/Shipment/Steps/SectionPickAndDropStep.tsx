@@ -14,7 +14,7 @@ import {
   EShipmentStatus,
 } from "@/graphql/generated/graphql";
 import Button from "@/components/Button";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { fileUploadAPI } from "@/services/upload";
 import UploadButton from "@/components/UploadButton";
 import { imagePath } from "@/utils/file";
@@ -168,7 +168,7 @@ export function DonePickAndDrop({ definition, shipment }: ProgressPickAndDropPro
     shipment?.status
   );
   if(isHiddenInfo) {
-    return <></>
+    return <Fragment />
   }
   return (
     <View style={styles.wrapper}>

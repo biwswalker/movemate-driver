@@ -310,7 +310,7 @@ function OverviewDetail({ shipment }: OverviewDetailProps) {
         </Fragment>
       )}
       {!isEmpty(additionalService) && (
-        <>
+        <Fragment>
           <View style={detailStyles.divider} />
           <View style={detailStyles.additionalServiceWrapper}>
             <Text varient="body2" color="secondary">
@@ -331,7 +331,7 @@ function OverviewDetail({ shipment }: OverviewDetailProps) {
               );
             })}
           </View>
-        </>
+        </Fragment>
       )}
     </View>
   );

@@ -18,7 +18,7 @@ export default function RHFSelectDropdown<T = any>({ name, onChanged, ...other }
         <SelectDropdown
           {...field}
           onChanged={
-            typeof onChanged === 'function'
+            typeof onChanged !== 'undefined'
               ? onChanged
               : data => field.onChange(get(data, other.valueField, ''))
           }

@@ -10,7 +10,7 @@ import {
 } from "@/graphql/generated/graphql";
 import { usePushNotifications } from "@/hooks/usePushNotification";
 import { encryption } from "@/utils/crypto";
-import { ApolloError } from "@apollo/client";
+import { ApolloError, useApolloClient } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { get, isEqual } from "lodash";
@@ -43,11 +43,13 @@ interface AuthContextProps {
   requirePasswordChange: boolean;
   notificationCount: number;
   isFirstLaunch: boolean | undefined;
+  isAvailableWork: boolean | undefined; //For business driver (Agent)
 }
 
 export const AuthContext = createContext<AuthContextProps | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
+  const apolloClient = useApolloClient();
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | undefined>(
     undefined
   );
@@ -62,6 +64,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(false);
   const [requireAcceptedPolicy, setRequireAcceptedPolicy] = useState(false);
   const [requirePasswordChange, setRequirePasswordChange] = useState(false);
+  const [isAvailableWork, setAvailableWork] = useState(false);
 
   // CONTACT GRAPHQL
   const [me, { refetch, data }] = useMeLazyQuery();
@@ -83,11 +86,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
         me: meData,
         requireBeforeSignin,
         unreadCount: { notification = 0 },
+        checkAvailableToWork,
       }) => {
         // logout()
         if (meData) {
           setUser(meData as User);
           setAuthenticated(true);
+          setAvailableWork(checkAvailableToWork);
         }
         if (requireBeforeSignin) {
           setRequireAcceptedPolicy(requireBeforeSignin.requireAcceptedPolicy);
@@ -101,6 +106,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setUser(null);
         setAuthenticated(false);
         setIsInitialized(true);
+        setAvailableWork(false);
         setLoading(false);
       },
     });
@@ -218,6 +224,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setUser(null);
     setAuthenticated(false);
     setIsInitialized(true);
+    setAvailableWork(false);
+    await apolloClient.resetStore();
+    await apolloClient.clearStore();
     await AsyncStorage.removeItem("access_token");
   };
 
@@ -234,6 +243,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         loading,
         authError,
         isFirstLaunch,
+        isAvailableWork,
         initializeFCM,
         removeFCM,
         refetchMe,

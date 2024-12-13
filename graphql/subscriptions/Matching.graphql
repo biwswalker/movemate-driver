@@ -134,6 +134,9 @@ subscription ListenAvailableShipment {
         latitude
         longitude
       }
+      placeProvince
+      placeDistrict
+      placeSubDistrict
     }
     vehicleId {
       _id

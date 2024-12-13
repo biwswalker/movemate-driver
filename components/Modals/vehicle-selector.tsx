@@ -43,7 +43,7 @@ export default forwardRef<VehicleSelectorRef, VehicleSelectorModalProps>(
   ({ onSelected, value, multiple }, ref) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-    const [selectedValue, setSelectedValue] = useState<string[]>([]);
+    const [selectedValue, setSelectedValue] = useState<string[]>(value);
 
     const {
       data: vehicleData,

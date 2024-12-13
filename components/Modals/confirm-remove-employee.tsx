@@ -8,7 +8,7 @@ import React, {
 import Text from "@components/Text";
 import { StyleSheet, View } from "react-native";
 import { normalize } from "@utils/normalizeSize";
-import { User } from "@/graphql/generated/graphql";
+import { User, useRemoveEmployeeMutation } from "@/graphql/generated/graphql";
 import colors from "@constants/colors";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import SheetBackdrop from "../Sheets/SheetBackdrop";
@@ -19,6 +19,7 @@ import { router } from "expo-router";
 
 interface ConfirmRemoveEmployeeModalProps {
   user: User;
+  onRemoved: VoidFunction;
 }
 
 export interface ConfirmRemoveEmployeeModalRef {
@@ -29,14 +30,12 @@ export interface ConfirmRemoveEmployeeModalRef {
 export default forwardRef<
   ConfirmRemoveEmployeeModalRef,
   ConfirmRemoveEmployeeModalProps
->(function ConfirmRemoveEmployeee({ user }, ref) {
+>(function ConfirmRemoveEmployeee({ user, onRemoved }, ref) {
   const { showSnackbar, DropdownType } = useSnackbarV2();
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["50%"], []);
 
-  const loading = false;
-  // const [removeEmployee, { loading }] =
-  //   useRemoveEmployeeMutation();
+  const [removeEmployee, { loading }] = useRemoveEmployeeMutation();
 
   function handlePresent() {
     if (bottomSheetModalRef.current) {
@@ -67,7 +66,8 @@ export default forwardRef<
 
   function handleRemoveDriverComplete() {
     handleCloseModal();
-    router.navigate("/employee/employees");
+    onRemoved();
+    router.replace("/employee/employees");
   }
 
   function handleRemoveDriverError(error: ApolloError) {
@@ -80,11 +80,11 @@ export default forwardRef<
   }
 
   function handleRemoveDriver() {
-    // removeEmployee({
-    //   variables: { driverId: user._id },
-    //   onCompleted: handleAcceptDriverComplete,
-    //   onError: handleAcceptDriverError,
-    // });
+    removeEmployee({
+      variables: { driverId: user._id },
+      onCompleted: handleRemoveDriverComplete,
+      onError: handleRemoveDriverError,
+    });
   }
 
   return (

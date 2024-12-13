@@ -13,6 +13,7 @@ import {
 } from "@/constants/values";
 import {
   DriverDetail,
+  EDriverType,
   EUserStatus,
   EUserType,
   EUserValidationStatus,
@@ -29,8 +30,8 @@ import Yup from "@/utils/yup";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFocusEffect } from "expo-router";
-import { find, forEach, get, isEqual, map, reduce } from "lodash";
-import { useEffect, useMemo, useRef } from "react";
+import { find, forEach, get, includes, isEqual, map, reduce } from "lodash";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -51,7 +52,16 @@ export default function ProfileDetail() {
   const bottomSheetModalRef = useRef<VehicleSelectorRef>(null);
   const { user, refetchMe } = useAuth();
   const { showSnackbar } = useSnackbar();
-  const isBusinessDriver = user?.userType === EUserType.BUSINESS;
+  const isAgent = user?.userType === EUserType.BUSINESS;
+  const isOnlyBusinessDriver = useMemo(() => {
+    const driverTypes = get(user, "driverDetail.driverType", []);
+    if (driverTypes.length > 1) {
+      return false;
+    } else if (includes(driverTypes, EDriverType.BUSINESS_DRIVER)) {
+      return true;
+    }
+    return false;
+  }, [user?.driverDetail]);
 
   useFocusEffect(() => {
     refetchMe();
@@ -103,7 +113,7 @@ export default function ProfileDetail() {
         ? schema.required("ระบุคำนำหน้าชื่อ")
         : schema.notRequired()
     ),
-    ...(isBusinessDriver
+    ...(isAgent
       ? {
           businessName: Yup.string().required("ระบุชื่อบริษัท"),
           businessBranch: Yup.string(),
@@ -130,19 +140,22 @@ export default function ProfileDetail() {
       .required("ระบุรหัสไปรษณีย์")
       .min(5, "รหัสไปรษณีย์ 5 หลัก")
       .max(5, "รหัสไปรษณีย์ 5 หลัก"),
-
-    bank: Yup.string().required("ระบุธนาคารที่ชำระ"),
-    bankBranch: Yup.string()
-      .required("ระบุชื่อสาขาธนาคาร")
-      .matches(/^[a-zA-Z0-9ก-๙\s]+$/g, "ไม่อนุญาตมีอักษรพิเศษ"),
-    bankName: Yup.string()
-      .required("ระบุชื่อบัญชี")
-      .matches(/^[a-zA-Z0-9ก-๙\s]+$/g, "ไม่อนุญาตมีอักษรพิเศษ"),
-    bankNumber: Yup.string()
-      .required("ระบุเลขที่บัญชี")
-      .matches(/^[0-9\s]+$/g, "ตัวเลขเท่านั้น")
-      .min(10, "ตัวเลขขั้นต่ำ 10 หลัก")
-      .max(15, "ตัวเลขสูงสุด 15 หลัก"),
+    ...(isOnlyBusinessDriver
+      ? {}
+      : {
+          bank: Yup.string().required("ระบุธนาคารที่ชำระ"),
+          bankBranch: Yup.string()
+            .required("ระบุชื่อสาขาธนาคาร")
+            .matches(/^[a-zA-Z0-9ก-๙\s]+$/g, "ไม่อนุญาตมีอักษรพิเศษ"),
+          bankName: Yup.string()
+            .required("ระบุชื่อบัญชี")
+            .matches(/^[a-zA-Z0-9ก-๙\s]+$/g, "ไม่อนุญาตมีอักษรพิเศษ"),
+          bankNumber: Yup.string()
+            .required("ระบุเลขที่บัญชี")
+            .matches(/^[0-9\s]+$/g, "ตัวเลขเท่านั้น")
+            .min(10, "ตัวเลขขั้นต่ำ 10 หลัก")
+            .max(15, "ตัวเลขสูงสุด 15 หลัก"),
+        }),
     serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
   });
 
@@ -245,7 +258,7 @@ export default function ProfileDetail() {
   }
 
   return (
-    <>
+    <Fragment>
       <View style={styles.container}>
         <SafeAreaView style={styles.wrapper}>
           <NavigationBar title="ข้อมูลส่วนตัว" />
@@ -259,9 +272,7 @@ export default function ProfileDetail() {
                 name="title"
                 label="คำนำหน้าชื่อ*"
                 options={
-                  isBusinessDriver
-                    ? BUSINESS_TITLE_NAME_OPTIONS
-                    : TITLE_NAME_OPTIONS
+                  isAgent ? BUSINESS_TITLE_NAME_OPTIONS : TITLE_NAME_OPTIONS
                 }
                 value={values.title}
                 labelField="label"
@@ -274,8 +285,8 @@ export default function ProfileDetail() {
                   label="ระบุคำนำหน้าชื่อ*"
                 />
               )}
-              {isBusinessDriver ? (
-                <>
+              {isAgent ? (
+                <Fragment>
                   <RHFTextInput
                     disabled={!isApproved}
                     name="businessName"
@@ -286,9 +297,9 @@ export default function ProfileDetail() {
                     name="businessBranch"
                     label="สาขา"
                   />
-                </>
+                </Fragment>
               ) : (
-                <>
+                <Fragment>
                   <RHFTextInput
                     disabled={!isApproved}
                     name="firstname"
@@ -299,7 +310,7 @@ export default function ProfileDetail() {
                     name="lastname"
                     label="นามสกุล*"
                   />
-                </>
+                </Fragment>
               )}
               <RHFTextInput
                 disabled={!isApproved}
@@ -396,42 +407,46 @@ export default function ProfileDetail() {
                 label="รหัสไปรษณีย์*"
                 readOnly
               />
-              <View style={styles.formSubtitle}>
-                <Text varient="caption" color="disabled">
-                  บัญชีธนาคาร
-                </Text>
-              </View>
-              <RHFSelectDropdown
-                name="bank"
-                label="ธนาคาร*"
-                disabled={!isApproved}
-                options={BANKPROVIDER}
-                value={values.bank}
-                labelField="label"
-                valueField="value"
-              />
-              <RHFTextInput
-                disabled={!isApproved}
-                name="bankBranch"
-                label="สาขา*"
-              />
-              <RHFTextInput
-                disabled={!isApproved}
-                name="bankName"
-                label="ชื่อบัญชี*"
-              />
-              <RHFTextInput
-                disabled={!isApproved}
-                name="bankNumber"
-                label="เลขที่บัญชี*"
-              />
+              {!isOnlyBusinessDriver && (
+                <Fragment>
+                  <View style={styles.formSubtitle}>
+                    <Text varient="caption" color="disabled">
+                      บัญชีธนาคาร
+                    </Text>
+                  </View>
+                  <RHFSelectDropdown
+                    name="bank"
+                    label="ธนาคาร*"
+                    disabled={!isApproved}
+                    options={BANKPROVIDER}
+                    value={values.bank}
+                    labelField="label"
+                    valueField="value"
+                  />
+                  <RHFTextInput
+                    disabled={!isApproved}
+                    name="bankBranch"
+                    label="สาขา*"
+                  />
+                  <RHFTextInput
+                    disabled={!isApproved}
+                    name="bankName"
+                    label="ชื่อบัญชี*"
+                  />
+                  <RHFTextInput
+                    disabled={!isApproved}
+                    name="bankNumber"
+                    label="เลขที่บัญชี*"
+                  />
+                </Fragment>
+              )}
 
               <View style={styles.formSubtitle}>
                 <Text varient="caption" color="disabled">
                   เลือกประเภทรถที่ให้บริการ
                 </Text>
                 <CustomTextInput
-                  multiline={isBusinessDriver}
+                  multiline={isAgent}
                   onPress={handleSelectedVehicle}
                   value={reduce(
                     values.serviceVehicleTypes,
@@ -439,7 +454,7 @@ export default function ProfileDetail() {
                       const vehicle = find(vehicleTypes, ["_id", curr]);
                       if (vehicle) {
                         const vehicleName = vehicle.name;
-                        return prev ? `${prev}, ${vehicleName}` : vehicleName;
+                        return prev ? `${prev},\n${vehicleName}` : vehicleName;
                       }
                       return prev;
                     },
@@ -478,12 +493,12 @@ export default function ProfileDetail() {
         </SafeAreaView>
       </View>
       <VehicleSelectorModal
-        multiple={isBusinessDriver}
+        multiple={isAgent}
         ref={bottomSheetModalRef}
         onSelected={handleOnSelectedVehicleModal}
         value={values.serviceVehicleTypes}
       />
-    </>
+    </Fragment>
   );
 }
 

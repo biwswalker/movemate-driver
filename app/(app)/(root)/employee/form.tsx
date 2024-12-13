@@ -2,17 +2,19 @@ import colors from "@/constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   EDriverType,
   useGetDistrictLazyQuery,
   useGetProvinceQuery,
   useGetSubDistrictLazyQuery,
+  useGetVehicleTypeAvailableQuery,
   useVerifyEmployeeDataMutation,
+  VehicleType,
   VerifyEmployeeDataMutation,
 } from "@/graphql/generated/graphql";
 import Yup from "@/utils/yup";
-import { find, forEach, get, isEqual } from "lodash";
+import { find, forEach, get, isEqual, map, reduce } from "lodash";
 import {
   EmployeeDriverFormValue,
   EmployeeDriverFormValueType,
@@ -29,12 +31,18 @@ import RHFTextInput from "@/components/HookForm/RHFTextInput";
 import Button from "@/components/Button";
 import { normalize } from "@/utils/normalizeSize";
 import Text from "@/components/Text";
-
+import VehicleSelectorModal, {
+  VehicleSelectorRef,
+} from "@/components/Modals/vehicle-selector";
+import CustomTextInput from "@components/TextInput";
+import { TextInput } from "react-native-paper";
+import Iconify from "@/components/Iconify";
 interface NewEmployeeFormProps {
   phoneNumber: string;
 }
 
 export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
+  const bottomSheetModalRef = useRef<VehicleSelectorRef>(null);
   const { showSnackbar, DropdownType } = useSnackbarV2();
   const searchParam = useLocalSearchParams<{ param: string }>();
   const params = JSON.parse(searchParam.param || "{}") as EmployeeRegisterParam;
@@ -46,6 +54,17 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
     useGetSubDistrictLazyQuery();
   const [verifyData, { loading: verifyLoading }] =
     useVerifyEmployeeDataMutation();
+
+  const { data: vehicleData } = useGetVehicleTypeAvailableQuery();
+  const vehicleTypes = useMemo<VehicleType[]>(() => {
+    if (vehicleData?.getVehicleTypeAvailable) {
+      return map(vehicleData.getVehicleTypeAvailable, (vehi) => ({
+        ...vehi,
+        name: `${vehi.name}${vehi.isConfigured ? "" : " (ยังไม่เปิดให้บริการ)"}`,
+      })) as VehicleType[];
+    }
+    return [];
+  }, [vehicleData]);
 
   const BusinessDriverScema = Yup.object().shape({
     title: Yup.string().required("กรุณาเลือกคำนำหน้าชื่อ"),
@@ -78,6 +97,7 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
       .required("ระบุรหัสไปรษณีย์")
       .min(5, "รหัสไปรษณีย์ 5 หลัก")
       .max(5, "รหัสไปรษณีย์ 5 หลัก"),
+    serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
   });
 
   const defaultValues: EmployeeDriverFormValue = useMemo(() => {
@@ -96,6 +116,7 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
       district: detail?.district || "",
       subDistrict: detail?.subDistrict || "",
       postcode: detail?.postcode || "",
+      serviceVehicleTypes: detail?.serviceVehicleTypes || [],
     };
   }, []);
 
@@ -171,19 +192,31 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
       validatedData as EmployeeDriverFormValueType
     );
     const param = JSON.stringify(Object.assign(params, { detail: formValue }));
+    console.log('postvalidate: => ', JSON.stringify(param, undefined, 2))
     router.push({ pathname: "/employee/documents", params: { param } });
   }
 
   async function onSubmit(values: EmployeeDriverFormValue) {
     try {
       const submitData = new EmployeeDriverFormValue(values);
-      console.log(subDistrict);
+      console.log('prevalidate: => ', JSON.stringify(submitData, undefined, 2))
       verifyData({
         variables: { data: submitData },
         onCompleted: handleVerifySuccess,
         onError: handleErrorVerified,
       });
     } catch (error) {}
+  }
+
+  function handleSelectedVehicle() {
+    if (bottomSheetModalRef.current) {
+      bottomSheetModalRef.current.present();
+    }
+  }
+
+  function handleOnSelectedVehicleModal(vehicles: string[]) {
+    console.log("vehicles: ", vehicles);
+    setValue("serviceVehicleTypes", vehicles);
   }
 
   return (
@@ -270,7 +303,42 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
           }}
         />
         <RHFTextInput name="postcode" label="รหัสไปรษณีย์*" readOnly />
-
+        <View style={styles.formSubtitle}>
+          <Text varient="caption" color="disabled">
+            เลือกประเภทรถที่ให้บริการ
+          </Text>
+          <CustomTextInput
+            // multiline
+            onPress={handleSelectedVehicle}
+            value={reduce(
+              values.serviceVehicleTypes,
+              (prev, curr) => {
+                const vehicle = find(vehicleTypes, ["_id", curr]);
+                if (vehicle) {
+                  const vehicleName = vehicle.name;
+                  return prev ? `${prev}, ${vehicleName}` : vehicleName;
+                }
+                return prev;
+              },
+              ""
+            )}
+            label="ประเภทรถที่ให้บริการ"
+            disabled
+            error={!!errors.serviceVehicleTypes}
+            helperText={errors.serviceVehicleTypes?.message}
+            right={
+              <TextInput.Icon
+                icon={({ color, size }) => (
+                  <Iconify
+                    icon="system-uicons:plus"
+                    color={color || colors.text.primary}
+                    size={size}
+                  />
+                )}
+              />
+            }
+          />
+        </View>
         <View style={styles.actionWrapper}>
           <Button
             fullWidth
@@ -281,6 +349,11 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
           />
         </View>
       </FormProvider>
+      <VehicleSelectorModal
+        ref={bottomSheetModalRef}
+        onSelected={handleOnSelectedVehicleModal}
+        value={values.serviceVehicleTypes}
+      />
     </View>
   );
 }

@@ -19,7 +19,7 @@ import * as Linking from "expo-linking";
 import Button from "@/components/Button";
 import { fDateTime } from "@/utils/formatTime";
 import { censorText } from "@/utils/string";
-import { useState } from "react";
+import { Fragment, useCallback, useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
 
 interface ArrivalLocationProps extends ProgressingStepsProps {
@@ -40,7 +40,7 @@ export function ProgressArrivalLocation({
   const [isLoading, setLoading] = useState(false);
   const { showSnackbar } = useSnackbarV2();
   const [nextShipmentStep, { loading }] = useNextShipmentStepMutation();
-  
+
   function handleCallToCustomer() {
     const phoneNumber = destination?.contactNumber;
     if (phoneNumber) {
@@ -74,14 +74,14 @@ export function ProgressArrivalLocation({
     });
   }
 
-  function handleConfirm() {
+  const handleConfirm = useCallback(() => {
     setLoading(true);
     nextShipmentStep({
       variables: { data: { shipmentId: shipment._id } },
       onCompleted: handleConfirmComplete,
       onError: handleConfirmError,
     });
-  }
+  }, []);
 
   return (
     <ScrollView style={progressStyles.wrapper}>
@@ -143,7 +143,7 @@ export function ProgressArrivalLocation({
         </View>
       </View>
       {done ? (
-        <>
+        <Fragment>
           <Text
             varient="body2"
             color="secondary"
@@ -152,7 +152,7 @@ export function ProgressArrivalLocation({
             คุณมาถึงเมื่อ
           </Text>
           <Text varient="subtitle1">{fDateTime(definition?.updatedAt)}</Text>
-        </>
+        </Fragment>
       ) : (
         <View style={progressStyles.actionsWrapper}>
           <Button
@@ -236,8 +236,12 @@ export function DoneArrivalLocation({
       </Text>
       <View style={progressStyles.contactWrapper}>
         <View style={progressStyles.contactNameWrapper}>
-          {!isHiddenInfo && <Text varient="subtitle1">{destination?.name}</Text>}
-          <Text varient="body2">{destination?.detail}</Text>
+          {!isHiddenInfo && (
+            <Text varient="subtitle1">{destination?.name}</Text>
+          )}
+          <Text varient="body2">
+            {isHiddenInfo ? destination.placeProvince : destination?.detail}
+          </Text>
         </View>
         {!isHiddenInfo && (
           <View style={progressStyles.contactIcon}>
@@ -294,7 +298,7 @@ export function DoneArrivalLocation({
       </View>
       {/* Remark */}
       {destination.customerRemark && (
-        <>
+        <Fragment>
           <Text
             varient="body2"
             color="disabled"
@@ -303,7 +307,7 @@ export function DoneArrivalLocation({
             หมายเหตุ
           </Text>
           <Text varient="body2">{destination?.customerRemark}</Text>
-        </>
+        </Fragment>
       )}
       {/* Stamped time */}
       <Text

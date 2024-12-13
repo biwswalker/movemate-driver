@@ -7,6 +7,7 @@ import {
   EStepStatus,
   EUserStatus,
   Shipment,
+  StepDefinition,
   useAvailableEmployeesQuery,
   useGetAvailableShipmentByTrackingNumberQuery,
   User,
@@ -18,9 +19,10 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
-import { filter, get, includes, isEmpty } from "lodash";
+import { filter, find, get, includes, isEmpty, sortBy } from "lodash";
 import {
   forwardRef,
+  Fragment,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -68,16 +70,17 @@ export default function ShipmentDetail() {
     () => data?.getAvailableShipmentByTrackingNumber as Shipment,
     [data]
   );
+  const steps = useMemo<StepDefinition[]>(() => {
+    const allSteps = data?.getAvailableShipmentByTrackingNumber?.steps || [];
+    const sorted = sortBy(allSteps, ["seq"]);
+    return sorted;
+  }, [data]);
 
   const currentStepSeq = get(shipment, "currentStepSeq", 0);
-  const currentStepDefinition = get(
-    shipment,
-    `steps.${currentStepSeq}`,
-    undefined
-  );
+  const currentStepDefinition = find(steps || [], ["seq", currentStepSeq]);
 
   const isPendingAssignDriver =
-    currentStepDefinition?.step === EStepDefinition.DRIVER_ACCEPTED &&
+    currentStepDefinition?.step === EStepDefinition.ASSIGN_SHIPMENT &&
     currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
     shipment?.status === EShipmentStatus.PROGRESSING;
   const isConfirmFinishShipment =
@@ -169,7 +172,7 @@ export default function ShipmentDetail() {
         enablePanDownToClose={false}
         enableDynamicSizing={false}
         style={styles.sheetContainer}
-        topInset={StatusBar.currentHeight}
+        topInset={StatusBar.currentHeight || 0}
         snapPoints={snapPoints}
         onChange={handleSheetChange}
         handleComponent={SheetHandle}
@@ -208,8 +211,13 @@ export default function ShipmentDetail() {
   }
 
   const stepItems = filter(
-    shipment?.steps,
-    (step) => !isEmpty(step.driverMessage) && step.step !== "FINISH"
+    steps,
+    (step) =>
+      !isEmpty(step.driverMessage) &&
+      !includes(
+        [EStepDefinition.FINISH, EStepDefinition.ASSIGN_SHIPMENT],
+        step.step
+      )
   );
 
   return (
@@ -231,10 +239,10 @@ export default function ShipmentDetail() {
         />
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {shipment && (
-            <>
+            <Fragment>
               <Overview shipment={shipment} />
               <Detail shipment={shipment} />
-            </>
+            </Fragment>
           )}
         </ScrollView>
       </SafeAreaView>
@@ -312,7 +320,7 @@ const AssingDriverModal = forwardRef<
       enablePanDownToClose={false}
       enableDynamicSizing={false}
       style={styles.sheetContainer}
-      topInset={StatusBar.currentHeight}
+      topInset={StatusBar.currentHeight || 0}
       snapPoints={snapPoints}
       onChange={handleSheetChanges}
       handleComponent={SheetHandle}
@@ -322,7 +330,7 @@ const AssingDriverModal = forwardRef<
         data ? (
           <AssingDriver shipmentId={data as any} callback={handleCallback} />
         ) : (
-          <></>
+          <Fragment />
         )
       }
     </BottomSheetModal>
@@ -358,7 +366,7 @@ function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
         </BottomSheetView>
       );
     }
-    return <></>;
+    return <Fragment />;
   }
 
   function _UserItem({ item: user }: ListRenderItemInfo<User>) {
@@ -463,7 +471,7 @@ function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
   }
 
   return (
-    <>
+    <Fragment>
       <BottomSheetView
         style={{
           flex: 1,
@@ -491,7 +499,7 @@ function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
         onCallback={handleConfimedAssign}
         ref={confirmModalRef}
       />
-    </>
+    </Fragment>
   );
 }
 

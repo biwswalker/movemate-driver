@@ -20,6 +20,7 @@ query Me {
     fullname
     fcmToken
     drivingStatus
+    validationRejectedMessage
     profileImage {
       _id
       fileId
@@ -141,6 +142,22 @@ query Me {
           createdAt
           updatedAt
         }
+        businessRegistrationCertificate {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        certificateValueAddedTaxRegistration {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
       }
       serviceVehicleTypes {
         _id
@@ -174,10 +191,15 @@ query Me {
   unreadCount {
     notification
   }
+  checkAvailableToWork
 }
 
-query Employees($parentId: String) {
-  users(parentId: $parentId) {
+query Employees(
+  $parentId: String!
+  $userRole: EUserRole!
+  $userType: EUserCriterialType!
+) {
+  users(parentId: $parentId, userRole: $userRole, userType: $userType) {
     totalDocs
     limit
     totalPages
@@ -200,6 +222,8 @@ query Employees($parentId: String) {
       contactNumber
       drivingStatus
       validationStatus
+      requestedParents
+      validationRejectedMessage
       profileImage {
         _id
         fileId
@@ -261,6 +285,7 @@ query LookupDriver($phonenumber: String!) {
     status
     validationStatus
     drivingStatus
+    validationRejectedMessage
     profileImage {
       _id
       fileId
@@ -284,6 +309,7 @@ query LookupDriver($phonenumber: String!) {
       fullname
     }
   }
+  isExistingParentDriverByPhonenumber(phonenumber: $phonenumber)
 }
 
 query GetUser($id: String) {
@@ -299,6 +325,8 @@ query GetUser($id: String) {
     status
     validationStatus
     drivingStatus
+    requestedParents
+    validationRejectedMessage
     profileImage {
       _id
       fileId
@@ -320,6 +348,113 @@ query GetUser($id: String) {
       subDistrict
       postcode
       fullname
+      documents {
+        _id
+        frontOfVehicle {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        backOfVehicle {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        leftOfVehicle {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        rigthOfVehicle {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyVehicleRegistration {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyIDCard {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyDrivingLicense {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyBookBank {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        copyHouseRegistration {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        insurancePolicy {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        criminalRecordCheckCert {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        businessRegistrationCertificate {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+        certificateValueAddedTaxRegistration {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+      }
     }
   }
 }
@@ -337,6 +472,7 @@ query AvailableEmployees($shipmentId: String!) {
     contactNumber
     drivingStatus
     validationStatus
+    validationRejectedMessage
     profileImage {
       _id
       fileId
@@ -359,5 +495,12 @@ query AvailableEmployees($shipmentId: String!) {
       postcode
       fullname
     }
+  }
+}
+
+query GetEmployeeRequest {
+  getEmployeeRequest {
+    _id
+    fullname
   }
 }

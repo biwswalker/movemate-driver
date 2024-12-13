@@ -1,5 +1,5 @@
 import { get, isEmpty, map } from "lodash";
-import React, { useEffect } from "react";
+import React, { Fragment, useEffect } from "react";
 import { LatLng, Polyline } from "react-native-maps";
 import { useMaps } from "./Maps";
 import colors from "@constants/colors";
@@ -35,7 +35,7 @@ export default function Direction({
   }, [directions]);
 
   if (!coordinates || isEmpty(coordinates)) {
-    return <></>;
+    return <Fragment />;
   }
 
   return (

@@ -146,6 +146,7 @@ export type AdminNotificationCountPayload = {
   financial: Scalars["Int"]["output"];
   financialCash: Scalars["Int"]["output"];
   financialCredit: Scalars["Int"]["output"];
+  financialPayment: Scalars["Int"]["output"];
   individualCustomer: Scalars["Int"]["output"];
   individualDriver: Scalars["Int"]["output"];
   shipment: Scalars["Int"]["output"];
@@ -190,9 +191,26 @@ export type BilledMonthInput = {
   sep: Scalars["Int"]["input"];
 };
 
+export type BillingAdjustmentNote = {
+  __typename?: "BillingAdjustmentNote";
+  _id: Scalars["ID"]["output"];
+  adjustmentAmount: Scalars["Float"]["output"];
+  adjustmentDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  adjustmentNumber: Scalars["String"]["output"];
+  adjustmentReason?: Maybe<Scalars["String"]["output"]>;
+  adjustmentType: EAdjustmentNoteType;
+  billingCycleId: Scalars["String"]["output"];
+  createdAt: Scalars["DateTimeISO"]["output"];
+  createdBy: User;
+  issueDate: Scalars["DateTimeISO"]["output"];
+  payment?: Maybe<BillingPayment>;
+  updatedAt: Scalars["DateTimeISO"]["output"];
+};
+
 export type BillingCycle = {
   __typename?: "BillingCycle";
   _id: Scalars["ID"]["output"];
+  adjustmentNote?: Maybe<Array<BillingAdjustmentNote>>;
   billingEndDate: Scalars["DateTimeISO"]["output"];
   billingNumber: Scalars["String"]["output"];
   billingPayment?: Maybe<BillingPayment>;
@@ -372,6 +390,16 @@ export type ConfirmShipmentDateInput = {
   shipmentId: Scalars["String"]["input"];
 };
 
+export type CreateDriverPaymentInput = {
+  imageEvidence: FileInput;
+  paymentDate: Scalars["DateTimeISO"]["input"];
+  paymentTime: Scalars["DateTimeISO"]["input"];
+  subtotal: Scalars["Float"]["input"];
+  tax: Scalars["Float"]["input"];
+  total: Scalars["Float"]["input"];
+  transactionIds: Array<Scalars["String"]["input"]>;
+};
+
 export type CreditPaymentDetailInput = {
   acceptedFirstCreditTerm: Scalars["Boolean"]["input"];
   acceptedFirstCreditTermDate: Scalars["String"]["input"];
@@ -470,7 +498,11 @@ export type Destination = {
   detail: Scalars["String"]["output"];
   location: Location;
   name: Scalars["String"]["output"];
+  placeDetail?: Maybe<Scalars["JSONObject"]["output"]>;
+  placeDistrict?: Maybe<Scalars["String"]["output"]>;
   placeId: Scalars["String"]["output"];
+  placeProvince?: Maybe<Scalars["String"]["output"]>;
+  placeSubDistrict?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type DestinationInput = {
@@ -544,7 +576,6 @@ export type DriverDetail = {
   district: Scalars["String"]["output"];
   documents: DriverDocument;
   driverType: Array<EDriverType>;
-  employees?: Maybe<Array<User>>;
   firstname?: Maybe<Scalars["String"]["output"]>;
   fullname?: Maybe<Scalars["String"]["output"]>;
   lastname?: Maybe<Scalars["String"]["output"]>;
@@ -618,10 +649,83 @@ export type DriverDocumentInput = {
   rigthOfVehicle?: InputMaybe<FileInput>;
 };
 
+export type DriverPayment = {
+  __typename?: "DriverPayment";
+  _id: Scalars["ID"]["output"];
+  createdAt: Scalars["DateTimeISO"]["output"];
+  createdBy: User;
+  driver: User;
+  imageEvidence: File;
+  paymentDate: Scalars["DateTimeISO"]["output"];
+  paymentTime: Scalars["DateTimeISO"]["output"];
+  shipments: Array<Shipment>;
+  subtotal: Scalars["Float"]["output"];
+  tax: Scalars["Float"]["output"];
+  total: Scalars["Float"]["output"];
+  transactions: Array<Transaction>;
+  updatedAt: Scalars["DateTimeISO"]["output"];
+};
+
+export type DriverPaymentAggregatePayload = {
+  __typename?: "DriverPaymentAggregatePayload";
+  docs: Array<DriverPayment>;
+  hasNextPage: Scalars["Boolean"]["output"];
+  hasPrevPage: Scalars["Boolean"]["output"];
+  limit: Scalars["Int"]["output"];
+  nextPage?: Maybe<Scalars["Int"]["output"]>;
+  offset?: Maybe<Scalars["Int"]["output"]>;
+  page?: Maybe<Scalars["Int"]["output"]>;
+  pagingCounter: Scalars["Int"]["output"];
+  prevPage?: Maybe<Scalars["Int"]["output"]>;
+  totalDocs: Scalars["Int"]["output"];
+  totalPages: Scalars["Int"]["output"];
+};
+
+export type DriverReRegisterInput = {
+  detail: ReDriverDetailInput;
+  documents: DriverDocumentInput;
+};
+
 export type DriverRegisterInput = {
   detail: DriverDetailInput;
   documents: DriverDocumentInput;
   otp: RegisterOtpInput;
+};
+
+export type DriverTransactionSummaryPayload = {
+  __typename?: "DriverTransactionSummaryPayload";
+  all: TransactionSummaryPayload;
+  monthly: TransactionSummaryPayload;
+  paid: TransactionSummaryPayload;
+  pending: TransactionSummaryPayload;
+};
+
+export type DriverTransactionsAggregatePayload = {
+  __typename?: "DriverTransactionsAggregatePayload";
+  docs: Array<DriverTransactionsPayload>;
+  hasNextPage: Scalars["Boolean"]["output"];
+  hasPrevPage: Scalars["Boolean"]["output"];
+  limit: Scalars["Int"]["output"];
+  nextPage?: Maybe<Scalars["Int"]["output"]>;
+  offset?: Maybe<Scalars["Int"]["output"]>;
+  page?: Maybe<Scalars["Int"]["output"]>;
+  pagingCounter: Scalars["Int"]["output"];
+  prevPage?: Maybe<Scalars["Int"]["output"]>;
+  totalDocs: Scalars["Int"]["output"];
+  totalPages: Scalars["Int"]["output"];
+};
+
+export type DriverTransactionsPayload = {
+  __typename?: "DriverTransactionsPayload";
+  _id: Scalars["String"]["output"];
+  amount: Scalars["Float"]["output"];
+  createdAt: Scalars["DateTimeISO"]["output"];
+  description: Scalars["String"]["output"];
+  driverPayment?: Maybe<DriverPayment>;
+  shipment?: Maybe<Shipment>;
+  status: ETransactionStatus;
+  transactionType: ETransactionType;
+  updatedAt: Scalars["DateTimeISO"]["output"];
 };
 
 export type DriverVerifiedPayload = {
@@ -649,6 +753,12 @@ export type DriverVerifiedPayload = {
   taxNumber: Scalars["String"]["output"];
   title: Scalars["String"]["output"];
 };
+
+/** Adjustment Note Type */
+export enum EAdjustmentNoteType {
+  CREDIT_NOTE = "CREDIT_NOTE",
+  DEBIT_NOTE = "DEBIT_NOTE",
+}
 
 /** Admin acceptance status */
 export enum EAdminAcceptanceStatus {
@@ -706,9 +816,22 @@ export enum EPaymentStatus {
   WAITING_CONFIRM_PAYMENT = "WAITING_CONFIRM_PAYMENT",
 }
 
+/** Privilege discount unit */
+export enum EPrivilegeDiscountUnit {
+  CURRENCY = "CURRENCY",
+  PERCENTAGE = "PERCENTAGE",
+}
+
+/** Privilege status */
+export enum EPrivilegeStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+}
+
 /** Ref type */
 export enum ERefType {
   BILLING = "BILLING",
+  EARNING = "EARNING",
   SHIPMENT = "SHIPMENT",
 }
 
@@ -751,6 +874,7 @@ export enum EShipmentStatusCriteria {
 export enum EStepDefinition {
   ARRIVAL_DROPOFF = "ARRIVAL_DROPOFF",
   ARRIVAL_PICKUP_LOCATION = "ARRIVAL_PICKUP_LOCATION",
+  ASSIGN_SHIPMENT = "ASSIGN_SHIPMENT",
   CASH_VERIFY = "CASH_VERIFY",
   CONFIRM_DATETIME = "CONFIRM_DATETIME",
   CREATED = "CREATED",
@@ -776,6 +900,13 @@ export enum EStepStatus {
   PROGRESSING = "PROGRESSING",
 }
 
+/** Transaction Driver Status */
+export enum ETransactionDriverStatus {
+  ALL = "ALL",
+  NON_OUTSTANDING = "NON_OUTSTANDING",
+  PENDING = "PENDING",
+}
+
 /** Transaction owner */
 export enum ETransactionOwner {
   BUSINESS_DRIVER = "BUSINESS_DRIVER",
@@ -793,6 +924,30 @@ export enum ETransactionStatus {
 export enum ETransactionType {
   INCOME = "INCOME",
   OUTCOME = "OUTCOME",
+}
+
+/** Update user status permission */
+export enum EUpdateUserStatus {
+  APPROVE = "APPROVE",
+  PENDING = "PENDING",
+  REJECT = "REJECT",
+}
+
+/** User criteria status */
+export enum EUserCriterialStatus {
+  ACTIVE = "ACTIVE",
+  ALL = "ALL",
+  BANNED = "BANNED",
+  DENIED = "DENIED",
+  INACTIVE = "INACTIVE",
+  PENDING = "PENDING",
+}
+
+/** User Criteria type */
+export enum EUserCriterialType {
+  ALL = "ALL",
+  BUSINESS = "BUSINESS",
+  INDIVIDUAL = "INDIVIDUAL",
 }
 
 /** User role */
@@ -834,6 +989,7 @@ export type EmployeeDetailInput = {
   phoneNumber: Scalars["String"]["input"];
   postcode: Scalars["String"]["input"];
   province: Scalars["String"]["input"];
+  serviceVehicleTypes: Array<Scalars["String"]["input"]>;
   subDistrict: Scalars["String"]["input"];
   taxNumber: Scalars["String"]["input"];
   title: Scalars["String"]["input"];
@@ -850,6 +1006,7 @@ export type EmployeeDetailPayload = {
   phoneNumber: Scalars["String"]["output"];
   postcode: Scalars["String"]["output"];
   province: Scalars["String"]["output"];
+  serviceVehicleTypes: Array<Scalars["String"]["output"]>;
   subDistrict: Scalars["String"]["output"];
   taxNumber: Scalars["String"]["output"];
   title: Scalars["String"]["output"];
@@ -908,6 +1065,7 @@ export type FavoriteDriverPayload = {
   profileImage?: Maybe<File>;
   registration: ERegistration;
   remark?: Maybe<Scalars["String"]["output"]>;
+  requestedParents?: Maybe<Array<Scalars["String"]["output"]>>;
   status: EUserStatus;
   updatedAt: Scalars["DateTimeISO"]["output"];
   upgradeRequest?: Maybe<BusinessCustomer>;
@@ -915,6 +1073,8 @@ export type FavoriteDriverPayload = {
   userRole: EUserRole;
   userType: EUserType;
   username: Scalars["String"]["output"];
+  validationBy?: Maybe<User>;
+  validationRejectedMessage?: Maybe<Scalars["String"]["output"]>;
   validationStatus: EUserValidationStatus;
 };
 
@@ -1009,6 +1169,7 @@ export type Marker = {
 export type Mutation = {
   __typename?: "Mutation";
   acceptShipment: Scalars["Boolean"]["output"];
+  acceptationEmployee: Scalars["Boolean"]["output"];
   acceptedPolicy: Scalars["Boolean"]["output"];
   addAdditionalService: AdditionalService;
   addAdmin: User;
@@ -1029,12 +1190,15 @@ export type Mutation = {
   confirmReceiveWHT: Scalars["Boolean"]["output"];
   confirmShipmentDatetime: Scalars["Boolean"]["output"];
   continueMatchingShipment: Scalars["Boolean"]["output"];
+  createDriverPayment: Scalars["Boolean"]["output"];
   createShipment: Shipment;
   driverCalcellation: Scalars["Boolean"]["output"];
+  driverReRegister: Scalars["Boolean"]["output"];
   driverRegister: RegisterPayload;
   employeeRegister: RegisterPayload;
   file_upload: FileUploadPayload;
   forgotPassword: VerifyPayload;
+  getPreparationPaymentByTransactions: PreparationTransactionPayload;
   initialAdditionalService: Scalars["Boolean"]["output"];
   initialVehicleCost: Scalars["String"]["output"];
   login: AuthPayload;
@@ -1053,6 +1217,7 @@ export type Mutation = {
   refund: Scalars["Boolean"]["output"];
   regenerateReceipt: Scalars["Boolean"]["output"];
   register: Scalars["Boolean"]["output"];
+  removeEmployee: Scalars["Boolean"]["output"];
   removeEvent: Scalars["Boolean"]["output"];
   removeFCM: Scalars["Boolean"]["output"];
   removeFavoriteDriver: Scalars["Boolean"]["output"];
@@ -1073,15 +1238,18 @@ export type Mutation = {
   updateBusinessType: Scalars["Boolean"]["output"];
   updateContactus: Scalars["Boolean"]["output"];
   updateCustomerPolicies: Scalars["Boolean"]["output"];
+  updateCustomerRequest: Scalars["Boolean"]["output"];
   updateCustomerTerms: Scalars["Boolean"]["output"];
   updateDistanceCost: Scalars["Boolean"]["output"];
   updateDriverPolicies: Scalars["Boolean"]["output"];
   updateDriverTerms: Scalars["Boolean"]["output"];
   updateFAQ: Scalars["Boolean"]["output"];
+  updateFinancial: Scalars["Boolean"]["output"];
   updateIndividualCustomer: Scalars["Boolean"]["output"];
   updateInstruction: Scalars["Boolean"]["output"];
   updatePrivilege: Scalars["Boolean"]["output"];
   updateProfileImage: Scalars["Boolean"]["output"];
+  updateShipment: Scalars["Boolean"]["output"];
   updateVehicleType: VehicleType;
   upgradeAccount: Scalars["Boolean"]["output"];
   verifyDriverData: DriverVerifiedPayload;
@@ -1094,6 +1262,11 @@ export type Mutation = {
 
 export type MutationAcceptShipmentArgs = {
   shipmentId: Scalars["String"]["input"];
+};
+
+export type MutationAcceptationEmployeeArgs = {
+  agentId: Scalars["String"]["input"];
+  result: Scalars["String"]["input"];
 };
 
 export type MutationAcceptedPolicyArgs = {
@@ -1141,6 +1314,7 @@ export type MutationApprovalCashPaymentArgs = {
 
 export type MutationApprovalUserArgs = {
   id: Scalars["String"]["input"];
+  reason?: InputMaybe<Scalars["String"]["input"]>;
   result: Scalars["String"]["input"];
 };
 
@@ -1188,6 +1362,11 @@ export type MutationContinueMatchingShipmentArgs = {
   shipmentId: Scalars["String"]["input"];
 };
 
+export type MutationCreateDriverPaymentArgs = {
+  data: CreateDriverPaymentInput;
+  driverId: Scalars["String"]["input"];
+};
+
 export type MutationCreateShipmentArgs = {
   data: ShipmentInput;
 };
@@ -1196,6 +1375,11 @@ export type MutationDriverCalcellationArgs = {
   reason: Scalars["String"]["input"];
   reasonDetail: Scalars["String"]["input"];
   shipmentId: Scalars["String"]["input"];
+};
+
+export type MutationDriverReRegisterArgs = {
+  data: DriverReRegisterInput;
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type MutationDriverRegisterArgs = {
@@ -1212,6 +1396,11 @@ export type MutationFile_UploadArgs = {
 
 export type MutationForgotPasswordArgs = {
   username: Scalars["String"]["input"];
+};
+
+export type MutationGetPreparationPaymentByTransactionsArgs = {
+  driverNumber: Scalars["String"]["input"];
+  transactionIds: Array<Scalars["String"]["input"]>;
 };
 
 export type MutationInitialAdditionalServiceArgs = {
@@ -1289,6 +1478,10 @@ export type MutationRegenerateReceiptArgs = {
 
 export type MutationRegisterArgs = {
   data: RegisterInput;
+};
+
+export type MutationRemoveEmployeeArgs = {
+  driverId: Scalars["String"]["input"];
 };
 
 export type MutationRemoveEventArgs = {
@@ -1374,6 +1567,11 @@ export type MutationUpdateCustomerPoliciesArgs = {
   data: Scalars["String"]["input"];
 };
 
+export type MutationUpdateCustomerRequestArgs = {
+  data: CutomerBusinessInput;
+  id: Scalars["String"]["input"];
+};
+
 export type MutationUpdateCustomerTermsArgs = {
   data: Scalars["String"]["input"];
 };
@@ -1395,6 +1593,10 @@ export type MutationUpdateFaqArgs = {
   data: Array<SettingFaqInput>;
 };
 
+export type MutationUpdateFinancialArgs = {
+  promptpay: Scalars["String"]["input"];
+};
+
 export type MutationUpdateIndividualCustomerArgs = {
   data: CutomerIndividualInput;
   id: Scalars["String"]["input"];
@@ -1414,6 +1616,14 @@ export type MutationUpdateProfileImageArgs = {
   uid?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+export type MutationUpdateShipmentArgs = {
+  isRounded: Scalars["Boolean"]["input"];
+  locations: Array<DestinationInput>;
+  serviceIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  shipmentId: Scalars["String"]["input"];
+  vehicleTypeId: Scalars["String"]["input"];
+};
+
 export type MutationUpdateVehicleTypeArgs = {
   data: VehicleTypeInput;
   id: Scalars["String"]["input"];
@@ -1426,10 +1636,12 @@ export type MutationUpgradeAccountArgs = {
 
 export type MutationVerifyDriverDataArgs = {
   data: DriverDetailInput;
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type MutationVerifyEmployeeDataArgs = {
   data: EmployeeDetailInput;
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type MutationVerifyOtpArgs = {
@@ -1571,9 +1783,18 @@ export type PostalDetail = {
   updatedBy: Scalars["String"]["output"];
 };
 
+export type PreparationTransactionPayload = {
+  __typename?: "PreparationTransactionPayload";
+  subtotal: Scalars["Float"]["output"];
+  tax: Scalars["Float"]["output"];
+  total: Scalars["Float"]["output"];
+  transactions: Array<Transaction>;
+};
+
 export type PriceItem = {
   __typename?: "PriceItem";
   cost?: Maybe<Scalars["Float"]["output"]>;
+  isNew?: Maybe<Scalars["Boolean"]["output"]>;
   label: Scalars["String"]["output"];
   price: Scalars["Float"]["output"];
 };
@@ -1608,8 +1829,8 @@ export type Privilege = {
   minPrice?: Maybe<Scalars["Float"]["output"]>;
   name: Scalars["String"]["output"];
   startDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
-  status: Scalars["String"]["output"];
-  unit: Scalars["String"]["output"];
+  status: EPrivilegeStatus;
+  unit: EPrivilegeDiscountUnit;
   updatedAt: Scalars["DateTimeISO"]["output"];
   usedAmout?: Maybe<Scalars["Float"]["output"]>;
   usedUser: Array<User>;
@@ -1627,8 +1848,8 @@ export type PrivilegeInput = {
   minPrice?: InputMaybe<Scalars["Float"]["input"]>;
   name: Scalars["String"]["input"];
   startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status: Scalars["String"]["input"];
-  unit: Scalars["String"]["input"];
+  status: EPrivilegeStatus;
+  unit: EPrivilegeDiscountUnit;
 };
 
 export type PrivilegePaginationPayload = {
@@ -1661,8 +1882,8 @@ export type PrivilegeUsedPayload = {
   minPrice?: Maybe<Scalars["Float"]["output"]>;
   name: Scalars["String"]["output"];
   startDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
-  status: Scalars["String"]["output"];
-  unit: Scalars["String"]["output"];
+  status: EPrivilegeStatus;
+  unit: EPrivilegeDiscountUnit;
   updatedAt: Scalars["DateTimeISO"]["output"];
   used: Scalars["Boolean"]["output"];
   usedAmout?: Maybe<Scalars["Float"]["output"]>;
@@ -1680,14 +1901,16 @@ export type Province = {
 export type Query = {
   __typename?: "Query";
   allBillingCycleIds: Array<Scalars["String"]["output"]>;
+  allpendinguserIds: Array<Scalars["String"]["output"]>;
   allshipmentIds: Array<Scalars["String"]["output"]>;
   alluserIds: Array<Scalars["String"]["output"]>;
   billingCycle: BillingCycle;
   billingCycleList: BillingCyclePaginationAggregatePayload;
   billingNumberByShipment: Scalars["String"]["output"];
-  calculateMonthlyTransaction: Scalars["Float"]["output"];
+  calculateExistingShipment: SubtotalCalculatedPayload;
   calculateRoute: DirectionsResultPayload;
-  calculateTransaction: TransactionPayload;
+  calculateTransaction: DriverTransactionSummaryPayload;
+  checkAvailableToWork: Scalars["Boolean"]["output"];
   event: Event;
   events: Array<Event>;
   getAboutusInfo?: Maybe<SettingAboutus>;
@@ -1704,10 +1927,18 @@ export type Query = {
   getCustomerPoliciesInfo?: Maybe<SettingCustomerPolicies>;
   getCustomerTermsInfo?: Maybe<SettingCustomerTerms>;
   getDistrict: Array<District>;
+  getDriverPaymentIds: Array<Scalars["String"]["output"]>;
+  getDriverPayments: DriverPaymentAggregatePayload;
   getDriverPoliciesInfo?: Maybe<SettingDriverPolicies>;
   getDriverTermsInfo?: Maybe<SettingDriverTerms>;
+  getDriverTransactionDetail: TransactionDetailPayload;
+  getDriverTransactionSummary: DriverTransactionSummaryPayload;
+  getDriverTransactions: DriverTransactionsAggregatePayload;
+  getDriverTransactionsIds: Array<Scalars["String"]["output"]>;
+  getEmployeeRequest?: Maybe<User>;
   getFAQInfo?: Maybe<Array<SettingFaq>>;
   getFavoriteDrivers: Array<FavoriteDriverPayload>;
+  getFinancialInfo?: Maybe<SettingFinancial>;
   getInstructionInfo?: Maybe<Array<SettingInstruction>>;
   getLatestOtp: OtpRequst;
   getOtps: OtpPaginationPayload;
@@ -1721,7 +1952,10 @@ export type Query = {
   getProvince: Array<Province>;
   getShipmentByTracking: Shipment;
   getSubDistrict: Array<SubDistrict>;
+  getTodayShipment?: Maybe<Shipment>;
   getTransaction: Array<Transaction>;
+  getTransactionDrivers: TransactionDriversAggregatePayload;
+  getTransactionDriversCounting: Array<TransactionDriversTotalRecordPayload>;
   getUser: User;
   getUserByUsername: User;
   getVehicleCost: VehicleCost;
@@ -1732,6 +1966,7 @@ export type Query = {
   getVehicleTypeById: VehicleType;
   getVehicleTypeConfigs: Array<VehicleTypeConfigureStatusPayload>;
   getVehicleTypes: Array<VehicleType>;
+  isExistingParentDriverByPhonenumber: Scalars["Boolean"]["output"];
   isNearbyDuedate: Scalars["Boolean"]["output"];
   locationMarker: Marker;
   locationMarkerByCoords: Marker;
@@ -1740,6 +1975,8 @@ export type Query = {
   monthBilling: Array<BillingCycle>;
   notification: Notification;
   notifications: Array<Notification>;
+  pendingUsers: UserPendingAggregatePayload;
+  privileges: Array<Privilege>;
   requireBeforeSignin: RequireDataBeforePayload;
   searchHistorys: SearchHistoryPaginationPayload;
   searchLocations: Array<LocationAutocomplete>;
@@ -1770,6 +2007,21 @@ export type QueryAllBillingCycleIdsArgs = {
   receiptNumber?: InputMaybe<Scalars["String"]["input"]>;
   shipmentNumber?: InputMaybe<Scalars["String"]["input"]>;
   status?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type QueryAllpendinguserIdsArgs = {
+  email?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
+  requestEnd?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  requestStart?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  status?: InputMaybe<EUpdateUserStatus>;
+  taxId?: InputMaybe<Scalars["String"]["input"]>;
+  userId?: InputMaybe<Scalars["String"]["input"]>;
+  userNumber?: InputMaybe<Scalars["String"]["input"]>;
+  userRole?: InputMaybe<EUserRole>;
+  userType?: InputMaybe<EUserCriterialType>;
+  username?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryAllshipmentIdsArgs = {
@@ -1804,11 +2056,11 @@ export type QueryAlluserIdsArgs = {
   phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
   registration?: InputMaybe<ERegistration>;
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
-  status?: InputMaybe<EUserStatus>;
+  status?: InputMaybe<EUserCriterialStatus>;
   taxId?: InputMaybe<Scalars["String"]["input"]>;
   userNumber?: InputMaybe<Scalars["String"]["input"]>;
   userRole?: InputMaybe<EUserRole>;
-  userType?: InputMaybe<EUserType>;
+  userType?: InputMaybe<EUserCriterialType>;
   username?: InputMaybe<Scalars["String"]["input"]>;
   validationStatus?: InputMaybe<EUserValidationStatus>;
 };
@@ -1838,8 +2090,12 @@ export type QueryBillingNumberByShipmentArgs = {
   trackingNumber: Scalars["String"]["input"];
 };
 
-export type QueryCalculateMonthlyTransactionArgs = {
-  date: Scalars["DateTimeISO"]["input"];
+export type QueryCalculateExistingShipmentArgs = {
+  isRounded: Scalars["Boolean"]["input"];
+  locations: Array<DestinationInput>;
+  serviceIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  shipmentId: Scalars["String"]["input"];
+  vehicleTypeId: Scalars["String"]["input"];
 };
 
 export type QueryCalculateRouteArgs = {
@@ -1900,6 +2156,61 @@ export type QueryGetDistrictArgs = {
   provinceThName?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+export type QueryGetDriverPaymentIdsArgs = {
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
+  driverName?: InputMaybe<Scalars["String"]["input"]>;
+  driverNumber?: InputMaybe<Scalars["String"]["input"]>;
+  endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  shipmentTracking?: InputMaybe<Scalars["String"]["input"]>;
+  startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+};
+
+export type QueryGetDriverPaymentsArgs = {
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
+  driverName?: InputMaybe<Scalars["String"]["input"]>;
+  driverNumber?: InputMaybe<Scalars["String"]["input"]>;
+  endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  page?: InputMaybe<Scalars["Int"]["input"]>;
+  shipmentTracking?: InputMaybe<Scalars["String"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+};
+
+export type QueryGetDriverTransactionDetailArgs = {
+  transactionId: Scalars["String"]["input"];
+};
+
+export type QueryGetDriverTransactionSummaryArgs = {
+  driverNumber: Scalars["String"]["input"];
+  monthDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+};
+
+export type QueryGetDriverTransactionsArgs = {
+  driverNumber: Scalars["String"]["input"];
+  endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  page?: InputMaybe<Scalars["Int"]["input"]>;
+  refType?: InputMaybe<ERefType>;
+  shipmentTracking?: InputMaybe<Scalars["String"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  transactionStatus?: InputMaybe<ETransactionStatus>;
+  transactionType?: InputMaybe<ETransactionType>;
+};
+
+export type QueryGetDriverTransactionsIdsArgs = {
+  driverNumber: Scalars["String"]["input"];
+  endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  refType?: InputMaybe<ERefType>;
+  shipmentTracking?: InputMaybe<Scalars["String"]["input"]>;
+  startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  transactionStatus?: InputMaybe<ETransactionStatus>;
+  transactionType?: InputMaybe<ETransactionType>;
+};
+
 export type QueryGetFavoriteDriversArgs = {
   uid?: InputMaybe<Scalars["String"]["input"]>;
 };
@@ -1953,7 +2264,7 @@ export type QueryGetPrivilegesArgs = {
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
   startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EPrivilegeStatus>;
 };
 
 export type QueryGetShipmentByTrackingArgs = {
@@ -1971,6 +2282,16 @@ export type QueryGetTransactionArgs = {
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
+export type QueryGetTransactionDriversArgs = {
+  driverName?: InputMaybe<Scalars["String"]["input"]>;
+  driverType?: InputMaybe<EUserType>;
+  isPending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  page?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+};
+
 export type QueryGetUserArgs = {
   _id?: InputMaybe<Scalars["String"]["input"]>;
   email?: InputMaybe<Scalars["String"]["input"]>;
@@ -1984,11 +2305,11 @@ export type QueryGetUserArgs = {
   phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
   registration?: InputMaybe<ERegistration>;
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
-  status?: InputMaybe<EUserStatus>;
+  status?: InputMaybe<EUserCriterialStatus>;
   taxId?: InputMaybe<Scalars["String"]["input"]>;
   userNumber?: InputMaybe<Scalars["String"]["input"]>;
   userRole?: InputMaybe<EUserRole>;
-  userType?: InputMaybe<EUserType>;
+  userType?: InputMaybe<EUserCriterialType>;
   username?: InputMaybe<Scalars["String"]["input"]>;
   validationStatus?: InputMaybe<EUserValidationStatus>;
 };
@@ -2011,6 +2332,10 @@ export type QueryGetVehicleTypeArgs = {
 
 export type QueryGetVehicleTypeByIdArgs = {
   id: Scalars["String"]["input"];
+};
+
+export type QueryIsExistingParentDriverByPhonenumberArgs = {
+  phonenumber: Scalars["String"]["input"];
 };
 
 export type QueryLocationMarkerArgs = {
@@ -2045,17 +2370,51 @@ export type QueryNotificationsArgs = {
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
+export type QueryPendingUsersArgs = {
+  email?: InputMaybe<Scalars["String"]["input"]>;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  page?: InputMaybe<Scalars["Int"]["input"]>;
+  phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
+  requestEnd?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  requestStart?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  status?: InputMaybe<EUpdateUserStatus>;
+  taxId?: InputMaybe<Scalars["String"]["input"]>;
+  userId?: InputMaybe<Scalars["String"]["input"]>;
+  userNumber?: InputMaybe<Scalars["String"]["input"]>;
+  userRole?: InputMaybe<EUserRole>;
+  userType?: InputMaybe<EUserCriterialType>;
+  username?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type QueryPrivilegesArgs = {
+  _id?: InputMaybe<Scalars["String"]["input"]>;
+  code?: InputMaybe<Scalars["String"]["input"]>;
+  endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  skip?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  status?: InputMaybe<EPrivilegeStatus>;
+};
+
 export type QuerySearchHistorysArgs = {
+  endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   page?: InputMaybe<Scalars["Int"]["input"]>;
   search?: InputMaybe<Scalars["String"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
 };
 
 export type QuerySearchLocationsArgs = {
-  latitude: Scalars["Float"]["input"];
-  longitude: Scalars["Float"]["input"];
+  latitude?: InputMaybe<Scalars["Float"]["input"]>;
+  longitude?: InputMaybe<Scalars["Float"]["input"]>;
   query: Scalars["String"]["input"];
 };
 
@@ -2181,13 +2540,35 @@ export type QueryUsersArgs = {
   serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
-  status?: InputMaybe<EUserStatus>;
+  status?: InputMaybe<EUserCriterialStatus>;
   taxId?: InputMaybe<Scalars["String"]["input"]>;
   userNumber?: InputMaybe<Scalars["String"]["input"]>;
   userRole?: InputMaybe<EUserRole>;
-  userType?: InputMaybe<EUserType>;
+  userType?: InputMaybe<EUserCriterialType>;
   username?: InputMaybe<Scalars["String"]["input"]>;
   validationStatus?: InputMaybe<EUserValidationStatus>;
+};
+
+export type ReDriverDetailInput = {
+  address: Scalars["String"]["input"];
+  bank?: InputMaybe<Scalars["String"]["input"]>;
+  bankBranch?: InputMaybe<Scalars["String"]["input"]>;
+  bankName?: InputMaybe<Scalars["String"]["input"]>;
+  bankNumber?: InputMaybe<Scalars["String"]["input"]>;
+  businessBranch?: InputMaybe<Scalars["String"]["input"]>;
+  businessName?: InputMaybe<Scalars["String"]["input"]>;
+  district: Scalars["String"]["input"];
+  firstname?: InputMaybe<Scalars["String"]["input"]>;
+  lastname?: InputMaybe<Scalars["String"]["input"]>;
+  lineId?: InputMaybe<Scalars["String"]["input"]>;
+  otherTitle?: InputMaybe<Scalars["String"]["input"]>;
+  phoneNumber: Scalars["String"]["input"];
+  postcode: Scalars["String"]["input"];
+  province: Scalars["String"]["input"];
+  serviceVehicleTypes: Array<Scalars["String"]["input"]>;
+  subDistrict: Scalars["String"]["input"];
+  taxNumber: Scalars["String"]["input"];
+  title: Scalars["String"]["input"];
 };
 
 export type Refund = {
@@ -2426,6 +2807,14 @@ export type SettingFaqInput = {
   question: Scalars["String"]["input"];
 };
 
+export type SettingFinancial = {
+  __typename?: "SettingFinancial";
+  createdAt: Scalars["DateTimeISO"]["output"];
+  history?: Maybe<Array<UpdateHistory>>;
+  promptpay?: Maybe<Scalars["String"]["output"]>;
+  updatedAt: Scalars["DateTimeISO"]["output"];
+};
+
 export type SettingInstruction = {
   __typename?: "SettingInstruction";
   _id: Scalars["ID"]["output"];
@@ -2474,6 +2863,7 @@ export type Shipment = {
   isRoundedReturn: Scalars["Boolean"]["output"];
   notificationCount: Scalars["Float"]["output"];
   payment: Payment;
+  paymentOlds: Array<Payment>;
   podDetail?: Maybe<ShipmentPodAddress>;
   refId?: Maybe<Scalars["String"]["output"]>;
   refund?: Maybe<Refund>;
@@ -2625,6 +3015,8 @@ export type Transaction = {
   __typename?: "Transaction";
   _id: Scalars["ID"]["output"];
   amount: Scalars["Float"]["output"];
+  amountBeforeTax: Scalars["Float"]["output"];
+  amountTax: Scalars["Float"]["output"];
   createdAt: Scalars["DateTimeISO"]["output"];
   description: Scalars["String"]["output"];
   ownerId: Scalars["String"]["output"];
@@ -2636,12 +3028,47 @@ export type Transaction = {
   updatedAt: Scalars["DateTimeISO"]["output"];
 };
 
-export type TransactionPayload = {
-  __typename?: "TransactionPayload";
-  totalIncome: Scalars["Float"]["output"];
-  totalOutcome: Scalars["Float"]["output"];
-  totalOverall: Scalars["Float"]["output"];
-  totalPending?: Maybe<Scalars["Float"]["output"]>;
+export type TransactionDetailPayload = {
+  __typename?: "TransactionDetailPayload";
+  driverPayment?: Maybe<DriverPayment>;
+  shipment?: Maybe<Shipment>;
+  transaction: Transaction;
+};
+
+export type TransactionDriversAggregatePayload = {
+  __typename?: "TransactionDriversAggregatePayload";
+  docs: Array<TransactionDrivesPayload>;
+  hasNextPage: Scalars["Boolean"]["output"];
+  hasPrevPage: Scalars["Boolean"]["output"];
+  limit: Scalars["Int"]["output"];
+  nextPage?: Maybe<Scalars["Int"]["output"]>;
+  offset?: Maybe<Scalars["Int"]["output"]>;
+  page?: Maybe<Scalars["Int"]["output"]>;
+  pagingCounter: Scalars["Int"]["output"];
+  prevPage?: Maybe<Scalars["Int"]["output"]>;
+  totalDocs: Scalars["Int"]["output"];
+  totalPages: Scalars["Int"]["output"];
+};
+
+export type TransactionDriversTotalRecordPayload = {
+  __typename?: "TransactionDriversTotalRecordPayload";
+  count: Scalars["Int"]["output"];
+  key: ETransactionDriverStatus;
+  label: Scalars["String"]["output"];
+};
+
+export type TransactionDrivesPayload = {
+  __typename?: "TransactionDrivesPayload";
+  driver?: Maybe<User>;
+  driverType?: Maybe<EUserType>;
+  lastestPaid?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  pendingAmount: Scalars["Float"]["output"];
+};
+
+export type TransactionSummaryPayload = {
+  __typename?: "TransactionSummaryPayload";
+  amount: Scalars["Float"]["output"];
+  count: Scalars["Float"]["output"];
 };
 
 export type TransferPaymentDetailInput = {
@@ -2698,6 +3125,7 @@ export type User = {
   profileImage?: Maybe<File>;
   registration: ERegistration;
   remark?: Maybe<Scalars["String"]["output"]>;
+  requestedParents?: Maybe<Array<Scalars["String"]["output"]>>;
   status: EUserStatus;
   updatedAt: Scalars["DateTimeISO"]["output"];
   upgradeRequest?: Maybe<BusinessCustomer>;
@@ -2705,12 +3133,45 @@ export type User = {
   userRole: EUserRole;
   userType: EUserType;
   username: Scalars["String"]["output"];
+  validationBy?: Maybe<User>;
+  validationRejectedMessage?: Maybe<Scalars["String"]["output"]>;
   validationStatus: EUserValidationStatus;
 };
 
 export type UserPaginationAggregatePayload = {
   __typename?: "UserPaginationAggregatePayload";
   docs: Array<User>;
+  hasNextPage: Scalars["Boolean"]["output"];
+  hasPrevPage: Scalars["Boolean"]["output"];
+  limit: Scalars["Int"]["output"];
+  nextPage?: Maybe<Scalars["Int"]["output"]>;
+  offset?: Maybe<Scalars["Int"]["output"]>;
+  page?: Maybe<Scalars["Int"]["output"]>;
+  pagingCounter: Scalars["Int"]["output"];
+  prevPage?: Maybe<Scalars["Int"]["output"]>;
+  totalDocs: Scalars["Int"]["output"];
+  totalPages: Scalars["Int"]["output"];
+};
+
+export type UserPending = {
+  __typename?: "UserPending";
+  _id: Scalars["ID"]["output"];
+  approvalBy?: Maybe<User>;
+  businessDetail?: Maybe<BusinessCustomer>;
+  createdAt: Scalars["DateTimeISO"]["output"];
+  driverDetail?: Maybe<DriverDetail>;
+  individualDetail?: Maybe<IndividualCustomer>;
+  profileImage?: Maybe<File>;
+  status: EUpdateUserStatus;
+  updatedAt: Scalars["DateTimeISO"]["output"];
+  user: User;
+  userId: Scalars["ID"]["output"];
+  userNumber: Scalars["String"]["output"];
+};
+
+export type UserPendingAggregatePayload = {
+  __typename?: "UserPendingAggregatePayload";
+  docs: Array<UserPending>;
   hasNextPage: Scalars["Boolean"]["output"];
   hasPrevPage: Scalars["Boolean"]["output"];
   limit: Scalars["Int"]["output"];
@@ -2990,8 +3451,19 @@ export type DriverRegisterMutation = {
   };
 };
 
+export type DriverReRegisterMutationVariables = Exact<{
+  data: DriverReRegisterInput;
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
+}>;
+
+export type DriverReRegisterMutation = {
+  __typename?: "Mutation";
+  driverReRegister: boolean;
+};
+
 export type VerifyDriverDataMutationVariables = Exact<{
   data: DriverDetailInput;
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
 }>;
 
 export type VerifyDriverDataMutation = {
@@ -3056,6 +3528,7 @@ export type EmployeeRegisterMutation = {
 
 export type VerifyEmployeeDataMutationVariables = Exact<{
   data: EmployeeDetailInput;
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
 }>;
 
 export type VerifyEmployeeDataMutation = {
@@ -3074,7 +3547,27 @@ export type VerifyEmployeeDataMutation = {
     district: string;
     subDistrict: string;
     postcode: string;
+    serviceVehicleTypes: Array<string>;
   };
+};
+
+export type AcceptationEmployeeMutationVariables = Exact<{
+  result: Scalars["String"]["input"];
+  agentId: Scalars["String"]["input"];
+}>;
+
+export type AcceptationEmployeeMutation = {
+  __typename?: "Mutation";
+  acceptationEmployee: boolean;
+};
+
+export type RemoveEmployeeMutationVariables = Exact<{
+  driverId: Scalars["String"]["input"];
+}>;
+
+export type RemoveEmployeeMutation = {
+  __typename?: "Mutation";
+  removeEmployee: boolean;
 };
 
 export type AcceptShipmentMutationVariables = Exact<{
@@ -3344,6 +3837,9 @@ export type GetAvailableShipmentQuery = {
       contactName: string;
       contactNumber: string;
       customerRemark?: string | null;
+      placeProvince?: string | null;
+      placeDistrict?: string | null;
+      placeSubDistrict?: string | null;
       location: {
         __typename?: "Location";
         latitude: number;
@@ -3671,6 +4167,9 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       contactName: string;
       contactNumber: string;
       customerRemark?: string | null;
+      placeProvince?: string | null;
+      placeDistrict?: string | null;
+      placeSubDistrict?: string | null;
       location: {
         __typename?: "Location";
         latitude: number;
@@ -3780,17 +4279,19 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       postcode: string;
       phoneNumber: string;
       remark?: string | null;
+      provider?: string | null;
+      trackingNumber?: string | null;
     } | null;
     discountId?: {
       __typename?: "Privilege";
       _id: string;
-      status: string;
+      status: EPrivilegeStatus;
       name: string;
       code: string;
       startDate?: any | null;
       endDate?: any | null;
       discount: number;
-      unit: string;
+      unit: EPrivilegeDiscountUnit;
       minPrice?: number | null;
       maxDiscountPrice?: number | null;
       isInfinity: boolean;
@@ -4021,6 +4522,130 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
   };
 };
 
+export type GetTodayShipmentQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetTodayShipmentQuery = {
+  __typename?: "Query";
+  getTodayShipment?: {
+    __typename?: "Shipment";
+    _id: string;
+    trackingNumber: string;
+    status: EShipmentStatus;
+    adminAcceptanceStatus: EAdminAcceptanceStatus;
+    driverAcceptanceStatus: EDriverAcceptanceStatus;
+    displayDistance: number;
+    displayTime: number;
+    distance: number;
+    returnDistance: number;
+    isRoundedReturn: boolean;
+    isBookingWithDate: boolean;
+    bookingDateTime?: any | null;
+    refId?: string | null;
+    remark?: string | null;
+    createdAt: any;
+    updatedAt: any;
+    deliveredDate?: any | null;
+    cancellationReason?: string | null;
+    cancellationDetail?: string | null;
+    currentStepSeq: number;
+    destinations: Array<{
+      __typename?: "Destination";
+      placeId: string;
+      name: string;
+      detail: string;
+      contactName: string;
+      contactNumber: string;
+      customerRemark?: string | null;
+      placeProvince?: string | null;
+      placeDistrict?: string | null;
+      placeSubDistrict?: string | null;
+      location: {
+        __typename?: "Location";
+        latitude: number;
+        longitude: number;
+      };
+    }>;
+    vehicleId: {
+      __typename?: "VehicleType";
+      _id: string;
+      type: string;
+      isPublic?: boolean | null;
+      isLarger?: boolean | null;
+      name: string;
+      width: number;
+      length: number;
+      height: number;
+      maxCapacity: number;
+      maxDroppoint?: number | null;
+      details?: string | null;
+      image: {
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      };
+    };
+    podDetail?: {
+      __typename?: "ShipmentPODAddress";
+      fullname: string;
+      address: string;
+      province: string;
+      district: string;
+      subDistrict: string;
+      postcode: string;
+      phoneNumber: string;
+      remark?: string | null;
+      provider?: string | null;
+      trackingNumber?: string | null;
+    } | null;
+    steps: Array<{
+      __typename?: "StepDefinition";
+      _id: string;
+      step: EStepDefinition;
+      seq: number;
+      meta?: number | null;
+      stepName: string;
+      customerMessage: string;
+      driverMessage: string;
+      stepStatus: EStepStatus;
+      images: Array<{ __typename?: "File"; _id: string; filename: string }>;
+    }>;
+    driver?: {
+      __typename?: "User";
+      _id: string;
+      fullname?: string | null;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      username: string;
+      status: EUserStatus;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        filename: string;
+      } | null;
+    } | null;
+    agentDriver?: {
+      __typename?: "User";
+      _id: string;
+      fullname?: string | null;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      remark?: string | null;
+      status: EUserStatus;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        filename: string;
+      } | null;
+    } | null;
+  } | null;
+};
+
 export type NotificationsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   skip?: InputMaybe<Scalars["Int"]["input"]>;
@@ -4078,13 +4703,11 @@ export type GetTransactionQueryVariables = Exact<{
   >;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   skip?: InputMaybe<Scalars["Int"]["input"]>;
-  transactionDate: Scalars["DateTimeISO"]["input"];
 }>;
 
 export type GetTransactionQuery = {
   __typename?: "Query";
   totalTransaction: number;
-  calculateMonthlyTransaction: number;
   getTransaction: Array<{
     __typename?: "Transaction";
     _id: string;
@@ -4092,6 +4715,8 @@ export type GetTransactionQuery = {
     ownerType: ETransactionOwner;
     refId: string;
     refType: ERefType;
+    amountBeforeTax: number;
+    amountTax: number;
     amount: number;
     transactionType: ETransactionType;
     description: string;
@@ -4100,11 +4725,74 @@ export type GetTransactionQuery = {
     updatedAt: any;
   }>;
   calculateTransaction: {
-    __typename?: "TransactionPayload";
-    totalPending?: number | null;
-    totalIncome: number;
-    totalOutcome: number;
-    totalOverall: number;
+    __typename?: "DriverTransactionSummaryPayload";
+    monthly: {
+      __typename?: "TransactionSummaryPayload";
+      amount: number;
+      count: number;
+    };
+    pending: {
+      __typename?: "TransactionSummaryPayload";
+      amount: number;
+      count: number;
+    };
+    paid: {
+      __typename?: "TransactionSummaryPayload";
+      amount: number;
+      count: number;
+    };
+    all: {
+      __typename?: "TransactionSummaryPayload";
+      amount: number;
+      count: number;
+    };
+  };
+};
+
+export type GetDriverTransactionDetailQueryVariables = Exact<{
+  transactionId: Scalars["String"]["input"];
+}>;
+
+export type GetDriverTransactionDetailQuery = {
+  __typename?: "Query";
+  getDriverTransactionDetail: {
+    __typename?: "TransactionDetailPayload";
+    transaction: {
+      __typename?: "Transaction";
+      _id: string;
+      refType: ERefType;
+      ownerType: ETransactionOwner;
+      amountBeforeTax: number;
+      amountTax: number;
+      amount: number;
+      status: ETransactionStatus;
+      description: string;
+      createdAt: any;
+      updatedAt: any;
+    };
+    shipment?: {
+      __typename?: "Shipment";
+      _id: string;
+      trackingNumber: string;
+    } | null;
+    driverPayment?: {
+      __typename?: "DriverPayment";
+      _id: string;
+      paymentDate: any;
+      paymentTime: any;
+      subtotal: number;
+      tax: number;
+      total: number;
+      createdAt: any;
+      updatedAt: any;
+      transactions: Array<{
+        __typename?: "Transaction";
+        description: string;
+        amount: number;
+        updatedAt: any;
+      }>;
+      imageEvidence: { __typename?: "File"; filename: string };
+    } | null;
   };
 };
 
@@ -4112,6 +4800,7 @@ export type MeQueryVariables = Exact<{ [key: string]: never }>;
 
 export type MeQuery = {
   __typename?: "Query";
+  checkAvailableToWork: boolean;
   me: {
     __typename?: "User";
     _id: string;
@@ -4134,6 +4823,7 @@ export type MeQuery = {
     fullname?: string | null;
     fcmToken?: string | null;
     drivingStatus?: EDriverStatus | null;
+    validationRejectedMessage?: string | null;
     profileImage?: {
       __typename?: "File";
       _id: string;
@@ -4269,6 +4959,24 @@ export type MeQuery = {
           createdAt: any;
           updatedAt: any;
         } | null;
+        businessRegistrationCertificate?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        certificateValueAddedTaxRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
       };
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
@@ -4306,7 +5014,9 @@ export type MeQuery = {
 };
 
 export type EmployeesQueryVariables = Exact<{
-  parentId?: InputMaybe<Scalars["String"]["input"]>;
+  parentId: Scalars["String"]["input"];
+  userRole: EUserRole;
+  userType: EUserCriterialType;
 }>;
 
 export type EmployeesQuery = {
@@ -4336,6 +5046,8 @@ export type EmployeesQuery = {
       contactNumber?: string | null;
       drivingStatus?: EDriverStatus | null;
       validationStatus: EUserValidationStatus;
+      requestedParents?: Array<string> | null;
+      validationRejectedMessage?: string | null;
       profileImage?: {
         __typename?: "File";
         _id: string;
@@ -4394,6 +5106,7 @@ export type LookupDriverQueryVariables = Exact<{
 
 export type LookupDriverQuery = {
   __typename?: "Query";
+  isExistingParentDriverByPhonenumber: boolean;
   lookupDriverByPhonenumber?: {
     __typename?: "User";
     _id: string;
@@ -4407,6 +5120,7 @@ export type LookupDriverQuery = {
     status: EUserStatus;
     validationStatus: EUserValidationStatus;
     drivingStatus?: EDriverStatus | null;
+    validationRejectedMessage?: string | null;
     profileImage?: {
       __typename?: "File";
       _id: string;
@@ -4453,6 +5167,8 @@ export type GetUserQuery = {
     status: EUserStatus;
     validationStatus: EUserValidationStatus;
     drivingStatus?: EDriverStatus | null;
+    requestedParents?: Array<string> | null;
+    validationRejectedMessage?: string | null;
     profileImage?: {
       __typename?: "File";
       _id: string;
@@ -4476,6 +5192,127 @@ export type GetUserQuery = {
       subDistrict: string;
       postcode: string;
       fullname?: string | null;
+      documents: {
+        __typename?: "DriverDocument";
+        _id: string;
+        frontOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        backOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        leftOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        rigthOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyVehicleRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyIDCard?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyDrivingLicense?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyBookBank?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyHouseRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        insurancePolicy?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        criminalRecordCheckCert?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        businessRegistrationCertificate?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        certificateValueAddedTaxRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+      };
     } | null;
   };
 };
@@ -4499,6 +5336,7 @@ export type AvailableEmployeesQuery = {
     contactNumber?: string | null;
     drivingStatus?: EDriverStatus | null;
     validationStatus: EUserValidationStatus;
+    validationRejectedMessage?: string | null;
     profileImage?: {
       __typename?: "File";
       _id: string;
@@ -4524,6 +5362,17 @@ export type AvailableEmployeesQuery = {
       fullname?: string | null;
     } | null;
   }>;
+};
+
+export type GetEmployeeRequestQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetEmployeeRequestQuery = {
+  __typename?: "Query";
+  getEmployeeRequest?: {
+    __typename?: "User";
+    _id: string;
+    fullname?: string | null;
+  } | null;
 };
 
 export type GetVehicleTypeAvailableQueryVariables = Exact<{
@@ -4738,6 +5587,9 @@ export type ListenAvailableShipmentSubscription = {
       contactName: string;
       contactNumber: string;
       customerRemark?: string | null;
+      placeProvince?: string | null;
+      placeDistrict?: string | null;
+      placeSubDistrict?: string | null;
       location: {
         __typename?: "Location";
         latitude: number;
@@ -5351,9 +6203,58 @@ export type DriverRegisterMutationOptions = Apollo.BaseMutationOptions<
   DriverRegisterMutation,
   DriverRegisterMutationVariables
 >;
+export const DriverReRegisterDocument = gql`
+  mutation DriverReRegister($data: DriverReRegisterInput!, $driverId: String) {
+    driverReRegister(data: $data, driverId: $driverId)
+  }
+`;
+export type DriverReRegisterMutationFn = Apollo.MutationFunction<
+  DriverReRegisterMutation,
+  DriverReRegisterMutationVariables
+>;
+
+/**
+ * __useDriverReRegisterMutation__
+ *
+ * To run a mutation, you first call `useDriverReRegisterMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDriverReRegisterMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [driverReRegisterMutation, { data, loading, error }] = useDriverReRegisterMutation({
+ *   variables: {
+ *      data: // value for 'data'
+ *      driverId: // value for 'driverId'
+ *   },
+ * });
+ */
+export function useDriverReRegisterMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DriverReRegisterMutation,
+    DriverReRegisterMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    DriverReRegisterMutation,
+    DriverReRegisterMutationVariables
+  >(DriverReRegisterDocument, options);
+}
+export type DriverReRegisterMutationHookResult = ReturnType<
+  typeof useDriverReRegisterMutation
+>;
+export type DriverReRegisterMutationResult =
+  Apollo.MutationResult<DriverReRegisterMutation>;
+export type DriverReRegisterMutationOptions = Apollo.BaseMutationOptions<
+  DriverReRegisterMutation,
+  DriverReRegisterMutationVariables
+>;
 export const VerifyDriverDataDocument = gql`
-  mutation VerifyDriverData($data: DriverDetailInput!) {
-    verifyDriverData(data: $data) {
+  mutation VerifyDriverData($data: DriverDetailInput!, $driverId: String) {
+    verifyDriverData(data: $data, driverId: $driverId) {
       policyVersion
       driverType
       title
@@ -5398,6 +6299,7 @@ export type VerifyDriverDataMutationFn = Apollo.MutationFunction<
  * const [verifyDriverDataMutation, { data, loading, error }] = useVerifyDriverDataMutation({
  *   variables: {
  *      data: // value for 'data'
+ *      driverId: // value for 'driverId'
  *   },
  * });
  */
@@ -5571,8 +6473,8 @@ export type EmployeeRegisterMutationOptions = Apollo.BaseMutationOptions<
   EmployeeRegisterMutationVariables
 >;
 export const VerifyEmployeeDataDocument = gql`
-  mutation VerifyEmployeeData($data: EmployeeDetailInput!) {
-    verifyEmployeeData(data: $data) {
+  mutation VerifyEmployeeData($data: EmployeeDetailInput!, $driverId: String) {
+    verifyEmployeeData(data: $data, driverId: $driverId) {
       title
       otherTitle
       firstname
@@ -5585,6 +6487,7 @@ export const VerifyEmployeeDataDocument = gql`
       district
       subDistrict
       postcode
+      serviceVehicleTypes
     }
   }
 `;
@@ -5607,6 +6510,7 @@ export type VerifyEmployeeDataMutationFn = Apollo.MutationFunction<
  * const [verifyEmployeeDataMutation, { data, loading, error }] = useVerifyEmployeeDataMutation({
  *   variables: {
  *      data: // value for 'data'
+ *      driverId: // value for 'driverId'
  *   },
  * });
  */
@@ -5630,6 +6534,103 @@ export type VerifyEmployeeDataMutationResult =
 export type VerifyEmployeeDataMutationOptions = Apollo.BaseMutationOptions<
   VerifyEmployeeDataMutation,
   VerifyEmployeeDataMutationVariables
+>;
+export const AcceptationEmployeeDocument = gql`
+  mutation AcceptationEmployee($result: String!, $agentId: String!) {
+    acceptationEmployee(result: $result, agentId: $agentId)
+  }
+`;
+export type AcceptationEmployeeMutationFn = Apollo.MutationFunction<
+  AcceptationEmployeeMutation,
+  AcceptationEmployeeMutationVariables
+>;
+
+/**
+ * __useAcceptationEmployeeMutation__
+ *
+ * To run a mutation, you first call `useAcceptationEmployeeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAcceptationEmployeeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [acceptationEmployeeMutation, { data, loading, error }] = useAcceptationEmployeeMutation({
+ *   variables: {
+ *      result: // value for 'result'
+ *      agentId: // value for 'agentId'
+ *   },
+ * });
+ */
+export function useAcceptationEmployeeMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    AcceptationEmployeeMutation,
+    AcceptationEmployeeMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    AcceptationEmployeeMutation,
+    AcceptationEmployeeMutationVariables
+  >(AcceptationEmployeeDocument, options);
+}
+export type AcceptationEmployeeMutationHookResult = ReturnType<
+  typeof useAcceptationEmployeeMutation
+>;
+export type AcceptationEmployeeMutationResult =
+  Apollo.MutationResult<AcceptationEmployeeMutation>;
+export type AcceptationEmployeeMutationOptions = Apollo.BaseMutationOptions<
+  AcceptationEmployeeMutation,
+  AcceptationEmployeeMutationVariables
+>;
+export const RemoveEmployeeDocument = gql`
+  mutation RemoveEmployee($driverId: String!) {
+    removeEmployee(driverId: $driverId)
+  }
+`;
+export type RemoveEmployeeMutationFn = Apollo.MutationFunction<
+  RemoveEmployeeMutation,
+  RemoveEmployeeMutationVariables
+>;
+
+/**
+ * __useRemoveEmployeeMutation__
+ *
+ * To run a mutation, you first call `useRemoveEmployeeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveEmployeeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeEmployeeMutation, { data, loading, error }] = useRemoveEmployeeMutation({
+ *   variables: {
+ *      driverId: // value for 'driverId'
+ *   },
+ * });
+ */
+export function useRemoveEmployeeMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    RemoveEmployeeMutation,
+    RemoveEmployeeMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    RemoveEmployeeMutation,
+    RemoveEmployeeMutationVariables
+  >(RemoveEmployeeDocument, options);
+}
+export type RemoveEmployeeMutationHookResult = ReturnType<
+  typeof useRemoveEmployeeMutation
+>;
+export type RemoveEmployeeMutationResult =
+  Apollo.MutationResult<RemoveEmployeeMutation>;
+export type RemoveEmployeeMutationOptions = Apollo.BaseMutationOptions<
+  RemoveEmployeeMutation,
+  RemoveEmployeeMutationVariables
 >;
 export const AcceptShipmentDocument = gql`
   mutation AcceptShipment($shipmentId: String!) {
@@ -6400,6 +7401,9 @@ export const GetAvailableShipmentDocument = gql`
           latitude
           longitude
         }
+        placeProvince
+        placeDistrict
+        placeSubDistrict
       }
       vehicleId {
         _id
@@ -6779,6 +7783,9 @@ export const GetAvailableShipmentByTrackingNumberDocument = gql`
           latitude
           longitude
         }
+        placeProvince
+        placeDistrict
+        placeSubDistrict
       }
       vehicleId {
         _id
@@ -6873,6 +7880,8 @@ export const GetAvailableShipmentByTrackingNumberDocument = gql`
         postcode
         phoneNumber
         remark
+        provider
+        trackingNumber
       }
       discountId {
         _id
@@ -7169,6 +8178,190 @@ export type GetAvailableShipmentByTrackingNumberQueryResult =
     GetAvailableShipmentByTrackingNumberQuery,
     GetAvailableShipmentByTrackingNumberQueryVariables
   >;
+export const GetTodayShipmentDocument = gql`
+  query GetTodayShipment {
+    getTodayShipment {
+      _id
+      trackingNumber
+      status
+      adminAcceptanceStatus
+      driverAcceptanceStatus
+      displayDistance
+      displayTime
+      distance
+      returnDistance
+      isRoundedReturn
+      isBookingWithDate
+      bookingDateTime
+      refId
+      remark
+      createdAt
+      updatedAt
+      deliveredDate
+      cancellationReason
+      cancellationDetail
+      destinations {
+        placeId
+        name
+        detail
+        contactName
+        contactNumber
+        customerRemark
+        location {
+          latitude
+          longitude
+        }
+        placeProvince
+        placeDistrict
+        placeSubDistrict
+      }
+      vehicleId {
+        _id
+        type
+        isPublic
+        isLarger
+        name
+        width
+        length
+        height
+        maxCapacity
+        maxDroppoint
+        details
+        image {
+          _id
+          fileId
+          filename
+          mimetype
+          createdAt
+          updatedAt
+        }
+      }
+      podDetail {
+        fullname
+        address
+        province
+        district
+        subDistrict
+        postcode
+        phoneNumber
+        remark
+        provider
+        trackingNumber
+      }
+      currentStepSeq
+      steps {
+        _id
+        step
+        seq
+        meta
+        stepName
+        customerMessage
+        driverMessage
+        stepStatus
+        images {
+          _id
+          filename
+        }
+      }
+      driver {
+        _id
+        fullname
+        userNumber
+        userRole
+        userType
+        username
+        status
+        profileImage {
+          _id
+          filename
+        }
+      }
+      agentDriver {
+        _id
+        fullname
+        userNumber
+        userRole
+        userType
+        remark
+        status
+        profileImage {
+          _id
+          filename
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * __useGetTodayShipmentQuery__
+ *
+ * To run a query within a React component, call `useGetTodayShipmentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetTodayShipmentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetTodayShipmentQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetTodayShipmentQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    GetTodayShipmentQuery,
+    GetTodayShipmentQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<GetTodayShipmentQuery, GetTodayShipmentQueryVariables>(
+    GetTodayShipmentDocument,
+    options,
+  );
+}
+export function useGetTodayShipmentLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetTodayShipmentQuery,
+    GetTodayShipmentQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    GetTodayShipmentQuery,
+    GetTodayShipmentQueryVariables
+  >(GetTodayShipmentDocument, options);
+}
+export function useGetTodayShipmentSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        GetTodayShipmentQuery,
+        GetTodayShipmentQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<
+    GetTodayShipmentQuery,
+    GetTodayShipmentQueryVariables
+  >(GetTodayShipmentDocument, options);
+}
+export type GetTodayShipmentQueryHookResult = ReturnType<
+  typeof useGetTodayShipmentQuery
+>;
+export type GetTodayShipmentLazyQueryHookResult = ReturnType<
+  typeof useGetTodayShipmentLazyQuery
+>;
+export type GetTodayShipmentSuspenseQueryHookResult = ReturnType<
+  typeof useGetTodayShipmentSuspenseQuery
+>;
+export type GetTodayShipmentQueryResult = Apollo.QueryResult<
+  GetTodayShipmentQuery,
+  GetTodayShipmentQueryVariables
+>;
 export const NotificationsDocument = gql`
   query Notifications($limit: Int, $skip: Int) {
     notifications(skip: $skip, limit: $limit) {
@@ -7424,7 +8617,6 @@ export const GetTransactionDocument = gql`
     $sortField: [String!]
     $sortAscending: Boolean
     $skip: Int
-    $transactionDate: DateTimeISO!
   ) {
     getTransaction(
       limit: $limit
@@ -7437,6 +8629,8 @@ export const GetTransactionDocument = gql`
       ownerType
       refId
       refType
+      amountBeforeTax
+      amountTax
       amount
       transactionType
       description
@@ -7444,14 +8638,25 @@ export const GetTransactionDocument = gql`
       createdAt
       updatedAt
     }
-    calculateTransaction {
-      totalPending
-      totalIncome
-      totalOutcome
-      totalOverall
-    }
     totalTransaction
-    calculateMonthlyTransaction(date: $transactionDate)
+    calculateTransaction {
+      monthly {
+        amount
+        count
+      }
+      pending {
+        amount
+        count
+      }
+      paid {
+        amount
+        count
+      }
+      all {
+        amount
+        count
+      }
+    }
   }
 `;
 
@@ -7471,19 +8676,14 @@ export const GetTransactionDocument = gql`
  *      sortField: // value for 'sortField'
  *      sortAscending: // value for 'sortAscending'
  *      skip: // value for 'skip'
- *      transactionDate: // value for 'transactionDate'
  *   },
  * });
  */
 export function useGetTransactionQuery(
-  baseOptions: Apollo.QueryHookOptions<
+  baseOptions?: Apollo.QueryHookOptions<
     GetTransactionQuery,
     GetTransactionQueryVariables
-  > &
-    (
-      | { variables: GetTransactionQueryVariables; skip?: boolean }
-      | { skip: boolean }
-    ),
+  >,
 ) {
   const options = { ...defaultOptions, ...baseOptions };
   return Apollo.useQuery<GetTransactionQuery, GetTransactionQueryVariables>(
@@ -7533,6 +8733,121 @@ export type GetTransactionQueryResult = Apollo.QueryResult<
   GetTransactionQuery,
   GetTransactionQueryVariables
 >;
+export const GetDriverTransactionDetailDocument = gql`
+  query GetDriverTransactionDetail($transactionId: String!) {
+    getDriverTransactionDetail(transactionId: $transactionId) {
+      transaction {
+        _id
+        refType
+        ownerType
+        amountBeforeTax
+        amountTax
+        amount
+        status
+        description
+        createdAt
+        updatedAt
+      }
+      shipment {
+        _id
+        trackingNumber
+      }
+      driverPayment {
+        _id
+        paymentDate
+        paymentTime
+        subtotal
+        tax
+        total
+        createdAt
+        updatedAt
+        transactions {
+          description
+          amount
+          updatedAt
+        }
+        imageEvidence {
+          filename
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * __useGetDriverTransactionDetailQuery__
+ *
+ * To run a query within a React component, call `useGetDriverTransactionDetailQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetDriverTransactionDetailQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetDriverTransactionDetailQuery({
+ *   variables: {
+ *      transactionId: // value for 'transactionId'
+ *   },
+ * });
+ */
+export function useGetDriverTransactionDetailQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    GetDriverTransactionDetailQuery,
+    GetDriverTransactionDetailQueryVariables
+  > &
+    (
+      | { variables: GetDriverTransactionDetailQueryVariables; skip?: boolean }
+      | { skip: boolean }
+    ),
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<
+    GetDriverTransactionDetailQuery,
+    GetDriverTransactionDetailQueryVariables
+  >(GetDriverTransactionDetailDocument, options);
+}
+export function useGetDriverTransactionDetailLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetDriverTransactionDetailQuery,
+    GetDriverTransactionDetailQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    GetDriverTransactionDetailQuery,
+    GetDriverTransactionDetailQueryVariables
+  >(GetDriverTransactionDetailDocument, options);
+}
+export function useGetDriverTransactionDetailSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        GetDriverTransactionDetailQuery,
+        GetDriverTransactionDetailQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<
+    GetDriverTransactionDetailQuery,
+    GetDriverTransactionDetailQueryVariables
+  >(GetDriverTransactionDetailDocument, options);
+}
+export type GetDriverTransactionDetailQueryHookResult = ReturnType<
+  typeof useGetDriverTransactionDetailQuery
+>;
+export type GetDriverTransactionDetailLazyQueryHookResult = ReturnType<
+  typeof useGetDriverTransactionDetailLazyQuery
+>;
+export type GetDriverTransactionDetailSuspenseQueryHookResult = ReturnType<
+  typeof useGetDriverTransactionDetailSuspenseQuery
+>;
+export type GetDriverTransactionDetailQueryResult = Apollo.QueryResult<
+  GetDriverTransactionDetailQuery,
+  GetDriverTransactionDetailQueryVariables
+>;
 export const MeDocument = gql`
   query Me {
     me {
@@ -7556,6 +8871,7 @@ export const MeDocument = gql`
       fullname
       fcmToken
       drivingStatus
+      validationRejectedMessage
       profileImage {
         _id
         fileId
@@ -7677,6 +8993,22 @@ export const MeDocument = gql`
             createdAt
             updatedAt
           }
+          businessRegistrationCertificate {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          certificateValueAddedTaxRegistration {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
         }
         serviceVehicleTypes {
           _id
@@ -7710,6 +9042,7 @@ export const MeDocument = gql`
     unreadCount {
       notification
     }
+    checkAvailableToWork
   }
 `;
 
@@ -7759,8 +9092,12 @@ export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeSuspenseQueryHookResult = ReturnType<typeof useMeSuspenseQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
 export const EmployeesDocument = gql`
-  query Employees($parentId: String) {
-    users(parentId: $parentId) {
+  query Employees(
+    $parentId: String!
+    $userRole: EUserRole!
+    $userType: EUserCriterialType!
+  ) {
+    users(parentId: $parentId, userRole: $userRole, userType: $userType) {
       totalDocs
       limit
       totalPages
@@ -7783,6 +9120,8 @@ export const EmployeesDocument = gql`
         contactNumber
         drivingStatus
         validationStatus
+        requestedParents
+        validationRejectedMessage
         profileImage {
           _id
           fileId
@@ -7845,14 +9184,20 @@ export const EmployeesDocument = gql`
  * const { data, loading, error } = useEmployeesQuery({
  *   variables: {
  *      parentId: // value for 'parentId'
+ *      userRole: // value for 'userRole'
+ *      userType: // value for 'userType'
  *   },
  * });
  */
 export function useEmployeesQuery(
-  baseOptions?: Apollo.QueryHookOptions<
+  baseOptions: Apollo.QueryHookOptions<
     EmployeesQuery,
     EmployeesQueryVariables
-  >,
+  > &
+    (
+      | { variables: EmployeesQueryVariables; skip?: boolean }
+      | { skip: boolean }
+    ),
 ) {
   const options = { ...defaultOptions, ...baseOptions };
   return Apollo.useQuery<EmployeesQuery, EmployeesQueryVariables>(
@@ -7911,6 +9256,7 @@ export const LookupDriverDocument = gql`
       status
       validationStatus
       drivingStatus
+      validationRejectedMessage
       profileImage {
         _id
         fileId
@@ -7934,6 +9280,7 @@ export const LookupDriverDocument = gql`
         fullname
       }
     }
+    isExistingParentDriverByPhonenumber(phonenumber: $phonenumber)
   }
 `;
 
@@ -8025,6 +9372,8 @@ export const GetUserDocument = gql`
       status
       validationStatus
       drivingStatus
+      requestedParents
+      validationRejectedMessage
       profileImage {
         _id
         fileId
@@ -8046,6 +9395,113 @@ export const GetUserDocument = gql`
         subDistrict
         postcode
         fullname
+        documents {
+          _id
+          frontOfVehicle {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          backOfVehicle {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          leftOfVehicle {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          rigthOfVehicle {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyVehicleRegistration {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyIDCard {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyDrivingLicense {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyBookBank {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          copyHouseRegistration {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          insurancePolicy {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          criminalRecordCheckCert {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          businessRegistrationCertificate {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+          certificateValueAddedTaxRegistration {
+            _id
+            fileId
+            filename
+            mimetype
+            createdAt
+            updatedAt
+          }
+        }
       }
     }
   }
@@ -8125,6 +9581,7 @@ export const AvailableEmployeesDocument = gql`
       contactNumber
       drivingStatus
       validationStatus
+      validationRejectedMessage
       profileImage {
         _id
         fileId
@@ -8224,6 +9681,84 @@ export type AvailableEmployeesSuspenseQueryHookResult = ReturnType<
 export type AvailableEmployeesQueryResult = Apollo.QueryResult<
   AvailableEmployeesQuery,
   AvailableEmployeesQueryVariables
+>;
+export const GetEmployeeRequestDocument = gql`
+  query GetEmployeeRequest {
+    getEmployeeRequest {
+      _id
+      fullname
+    }
+  }
+`;
+
+/**
+ * __useGetEmployeeRequestQuery__
+ *
+ * To run a query within a React component, call `useGetEmployeeRequestQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetEmployeeRequestQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetEmployeeRequestQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetEmployeeRequestQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    GetEmployeeRequestQuery,
+    GetEmployeeRequestQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<
+    GetEmployeeRequestQuery,
+    GetEmployeeRequestQueryVariables
+  >(GetEmployeeRequestDocument, options);
+}
+export function useGetEmployeeRequestLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetEmployeeRequestQuery,
+    GetEmployeeRequestQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    GetEmployeeRequestQuery,
+    GetEmployeeRequestQueryVariables
+  >(GetEmployeeRequestDocument, options);
+}
+export function useGetEmployeeRequestSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        GetEmployeeRequestQuery,
+        GetEmployeeRequestQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<
+    GetEmployeeRequestQuery,
+    GetEmployeeRequestQueryVariables
+  >(GetEmployeeRequestDocument, options);
+}
+export type GetEmployeeRequestQueryHookResult = ReturnType<
+  typeof useGetEmployeeRequestQuery
+>;
+export type GetEmployeeRequestLazyQueryHookResult = ReturnType<
+  typeof useGetEmployeeRequestLazyQuery
+>;
+export type GetEmployeeRequestSuspenseQueryHookResult = ReturnType<
+  typeof useGetEmployeeRequestSuspenseQuery
+>;
+export type GetEmployeeRequestQueryResult = Apollo.QueryResult<
+  GetEmployeeRequestQuery,
+  GetEmployeeRequestQueryVariables
 >;
 export const GetVehicleTypeAvailableDocument = gql`
   query GetVehicleTypeAvailable {
@@ -8562,6 +10097,9 @@ export const ListenAvailableShipmentDocument = gql`
           latitude
           longitude
         }
+        placeProvince
+        placeDistrict
+        placeSubDistrict
       }
       vehicleId {
         _id

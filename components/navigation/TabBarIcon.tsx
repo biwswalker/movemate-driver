@@ -58,7 +58,7 @@ export function IconItem(menu: TMenu, hidden: boolean = false) {
       >
         <Animated.View style={[tabStyles.menuWrapper]}>
           {Icon[menu]}
-          {isActive && <Text style={tabStyles.menuText}>{Label[menu]}</Text>}
+          {/* {isActive && <Text style={tabStyles.menuText}>{Label[menu]}</Text>} */}
         </Animated.View>
       </TouchableOpacity>
     );
@@ -68,7 +68,7 @@ export function IconItem(menu: TMenu, hidden: boolean = false) {
 export const tabStyles = StyleSheet.create({
   tabBar: {
     position: "absolute",
-    bottom: normalize(24),
+    bottom: normalize(16),
     left: normalize(24),
     right: normalize(24),
     elevation: 0,
@@ -78,6 +78,7 @@ export const tabStyles = StyleSheet.create({
     paddingHorizontal: normalize(8),
     alignItems: "center",
     justifyContent: "center",
+    marginHorizontal: normalize(16),
   },
   shadow: {
     shadowColor: colors.grey[500],

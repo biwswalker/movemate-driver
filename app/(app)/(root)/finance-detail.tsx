@@ -138,6 +138,40 @@ export default function FinancialDetail() {
 
           <View style={styles.contentRow}>
             <View style={styles.contentField}>
+              <Text varient="body2">ยอกก่อนหักภาษีขนส่ง</Text>
+              {isAgentDriverShipment ? (
+                <Text varient="body1" color="secondary">
+                  -
+                </Text>
+              ) : (
+                <Text
+                  varient="body1"
+                  color="secondary"
+                  style={{ lineHeight: normalize(20) }}
+                >
+                  {fCurrency(transaction.amountBeforeTax)} บาท
+                </Text>
+              )}
+            </View>
+            <View style={styles.contentField}>
+              <Text varient="body2">ภาษีขนส่ง</Text>
+              {isAgentDriverShipment ? (
+                <Text varient="body1" color="secondary">
+                  -
+                </Text>
+              ) : (
+                <Text
+                  varient="body1"
+                  color="secondary"
+                  style={{ lineHeight: normalize(20) }}
+                >
+                  -{fCurrency(transaction.amountTax)} บาท
+                </Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.contentRow}>
+            <View style={styles.contentField}>
               <Text varient="body2">จำนวน</Text>
               {isAgentDriverShipment ? (
                 <Text varient="body1" color="secondary">

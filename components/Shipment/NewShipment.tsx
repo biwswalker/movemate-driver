@@ -19,7 +19,7 @@ import { fDateTime, fSecondsToDuration } from "@utils/formatTime";
 import { normalize } from "@utils/normalizeSize";
 import Button from "@components/Button";
 import Iconify from "@components/Iconify";
-import { head, isEmpty, map, tail } from "lodash";
+import { head, isEmpty, last, map, sortBy, tail } from "lodash";
 import {
   EDriverStatus,
   Shipment,
@@ -69,6 +69,8 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
     }, [data?.listenAvailableShipment]);
 
     function Item({ item, index }: ListRenderItemInfo<Shipment>) {
+      const _quotation = last(sortBy(item.quotations, "createdAt"));
+
       const pickupLocation = head(item.destinations);
       const dropoffLocations = tail(item.destinations);
 
@@ -171,7 +173,7 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
               }}
             >
               <Text varient="h3" style={shipmentStyle.pricingText}>
-                {fCurrency(item.payment.invoice?.totalCost || 0)}
+                {fCurrency(_quotation?.cost.total || 0)}
               </Text>
               <Text
                 varient="body2"

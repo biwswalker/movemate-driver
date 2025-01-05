@@ -1,0 +1,12 @@
+fragment UpdateHistoryFragment on UpdateHistory {
+  _id
+  referenceId
+  referenceType
+  beforeUpdate
+  afterUpdate
+  who {
+    ...UserNonInfoDataFragment
+  }
+  createdAt
+  updatedAt
+}

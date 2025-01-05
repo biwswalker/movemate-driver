@@ -126,7 +126,7 @@ export default function PrivacyPolicy() {
     if (policy) {
       console.log("onAcceptPolicy: ", policy.version);
       router.dismiss();
-      const registerRoutes: Href<string> =
+      const registerRoutes: Href =
         driverType === EDriverType.BUSINESS
           ? "/register/business"
           : "/register/individual";

@@ -1,0 +1,8 @@
+fragment FileFragment on File {
+  _id
+  fileId
+  filename
+  mimetype
+  createdAt
+  updatedAt
+}

@@ -1,0 +1,40 @@
+fragment VehicleTypeFragment on VehicleType {
+  _id
+  type
+  isPublic
+  isLarger
+  name
+  width
+  length
+  height
+  maxCapacity
+  maxDroppoint
+  image {
+    ...FileFragment
+  }
+  details
+  createdAt
+  updatedAt
+}
+
+fragment VehicleTypeConfigFragment on VehicleTypeConfigureStatusPayload {
+  _id
+  type
+  isPublic
+  isLarger
+  name
+  width
+  length
+  height
+  maxCapacity
+  maxDroppoint
+  image {
+    ...FileFragment
+  }
+  details
+  createdAt
+  updatedAt
+  isAdditionalServicesConfigured
+  isDistancesConfigured
+  isConfigured
+}

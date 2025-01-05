@@ -1,0 +1,30 @@
+fragment ShipmentPODAddressFragment on ShipmentPODAddress {
+  _id
+  fullname
+  address
+  province
+  district
+  subDistrict
+  postcode
+  phoneNumber
+  remark
+  trackingNumber
+  provider
+}
+
+fragment PODAddressFragment on PODAddress {
+  _id
+  user {
+    ...UserNonInfoDataFragment
+  }
+  fullname
+  address
+  province
+  district
+  subDistrict
+  postcode
+  phoneNumber
+  remark
+  createdAt
+  updatedAt
+}

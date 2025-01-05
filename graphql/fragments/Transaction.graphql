@@ -1,0 +1,15 @@
+fragment TransactionFragment on Transaction {
+  _id
+  ownerId
+  ownerType
+  refId
+  refType
+  transactionType
+  status
+  amountBeforeTax
+  amountTax
+  amount
+  description
+  createdAt
+  updatedAt
+}

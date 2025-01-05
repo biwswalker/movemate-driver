@@ -1,0 +1,32 @@
+fragment PaymentEvidence on PaymentEvidence {
+  image {
+    ...FileFragment
+  }
+  paymentDate
+  paymentTime
+  bank
+  bankName
+  bankNumber
+}
+
+fragment PaymentFragment on Payment {
+  _id
+  paymentNumber
+  status
+  type
+  paymentMethod
+  evidence {
+    ...PaymentEvidence
+  }
+  quotations {
+    ...QuotationFragment
+  }
+  createdAt
+  updatedAt
+  updatedBy {
+    ...UserNonInfoDataFragment
+  }
+  total
+  subTotal
+  tax
+}

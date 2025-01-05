@@ -1,0 +1,26 @@
+fragment UserPendingFragment on UserPending {
+  _id
+  userId
+  userNumber
+  status
+  createdAt
+  updatedAt
+  user {
+    ...UserFragment
+  }
+  profileImage {
+    ...FileFragment
+  }
+  individualDetail {
+    ...IndividualCustomerFragment
+  }
+  businessDetail {
+    ...BusinessCustomerFragment
+  }
+  driverDetail {
+    ...DriverDetailFragment
+  }
+  approvalBy {
+    ...UserNonInfoDataFragment
+  }
+}

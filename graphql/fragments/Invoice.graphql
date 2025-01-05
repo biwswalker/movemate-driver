@@ -1,0 +1,20 @@
+fragment InvoiceFragment on Invoice {
+  _id
+  invoiceNumber
+  invoiceDate
+  name
+  address
+  province
+  district
+  subDistrict
+  postcode
+  contactNumber
+  document {
+    ...BillingDocumentFragment
+  }
+  createdAt
+  updatedAt
+  updatedBy {
+    ...UserNonInfoDataFragment
+  }
+}

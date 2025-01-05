@@ -1,0 +1,14 @@
+fragment ReceiptFragment on Receipt {
+  _id
+  receiptNumber
+  receiptDate
+  document {
+    ...BillingDocumentFragment
+  }
+  createdAt
+  updatedAt
+  updatedBy
+  total
+  subTotal
+  tax
+}

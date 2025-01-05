@@ -12,7 +12,7 @@ import { normalize } from "@/utils/normalizeSize";
 import { fCurrency, fNumber } from "@/utils/number";
 import { router, useLocalSearchParams } from "expo-router";
 import hexToRgba from "hex-to-rgba";
-import { get, isEmpty, map, tail } from "lodash";
+import { get, isEmpty, last, map, sortBy, tail } from "lodash";
 import { Fragment, useEffect, useMemo } from "react";
 import {
   BackHandler,
@@ -106,6 +106,8 @@ interface OverviewProps {
 }
 
 function Overview({ shipment }: OverviewProps) {
+  const _quotation = last(sortBy(shipment.quotations, "createdAt"));
+
   return (
     <View style={overviewStyles.container}>
       <View style={overviewStyles.titleContainer}>
@@ -150,7 +152,7 @@ function Overview({ shipment }: OverviewProps) {
             }}
           >
             <Text varient="h3" style={overviewStyles.pricingText}>
-              {fCurrency(get(shipment, "payment.invoice.totalCost", 0))}
+              {fCurrency(_quotation?.cost.total || 0)}
             </Text>
             <Text varient="body2" style={{ lineHeight: normalize(32) }}>
               {" "}

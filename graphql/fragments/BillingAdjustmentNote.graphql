@@ -1,0 +1,15 @@
+fragment BillingAdjustmentNoteFragment on BillingAdjustmentNote {
+  _id
+  adjustmentNumber
+  status
+  billingId
+  adjustmentType
+  adjustmentAmount
+  adjustmentReason
+  issueDate
+  payment {
+    ...PaymentFragment
+  }
+  createdAt
+  updatedAt
+}

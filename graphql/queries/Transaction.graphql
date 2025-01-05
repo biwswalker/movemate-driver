@@ -10,19 +10,7 @@ query GetTransaction(
     sortAscending: $sortAscending
     skip: $skip
   ) {
-    _id
-    ownerId
-    ownerType
-    refId
-    refType
-    amountBeforeTax
-    amountTax
-    amount
-    transactionType
-    description
-    status
-    createdAt
-    updatedAt
+    ...TransactionFragment
   }
   totalTransaction
   calculateTransaction {
@@ -48,16 +36,7 @@ query GetTransaction(
 query GetDriverTransactionDetail($transactionId: String!) {
   getDriverTransactionDetail(transactionId: $transactionId) {
     transaction {
-      _id
-      refType
-      ownerType
-      amountBeforeTax
-      amountTax
-      amount
-      status
-      description
-      createdAt
-      updatedAt
+      ...TransactionFragment
     }
     shipment {
       _id

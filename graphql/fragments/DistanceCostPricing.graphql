@@ -1,0 +1,40 @@
+fragment DistanceCostPricingFragment on DistanceCostPricing {
+  _id
+  from
+  to
+  unit
+  cost
+  price
+  benefits
+  history {
+    ...UpdateHistoryFragment
+  }
+  createdAt
+  updatedAt
+}
+
+fragment DistanceCostPricingWithoutHistoryFragment on DistanceCostPricing {
+  _id
+  from
+  to
+  unit
+  cost
+  price
+  benefits
+  createdAt
+  updatedAt
+}
+
+fragment DistanceCostPricingCalculatedFragment on CalculationResultPayload {
+  _id
+  from
+  to
+  unit
+  cost
+  price
+  benefits
+  createdAt
+  updatedAt
+  calculatedCost
+  calculatedPrice
+}

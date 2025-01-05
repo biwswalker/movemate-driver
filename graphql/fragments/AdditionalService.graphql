@@ -1,0 +1,33 @@
+fragment AdditionalServiceDescriptionFragment on AdditionalServiceDescription {
+  _id
+  detail
+  vehicleTypes {
+    ...VehicleTypeFragment
+  }
+}
+
+fragment AdditionalServiceFragment on AdditionalService {
+  _id
+  type
+  name
+  permanent
+  status
+  createdAt
+  updatedAt
+  descriptions {
+    ...AdditionalServiceDescriptionFragment
+  }
+}
+
+fragment AdditionalServiceCostPricingFragment on AdditionalServiceCostPricing {
+  _id
+  available
+  type
+  cost
+  price
+  createdAt
+  updatedAt
+  additionalService {
+    ...AdditionalServiceFragment
+  }
+}

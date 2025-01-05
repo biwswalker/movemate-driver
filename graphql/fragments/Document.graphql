@@ -1,0 +1,55 @@
+fragment DriverDocumentFragment on DriverDocument {
+  _id
+  frontOfVehicle {
+    ...FileFragment
+  }
+  backOfVehicle {
+    ...FileFragment
+  }
+  leftOfVehicle {
+    ...FileFragment
+  }
+  rigthOfVehicle {
+    ...FileFragment
+  }
+  copyVehicleRegistration {
+    ...FileFragment
+  }
+  copyIDCard {
+    ...FileFragment
+  }
+  copyDrivingLicense {
+    ...FileFragment
+  }
+  copyBookBank {
+    ...FileFragment
+  }
+  copyHouseRegistration {
+    ...FileFragment
+  }
+  insurancePolicy {
+    ...FileFragment
+  }
+  criminalRecordCheckCert {
+    ...FileFragment
+  }
+  businessRegistrationCertificate {
+    ...FileFragment
+  }
+  certificateValueAddedTaxRegistration {
+    ...FileFragment
+  }
+}
+
+fragment BillingDocumentFragment on BillingDocument {
+  _id
+  filename
+  emailTime
+  postalTime
+  trackingNumber
+  provider
+  receviedWHTDocumentDate
+  updatedBy {
+    ...UserNonInfoDataFragment
+  }
+}

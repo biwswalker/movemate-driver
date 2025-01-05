@@ -15,7 +15,7 @@ import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { addMinutes } from "date-fns";
 import { router } from "expo-router";
 import hexToRgba from "hex-to-rgba";
-import { head, isEmpty, map, tail } from "lodash";
+import { head, isEmpty, last, map, sortBy, tail } from "lodash";
 import { Fragment, useCallback, useMemo, useState } from "react";
 import { Image, Platform, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -74,6 +74,8 @@ export default function ShipmentList() {
   function Item({ item, index }: ListRenderItemInfo<Shipment>) {
     const pickupLocation = head(item.destinations);
     const dropoffLocations = tail(item.destinations);
+
+    const _quotation = last(sortBy(item.quotations, "createdAt"));
 
     const createTime = addMinutes(new Date(item.createdAt), 60).getTime();
     const isNew = new Date().getTime() < createTime;
@@ -178,7 +180,7 @@ export default function ShipmentList() {
             }}
           >
             <Text varient="h3" style={shipmentStyle.pricingText}>
-              {fCurrency(item.payment.invoice?.totalCost || 0)}
+              {fCurrency(_quotation?.cost.total || 0)}
             </Text>
             <Text
               varient="body2"

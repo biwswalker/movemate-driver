@@ -15,7 +15,7 @@ import { ApolloError } from "@apollo/client";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import hexToRgba from "hex-to-rgba";
-import { get } from "lodash";
+import { last, sortBy } from "lodash";
 import {
   Dispatch,
   Fragment,
@@ -180,6 +180,8 @@ interface IConfirmDialogProps {
 
 function ConfirmDialog({ open, setOpen, shipment }: IConfirmDialogProps) {
   const { showSnackbar } = useSnackbarV2();
+  const _quotation = last(sortBy(shipment.quotations, "createdAt"));
+
   const handleClose = () => {
     setOpen(false);
   };
@@ -233,7 +235,7 @@ function ConfirmDialog({ open, setOpen, shipment }: IConfirmDialogProps) {
             <Text>
               ราคา{" "}
               <Text varient="subtitle1">
-                {fCurrency(get(shipment, "payment.invoice.totalCost", 0))}
+                {fCurrency(_quotation?.cost.total || 0)}
               </Text>{" "}
               บาท ({fNumber(shipment?.displayDistance / 1000, "0,0.0")} กม.)
             </Text>

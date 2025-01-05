@@ -1,0 +1,15 @@
+fragment StepDefinitionFragment on StepDefinition {
+  _id
+  step
+  seq
+  stepName
+  customerMessage
+  driverMessage
+  meta
+  stepStatus
+  images {
+    ...FileFragment
+  }
+  createdAt
+  updatedAt
+}

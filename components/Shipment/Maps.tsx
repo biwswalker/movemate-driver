@@ -28,15 +28,15 @@ export default function MapsComponent({ shipment }: IMapsProps) {
   }, [shipment.destinations]);
 
   const direction = useMemo<google.maps.DirectionsResult | undefined>(() => {
-    if (shipment.directionId) {
-      if (shipment.directionId.rawData) {
-        const rawData = shipment.directionId.rawData;
+    if (shipment.route) {
+      if (shipment.route.rawData) {
+        const rawData = shipment.route.rawData;
         const direction = JSON.parse(rawData);
         return direction;
       }
     }
     return undefined;
-  }, [shipment.directionId]);
+  }, [shipment.route]);
 
   // if (destinations && direction) {
   //   return <ShipmentMaps destinations={destinations} direction={direction} />;

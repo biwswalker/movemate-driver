@@ -8,7 +8,17 @@ import { fDateTime } from "@utils/formatTime";
 import { normalize } from "@utils/normalizeSize";
 import Button from "@components/Button";
 import Iconify from "@components/Iconify";
-import { find, get, head, includes, isEmpty, map, tail } from "lodash";
+import {
+  find,
+  get,
+  head,
+  includes,
+  isEmpty,
+  last,
+  map,
+  sortBy,
+  tail,
+} from "lodash";
 import hexToRgba from "hex-to-rgba";
 import {
   EDriverType,
@@ -411,6 +421,8 @@ function Shipments({ status }: ShipmentsProps) {
   }, [data?.getAvailableShipment]);
 
   function Item({ item, index }: ListRenderItemInfo<Shipment>) {
+    const _quotation = last(sortBy(item.quotations, "createdAt"));
+
     const pickupLocation = head(item.destinations);
     const dropoffLocations = tail(item.destinations);
 
@@ -499,7 +511,7 @@ function Shipments({ status }: ShipmentsProps) {
             ) : (
               <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
                 <Text varient="h3">
-                  {fCurrency(item.payment.invoice?.totalCost || 0)}
+                  {fCurrency(_quotation?.cost.total || 0)}
                 </Text>
                 <Text varient="body2" style={{ lineHeight: normalize(26) }}>
                   {" "}

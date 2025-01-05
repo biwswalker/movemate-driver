@@ -1,0 +1,56 @@
+fragment PriceFragment on Price {
+  acturePrice
+  droppoint
+  rounded
+  roundedPercent
+  total
+  subTotal
+  tax
+}
+
+fragment PriceItemFragment on PriceItem {
+  label
+  price
+  cost
+}
+
+fragment QuotationDetailFragment on QuotationDetail {
+  shippingPrices {
+    ...PriceItemFragment
+  }
+  additionalServices {
+    ...PriceItemFragment
+  }
+  discounts {
+    ...PriceItemFragment
+  }
+  taxs {
+    ...PriceItemFragment
+  }
+  total
+  subTotal
+  tax
+}
+
+fragment QuotationFragment on Quotation {
+  _id
+  quotationNumber
+  quotationDate
+  price {
+    ...PriceFragment
+  }
+  cost {
+    ...PriceFragment
+  }
+  detail {
+    ...QuotationDetailFragment
+  }
+  createdAt
+  updatedAt
+  updatedBy {
+    ...UserNonInfoDataFragment
+  }
+  total
+  subTotal
+  tax
+}

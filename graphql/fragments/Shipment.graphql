@@ -1,0 +1,210 @@
+fragment LocationFragment on Location {
+  latitude
+  longitude
+}
+
+fragment DestinationFragment on Destination {
+  placeId
+  name
+  detail
+  location {
+    ...LocationFragment
+  }
+  contactName
+  contactNumber
+  customerRemark
+  placeDetail
+  placeProvince
+  placeDistrict
+  placeSubDistrict
+}
+
+fragment ShipmentAdditionalServicePriceFragment on ShipmentAdditionalServicePrice {
+  _id
+  reference {
+    ...AdditionalServiceCostPricingFragment
+  }
+  cost
+  price
+  createdAt
+  updatedAt
+}
+
+fragment DirectionsResultFragment on DirectionsResult {
+  _id
+  rawData
+}
+
+fragment ShipmentFragment on Shipment {
+  _id
+  trackingNumber
+  status
+  adminAcceptanceStatus
+  driverAcceptanceStatus
+  customer {
+    ...UserNonInfoDataFragment
+  }
+  requestedDriver {
+    ...UserNonInfoDataFragment
+  }
+  driver {
+    ...UserNonInfoDataFragment
+  }
+  agentDriver {
+    ...UserNonInfoDataFragment
+  }
+  destinations {
+    ...DestinationFragment
+  }
+  displayDistance
+  displayTime
+  distance
+  returnDistance
+  isRoundedReturn
+  vehicleId {
+    ...VehicleTypeFragment
+  }
+  additionalServices {
+    ...ShipmentAdditionalServicePriceFragment
+  }
+  podDetail {
+    ...ShipmentPODAddressFragment
+  }
+  discountId {
+    ...PrivilegeFragment
+  }
+  isBookingWithDate
+  bookingDateTime
+  additionalImages {
+    ...FileFragment
+  }
+  refId
+  remark
+  route {
+    ...DirectionsResultFragment
+  }
+  steps {
+    ...StepDefinitionFragment
+  }
+  currentStepSeq
+  paymentMethod
+  createdAt
+  updatedAt
+  history {
+    ...UpdateHistoryFragment
+  }
+  cancellationReason
+  cancellationDetail
+  deliveredDate
+  cancelledDate
+  notificationCount
+  isNotificationPause
+  formula {
+    ...DistanceCostPricingWithoutHistoryFragment
+  }
+  quotations {
+    ...QuotationFragment
+  }
+}
+
+fragment ShipmentListFragment on Shipment {
+  _id
+  trackingNumber
+  status
+  adminAcceptanceStatus
+  driverAcceptanceStatus
+  customer {
+    ...UserNonInfoDataFragment
+  }
+  requestedDriver {
+    ...UserNonInfoDataFragment
+  }
+  driver {
+    ...UserNonInfoDataFragment
+  }
+  agentDriver {
+    ...UserNonInfoDataFragment
+  }
+  destinations {
+    ...DestinationFragment
+  }
+  displayDistance
+  displayTime
+  distance
+  returnDistance
+  isRoundedReturn
+  vehicleId {
+    ...VehicleTypeFragment
+  }
+  additionalServices {
+    ...ShipmentAdditionalServicePriceFragment
+  }
+  podDetail {
+    ...ShipmentPODAddressFragment
+  }
+  discountId {
+    ...PrivilegeFragment
+  }
+  isBookingWithDate
+  bookingDateTime
+  additionalImages {
+    ...FileFragment
+  }
+  refId
+  remark
+  route {
+    ...DirectionsResultFragment
+  }
+  steps {
+    ...StepDefinitionFragment
+  }
+  currentStepSeq
+  paymentMethod
+  createdAt
+  updatedAt
+  cancellationReason
+  cancellationDetail
+  deliveredDate
+  cancelledDate
+  notificationCount
+  isNotificationPause
+  formula {
+    ...DistanceCostPricingWithoutHistoryFragment
+  }
+  quotations {
+    ...QuotationFragment
+  }
+}
+
+fragment ShipmentPureFragment on Shipment {
+  _id
+  trackingNumber
+  status
+  adminAcceptanceStatus
+  driverAcceptanceStatus
+  destinations {
+    ...DestinationFragment
+  }
+  displayDistance
+  displayTime
+  distance
+  returnDistance
+  isRoundedReturn
+  isBookingWithDate
+  bookingDateTime
+  refId
+  remark
+  currentStepSeq
+  paymentMethod
+  createdAt
+  updatedAt
+  cancellationReason
+  cancellationDetail
+  deliveredDate
+  cancelledDate
+  notificationCount
+  isNotificationPause
+  formula {
+    ...DistanceCostPricingWithoutHistoryFragment
+  }
+}

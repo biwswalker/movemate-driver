@@ -1,0 +1,17 @@
+fragment NotificationFragment on Notification {
+  _id
+  userId
+  varient
+  title
+  message
+  infoText
+  infoLink
+  errorText
+  errorLink
+  masterText
+  masterLink
+  permanent
+  read
+  createdAt
+  updatedAt
+}

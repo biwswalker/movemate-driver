@@ -81,7 +81,7 @@ export default function RootLayout() {
       } else if (requireAcceptedPolicy) {
         router.replace("/readfirst");
       } else {
-        router.replace("/(tabs)");
+        router.replace("/(app)/(root)/(tabs)");
       }
     }
   }, [isAuthenticated, requirePasswordChange, requireAcceptedPolicy]);
@@ -123,10 +123,7 @@ export default function RootLayout() {
         name="finance-list"
         options={{ headerShown: false, presentation: "fullScreenModal" }}
       />
-      <Stack.Screen
-        name="finance-detail"
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="finance-detail" options={{ headerShown: false }} />
       <Stack.Screen
         name="profile-detail"
         options={{ headerShown: false, presentation: "fullScreenModal" }}
@@ -159,10 +156,7 @@ export default function RootLayout() {
         name="notifications"
         options={{ headerShown: false, presentation: "fullScreenModal" }}
       />
-      <Stack.Screen
-        name="re-register"
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="re-register" options={{ headerShown: false }} />
     </Stack>
   );
 }

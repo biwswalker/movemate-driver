@@ -1,0 +1,87 @@
+fragment BillingFragment on Billing {
+  _id
+  billingNumber
+  status
+  state
+  paymentMethod
+  user {
+    ...UserNonInfoDataFragment
+  }
+  shipments {
+    ...ShipmentFragment
+  }
+  payments {
+    ...PaymentFragment
+  }
+  receipts {
+    ...ReceiptFragment
+  }
+  adjustmentNotes {
+    ...BillingAdjustmentNoteFragment
+  }
+  reasons {
+    type
+    detail
+  }
+  invoice {
+    ...InvoiceFragment
+  }
+  issueDate
+  billingStartDate
+  billingEndDate
+  paymentDueDate
+  createdAt
+  updatedAt
+  updatedBy {
+    ...UserNonInfoDataFragment
+  }
+  amount {
+    total
+    subTotal
+    tax
+  }
+}
+
+fragment BillingListFragment on Billing {
+  _id
+  billingNumber
+  status
+  state
+  paymentMethod
+  user {
+    ...UserNonInfoDataFragment
+  }
+  shipments {
+    ...ShipmentPureFragment
+  }
+  payments {
+    ...PaymentFragment
+  }
+  receipts {
+    ...ReceiptFragment
+  }
+  adjustmentNotes {
+    ...BillingAdjustmentNoteFragment
+  }
+  reasons {
+    type
+    detail
+  }
+  invoice {
+    ...InvoiceFragment
+  }
+  issueDate
+  billingStartDate
+  billingEndDate
+  paymentDueDate
+  createdAt
+  updatedAt
+  updatedBy {
+    ...UserNonInfoDataFragment
+  }
+  amount {
+    total
+    subTotal
+    tax
+  }
+}

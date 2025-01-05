@@ -1,0 +1,371 @@
+fragment AdminFragment on Admin {
+  _id
+  userNumber
+  permission
+  email
+  title
+  firstname
+  lastname
+  phoneNumber
+  taxId
+  address
+  province
+  district
+  subDistrict
+  postcode
+  fullname
+}
+
+fragment IndividualCustomerFragment on IndividualCustomer {
+  _id
+  userNumber
+  email
+  title
+  otherTitle
+  firstname
+  lastname
+  phoneNumber
+  taxId
+  address
+  province
+  district
+  subDistrict
+  postcode
+  fullname
+}
+
+fragment BilledMonthFragment on BilledMonth {
+  jan
+  feb
+  mar
+  apr
+  may
+  jun
+  jul
+  aug
+  sep
+  oct
+  nov
+  dec
+}
+
+fragment BusinessCustomerCreditPaymentFragment on BusinessCustomerCreditPayment {
+  _id
+  isSameAddress
+  financialFirstname
+  financialLastname
+  financialContactNumber
+  financialContactEmails
+  financialAddress
+  financialPostcode
+  financialProvince
+  financialDistrict
+  financialSubDistrict
+  billedDateType
+  billedDate {
+    ...BilledMonthFragment
+  }
+  billedRoundType
+  billedRound {
+    ...BilledMonthFragment
+  }
+  acceptedFirstCreditTermDate
+  businessRegistrationCertificateFile {
+    ...FileFragment
+  }
+  copyIDAuthorizedSignatoryFile {
+    ...FileFragment
+  }
+  certificateValueAddedTaxRegistrationFile {
+    ...FileFragment
+  }
+  creditLimit
+  creditUsage
+  creditOutstandingBalance
+}
+
+fragment BusinessCustomerCashPaymentFragment on BusinessCustomerCashPayment {
+  _id
+  acceptedEReceiptDate
+}
+
+fragment BusinessCustomerFragment on BusinessCustomer {
+  _id
+  userNumber
+  businessTitle
+  businessName
+  businessBranch
+  businessType
+  businessTypeOther
+  taxNumber
+  address
+  province
+  district
+  subDistrict
+  postcode
+  contactNumber
+  businessEmail
+  paymentMethod
+  acceptedEDocumentDate
+  acceptedPoliciesVersion
+  acceptedPoliciesDate
+  acceptedTermConditionVersion
+  acceptedTermConditionDate
+  changePaymentMethodRequest
+  creditPayment {
+    ...BusinessCustomerCreditPaymentFragment
+  }
+  cashPayment {
+    ...BusinessCustomerCashPaymentFragment
+  }
+}
+
+fragment DriverDetailFragment on DriverDetail {
+  _id
+  driverType
+  title
+  otherTitle
+  firstname
+  lastname
+  businessName
+  businessBranch
+  taxNumber
+  phoneNumber
+  lineId
+  address
+  province
+  district
+  subDistrict
+  postcode
+  bank
+  bankBranch
+  bankName
+  bankNumber
+  balance
+  fullname
+  serviceVehicleTypes {
+    ...VehicleTypeFragment
+  }
+  documents {
+    ...DriverDocumentFragment
+  }
+}
+
+fragment UserSummaryFragment on User {
+  _id
+  userNumber
+  userRole
+  userType
+  username
+  remark
+  status
+  adminDetail {
+    ...AdminFragment
+  }
+  individualDetail {
+    ...IndividualCustomerFragment
+  }
+  businessDetail {
+    ...BusinessCustomerFragment
+  }
+  driverDetail {
+    ...DriverDetailFragment
+  }
+  upgradeRequest {
+    ...BusinessCustomerFragment
+  }
+  profileImage {
+    ...FileFragment
+  }
+  notifications {
+    ...NotificationFragment
+  }
+  fcmToken
+  drivingStatus
+  favoriteDrivers
+  parents
+  requestedParents
+  validationRejectedMessage
+  fullname
+  email
+  contactNumber
+  address
+}
+
+fragment UserFragment on User {
+  _id
+  userNumber
+  userRole
+  userType
+  username
+  remark
+  status
+  validationStatus
+  registration
+  lastestOTP
+  lastestOTPRef
+  lastestOTPTime
+  isVerifiedEmail
+  isVerifiedPhoneNumber
+  acceptPolicyVersion
+  acceptPolicyTime
+  createdAt
+  updatedAt
+  adminDetail {
+    ...AdminFragment
+  }
+  individualDetail {
+    ...IndividualCustomerFragment
+  }
+  businessDetail {
+    ...BusinessCustomerFragment
+  }
+  driverDetail {
+    ...DriverDetailFragment
+  }
+  agents {
+    ...UserSummaryFragment
+  }
+  upgradeRequest {
+    ...BusinessCustomerFragment
+  }
+  profileImage {
+    ...FileFragment
+  }
+  notifications {
+    ...NotificationFragment
+  }
+  fcmToken
+  drivingStatus
+  favoriteDrivers
+  parents
+  requestedParents
+  validationRejectedMessage
+  validationBy {
+    ...UserSummaryFragment
+  }
+  fullname
+  email
+  contactNumber
+  address
+}
+
+fragment UserFragment on User {
+  _id
+  userNumber
+  userRole
+  userType
+  username
+  remark
+  status
+  validationStatus
+  registration
+  lastestOTP
+  lastestOTPRef
+  lastestOTPTime
+  isVerifiedEmail
+  isVerifiedPhoneNumber
+  acceptPolicyVersion
+  acceptPolicyTime
+  createdAt
+  updatedAt
+  adminDetail {
+    ...AdminFragment
+  }
+  individualDetail {
+    ...IndividualCustomerFragment
+  }
+  businessDetail {
+    ...BusinessCustomerFragment
+  }
+  driverDetail {
+    ...DriverDetailFragment
+  }
+  agents {
+    ...UserSummaryFragment
+  }
+  upgradeRequest {
+    ...BusinessCustomerFragment
+  }
+  profileImage {
+    ...FileFragment
+  }
+  notifications {
+    ...NotificationFragment
+  }
+  fcmToken
+  drivingStatus
+  favoriteDrivers
+  parents
+  requestedParents
+  validationRejectedMessage
+  validationBy {
+    ...UserSummaryFragment
+  }
+  fullname
+  email
+  contactNumber
+  address
+}
+
+fragment UserDriverFragment on User {
+  _id
+  userNumber
+  userRole
+  userType
+  username
+  remark
+  status
+  validationStatus
+  driverDetail {
+    ...DriverDetailFragment
+  }
+  agents {
+    ...UserSummaryFragment
+  }
+  profileImage {
+    ...FileFragment
+  }
+  notifications {
+    ...NotificationFragment
+  }
+  drivingStatus
+  favoriteDrivers
+  parents
+  fullname
+  email
+  contactNumber
+  address
+}
+
+fragment UserNonInfoDataFragment on User {
+  _id
+  username
+  userNumber
+  userRole
+  userType
+  status
+  adminDetail {
+    ...AdminFragment
+  }
+  individualDetail {
+    ...IndividualCustomerFragment
+  }
+  businessDetail {
+    ...BusinessCustomerFragment
+  }
+  driverDetail {
+    ...DriverDetailFragment
+  }
+  agents {
+    ...UserSummaryFragment
+  }
+  profileImage {
+    ...FileFragment
+  }
+  parents
+  fullname
+  email
+  contactNumber
+  address
+}

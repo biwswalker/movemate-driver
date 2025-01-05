@@ -4,6 +4,7 @@ const config: CodegenConfig = {
   overwrite: true,
   schema: "http://localhost:5500/graphql",
   documents: [
+    "graphql/fragments/**/*.graphql",
     "graphql/queries/**/*.graphql",
     "graphql/mutations/**/*.graphql",
     "graphql/subscriptions/**/*.graphql",

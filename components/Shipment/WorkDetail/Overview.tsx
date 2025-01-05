@@ -1,11 +1,11 @@
 import Text from "@/components/Text";
 import colors from "@constants/colors";
-import { EDriverType, EUserType, Shipment } from "@/graphql/generated/graphql";
+import { EUserType, Shipment } from "@/graphql/generated/graphql";
 import { fDateTime, fSecondsToDuration } from "@/utils/formatTime";
 import { normalize } from "@/utils/normalizeSize";
 import { fCurrency, fNumber } from "@/utils/number";
 import { StyleSheet, View } from "react-native";
-import { get, includes } from "lodash";
+import { get, last, sortBy } from "lodash";
 import useAuth from "@/hooks/useAuth";
 import { Fragment } from "react";
 
@@ -17,6 +17,8 @@ export default function Overview({ shipment }: OverviewProps) {
   const { user } = useAuth();
 
   const isAgent = user?.userType === EUserType.BUSINESS;
+  const _quotation = last(sortBy(shipment.quotations, "createdAt"));
+
   // const driverTypes = get(user, "driverDetail.driverType", []);
   // const isBusinessDriver = includes(driverTypes, EDriverType.BUSINESS_DRIVER); // isBusinessDriver != isAgent
 
@@ -67,7 +69,7 @@ export default function Overview({ shipment }: OverviewProps) {
               }}
             >
               <Text varient="h4" style={overviewStyles.pricingText}>
-                {fCurrency(get(shipment, "payment.invoice.totalCost", 0))}
+                {fCurrency(_quotation?.cost.total || 0)}
               </Text>
               <Text varient="body2" style={{ lineHeight: normalize(32) }}>
                 {" "}

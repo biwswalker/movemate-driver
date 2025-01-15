@@ -89,8 +89,8 @@ export default function ShipmentOverview() {
             }
           />
           <ScrollView style={styles.scrollContainer}>
-            <Overview shipment={shipment} />
-            <Detail shipment={shipment} />
+            {shipment && <Overview shipment={shipment} />}
+            {shipment && <Detail shipment={shipment} />}
             <View style={styles.spacingBox} />
           </ScrollView>
           <View style={styles.actionButton}>
@@ -125,11 +125,13 @@ export default function ShipmentOverview() {
           </View>
         </SafeAreaView>
       </View>
-      <ConfirmDialog
-        open={confirmOpen}
-        setOpen={setConfirmOpen}
-        shipment={shipment}
-      />
+      {shipment && (
+        <ConfirmDialog
+          open={confirmOpen}
+          setOpen={setConfirmOpen}
+          shipment={shipment}
+        />
+      )}
     </Fragment>
   );
 }

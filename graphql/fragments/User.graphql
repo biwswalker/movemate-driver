@@ -223,9 +223,9 @@ fragment UserFragment on User {
   driverDetail {
     ...DriverDetailFragment
   }
-  agents {
-    ...UserSummaryFragment
-  }
+  # agents {
+  #   ...UserSummaryFragment
+  # }
   upgradeRequest {
     ...BusinessCustomerFragment
   }
@@ -281,9 +281,9 @@ fragment UserFragment on User {
   driverDetail {
     ...DriverDetailFragment
   }
-  agents {
-    ...UserSummaryFragment
-  }
+  # agents {
+  #   ...UserSummaryFragment
+  # }
   upgradeRequest {
     ...BusinessCustomerFragment
   }
@@ -320,9 +320,9 @@ fragment UserDriverFragment on User {
   driverDetail {
     ...DriverDetailFragment
   }
-  agents {
-    ...UserSummaryFragment
-  }
+  # agents {
+  #   ...UserSummaryFragment
+  # }
   profileImage {
     ...FileFragment
   }
@@ -357,9 +357,9 @@ fragment UserNonInfoDataFragment on User {
   driverDetail {
     ...DriverDetailFragment
   }
-  agents {
-    ...UserSummaryFragment
-  }
+  # agents {
+  #   ...UserSummaryFragment
+  # }
   profileImage {
     ...FileFragment
   }

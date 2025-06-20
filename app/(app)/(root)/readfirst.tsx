@@ -90,7 +90,7 @@ export default function ReadfirstScreen() {
           <View style={styles.headerWrapper}>
             <Text varient="h3">ยอมรับข้อกำหนด</Text>
             <Text varient="body2" color="secondary">
-              เนื่องจากมีการเปลี่ยนแปลงข้อกำหนดหารให้บริการและนโยบายส่วนตัว
+              เนื่องจากมีการเปลี่ยนแปลงข้อกำหนดการให้บริการและนโยบายส่วนตัว
             </Text>
           </View>
           <ScrollView style={styles.scrollViewWrapper}>

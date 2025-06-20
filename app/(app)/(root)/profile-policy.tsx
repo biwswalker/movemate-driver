@@ -127,7 +127,7 @@ export default function ProfilePolicy() {
         <View style={styles.wrapper}>
           <View style={styles.headerWrapper}>
             <Text style={styles.headerText} varient="h6">
-              {`ข้อกำหนดหารให้บริการ\nและนโยบายส่วนตัว`}
+              {`ข้อกำหนดการให้บริการ\nและนโยบายส่วนตัว`}
             </Text>
             <View style={styles.headerActionWrapper}>
               <ButtonIcon

@@ -48,7 +48,7 @@ export function SnackbarV2Provider({ children }: PropsWithChildren) {
   let dismiss = useRef(() => {});
 
   const showSnackbar = useCallback(
-    ({
+    async({
       type = DropdownAlertType.Info,
       interval = 5000,
       color = DropdownAlertColor.Default,
@@ -61,15 +61,15 @@ export function SnackbarV2Provider({ children }: PropsWithChildren) {
         interval,
         color,
       });
+      setProcessing(true);
       setTimeout(async () => {
-        setProcessing(true);
         await alert.current({
           ...item,
           interval,
           type,
         });
         setProcessing(false);
-      }, 10);
+      }, 126);
     },
     []
   );

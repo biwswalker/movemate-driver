@@ -6,6 +6,7 @@ import {
   Notification,
   useNotificationsQuery,
 } from "@/graphql/generated/graphql";
+import useAuth from "@/hooks/useAuth";
 import { fToNow } from "@/utils/formatTime";
 import { normalize } from "@/utils/normalizeSize";
 import colors from "@constants/colors";
@@ -21,6 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function Notifications() {
   const [hasMore, setHasMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const { refetchMe } = useAuth()
   const { data, loading, fetchMore, refetch } = useNotificationsQuery({
     variables: { limit: 10, skip: 0 },
     notifyOnNetworkStatusChange: true,
@@ -40,6 +42,7 @@ export default function Notifications() {
       // Refresh
       // setRefreshing(true);
       await refetch();
+      refetchMe()
     } catch (error) {
       console.log("error: ", JSON.stringify(error, undefined, 2));
     } finally {
@@ -63,6 +66,7 @@ export default function Notifications() {
         } else {
           setHasMore(true);
         }
+        refetchMe()
         return {
           ...prevResult,
           ...fetchMoreResult,

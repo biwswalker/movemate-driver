@@ -8,10 +8,11 @@ import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import ApolloProvider from "@/graphql/apollo-provider";
-import { PaperProvider } from "react-native-paper";
 import RNPaperConfig from "@/configs/RNPaper";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import * as Notifications from 'expo-notifications';
 
+import { PaperProvider } from "react-native-paper";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { SnackbarProvider } from "@/contexts/SnackbarContext";
@@ -19,9 +20,20 @@ import { SnackbarV2Provider } from "@/contexts/SnackbarV2Context";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { StatusBar } from "expo-status-bar";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { usePushNotification } from '@/hooks/usePushNotification'; 
 
+
+// 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -48,6 +60,8 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
+
+  usePushNotification();
 
   return (
     <ApolloProvider>

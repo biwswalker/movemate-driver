@@ -17,6 +17,9 @@ import { getMainDefinition } from "@apollo/client/utilities";
 import { onError } from "@apollo/client/link/error";
 import SplashScreen from "@/components/SplashScreen";
 import { ERegistration } from "./generated/graphql";
+import { mmkvStorageAdapter } from "@/utils/mmkv-storage";
+import { storage } from "@/utils/mmkv-storage";
+import { CachePersistor } from "apollo3-cache-persist";
 
 const httpLink = new HttpLink({
   uri: `${process.env.EXPO_PUBLIC_API_URL}/graphql`,
@@ -45,7 +48,8 @@ const errorLink = onError(
 
 const authLink = setContext(
   async ({ query, operationName }, { headers, ...prev }) => {
-    const token = await AsyncStorage.getItem("access_token");
+    const token = storage.getString("accessToken");
+    // const token = await AsyncStorage.getItem("access_token");
     const existingAuthorization = get(headers, "authorization", "");
     return {
       headers: {
@@ -74,9 +78,12 @@ function createWSLink(access_token: string) {
 }
 
 // const uploadLink = createUploadLink({ uri: `${API_URL}/graphql` });
+const SCHEMA_VERSION = "1";
+const SCHEMA_VERSION_KEY = "apollo-schema-version";
 
 export default function ApolloWrapper({ children }: PropsWithChildren) {
   const [client, setClient] = useState<ApolloClient<any> | null>(null);
+  const [persistor, setPersistor] = useState<CachePersistor<any>>();
 
   if (__DEV__) {
     loadDevMessages();
@@ -89,6 +96,26 @@ export default function ApolloWrapper({ children }: PropsWithChildren) {
 
   async function initialClient() {
     try {
+      const cache = new InMemoryCache();
+      const newPersistor = new CachePersistor({
+        cache,
+        storage: mmkvStorageAdapter as any,
+        debug: __DEV__,
+        trigger: "write",
+      });
+
+      const currentVersion = storage.getString(SCHEMA_VERSION_KEY); // 👈 3. ใช้ MMKV โดยตรง
+      const isCompatible = currentVersion === SCHEMA_VERSION;
+
+      if (isCompatible) {
+        await newPersistor.restore();
+      } else {
+        await newPersistor.purge();
+        storage.set(SCHEMA_VERSION_KEY, SCHEMA_VERSION); // 👈 4. ใช้ MMKV โดยตรง
+      }
+
+      setPersistor(newPersistor);
+
       const token = await AsyncStorage.getItem("access_token").catch(() => "");
       const wsLink = createWSLink(token || "");
       const splitLink = split(
@@ -105,7 +132,7 @@ export default function ApolloWrapper({ children }: PropsWithChildren) {
 
       const client = new ApolloClient({
         uri: `${process.env.NEXT_PUBLIC_API}/graphql`,
-        cache: new InMemoryCache(),
+        cache,
         link: from([authLink, splitLink, errorLink]),
       });
 

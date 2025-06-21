@@ -8,10 +8,15 @@ import {
   useRemoveFcmMutation,
   useStoreFcmMutation,
 } from "@/graphql/generated/graphql";
-import { usePushNotifications } from "@/hooks/usePushNotification";
+import {
+  unregisterForPushNotifications,
+  registerForPushNotifications,
+} from "@/hooks/usePushNotification";
+// import { usePushNotifications } from "@/hooks/usePushNotification";
 import { encryption } from "@/utils/crypto";
+import { storage } from "@/utils/mmkv-storage";
 import { ApolloError, useApolloClient } from "@apollo/client";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { get, isEqual } from "lodash";
 import {
@@ -53,7 +58,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | undefined>(
     undefined
   );
-  const { devicePushToken } = usePushNotifications();
+  // const { devicePushToken } = usePushNotifications();
   const [notificationCount, setNotificationCount] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -113,12 +118,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [me]);
 
   async function checkFirstLaunch() {
-    const hasLaunched = await AsyncStorage.getItem("hasLaunched");
+    const hasLaunched = storage.getString("hasLaunched");
     if (hasLaunched === "yes") {
       setIsFirstLaunch(false);
     } else {
       setIsFirstLaunch(true);
-      await AsyncStorage.setItem("hasLaunched", "yes");
+      storage.set("hasLaunched", "yes");
     }
   }
 
@@ -148,12 +153,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (login) {
       const userRole = get(login, "user.userRole", "");
       if (isEqual(userRole, EUserRole.DRIVER)) {
-        await AsyncStorage.setItem("access_token", login.token);
+        storage.set("access_token", login.token);
         setUser(login.user as User);
         setAuthError(undefined);
         setAuthenticated(true);
         setLoading(false);
-        await initializeFCM();
+        // await initializeFCM();
         setRequireAcceptedPolicy(login.requireAcceptedPolicy);
         setRequirePasswordChange(login.requirePasswordChange);
         refetchMe();
@@ -173,20 +178,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setAuthError(undefined);
   };
 
-  const getEncryptedFCMToken = async () => {
-    const fcmToken = devicePushToken?.data;
-    if (fcmToken) {
-      const fcmTokenEncryption = encryption(fcmToken);
+  const getEncryptedFCMToken = async (token: string) => {
+    if (token) {
+      const fcmTokenEncryption = encryption(token);
       return fcmTokenEncryption;
     }
     return null;
   };
 
   async function initializeFCM() {
-    const token = await getEncryptedFCMToken();
-    if (token) {
+    const token = await registerForPushNotifications();
+    const encryptedToken = await getEncryptedFCMToken(token);
+    if (encryptedToken) {
       await storeFCMToken({
-        variables: { fcmToken: token },
+        variables: { fcmToken: encryptedToken },
         onError: (error) => {
           console.log("----error---", error);
         },
@@ -195,6 +200,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   async function removeFCM() {
+    await unregisterForPushNotifications();
     await removeFCMToken();
     await refetchMe();
   }
@@ -225,9 +231,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setAuthenticated(false);
     setIsInitialized(true);
     setAvailableWork(false);
+    storage.delete("access_token");
     await apolloClient.resetStore();
     await apolloClient.clearStore();
-    await AsyncStorage.removeItem("access_token");
   };
 
   return (

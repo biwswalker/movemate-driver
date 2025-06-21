@@ -7,33 +7,38 @@ import {
   useChangeDrivingStatusMutation,
 } from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
-import { usePushNotifications } from "@/hooks/usePushNotification";
 import { normalize } from "@/utils/normalizeSize";
 import { includes, isEmpty } from "lodash";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { Switch } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { storage } from "@/utils/mmkv-storage";
 
+const NOTIFICATION_SETTING_KEY = "notifications_enabled";
 export default function ProfileSetting() {
-  const { user, removeFCM, refetchMe, initializeFCM } = useAuth();
-  const {
-    status: notificationStatus,
-    refetchPermissionStatus,
-    requestPermission,
-  } = usePushNotifications();
+  const { user, removeFCM, initializeFCM, refetchMe } = useAuth();
+  // const {
+  //   status: notificationStatus,
+  //   refetchPermissionStatus,
+  //   requestPermission,
+  // } = usePushNotifications();
   const [changeDrivingStatus] = useChangeDrivingStatusMutation();
 
-  const [isNotification, setIsNotification] = useState(notificationStatus);
+  // const [isNotification, setIsNotification] = useState(notificationStatus);
   const [isNotificationLoading, setIsNotificationLoding] = useState(false);
+  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false);
   const [isShipment, setIsShipment] = useState(false);
   const [isShipmentLoading, setIsShipmentLoding] = useState(false);
 
-  async function onToggleNotificationSwitch(state: boolean) {
+  async function onToggleNotificationSwitch() {
+    const newValue = !isNotificationsEnabled;
+    setIsNotificationsEnabled(newValue);
+    storage.set(NOTIFICATION_SETTING_KEY, newValue);
+
     try {
       setIsNotificationLoding(true);
-      if (state) {
-        await requestPermission();
+      if (newValue) {
         await initializeFCM();
         await refetchMe();
       } else {
@@ -61,21 +66,32 @@ export default function ProfileSetting() {
   }
 
   useEffect(() => {
-    refetchPermissionStatus();
+    // ตั้งค่าเริ่มต้นเป็น true ถ้ายังไม่เคยตั้งค่ามาก่อน
+    const savedSetting = storage.getBoolean(NOTIFICATION_SETTING_KEY);
+    if (savedSetting === undefined) {
+      setIsNotificationsEnabled(true);
+      storage.set(NOTIFICATION_SETTING_KEY, true);
+    } else {
+      setIsNotificationsEnabled(savedSetting);
+    }
   }, []);
 
-  useEffect(() => {
-    if (!isEmpty(user?.fcmToken) && notificationStatus) {
-      setIsNotification(notificationStatus);
-    } else {
-      setIsNotification(false);
-    }
-  }, [notificationStatus, user]);
+  // useEffect(() => {
+  //   // Get status
+  //   if (!isEmpty(user?.fcmToken) && notificationStatus) {
+  //     setIsNotification(notificationStatus);
+  //   } else {
+  //     setIsNotification(false);
+  //   }
+  // }, [notificationStatus, user]);
 
   useEffect(() => {
     if (user) {
-      console.log('user.drivingStatus', user.drivingStatus)
-      setIsShipment(user.drivingStatus === EDriverStatus.IDLE || user.drivingStatus === EDriverStatus.WORKING);
+      console.log("user.drivingStatus", user.drivingStatus);
+      setIsShipment(
+        user.drivingStatus === EDriverStatus.IDLE ||
+          user.drivingStatus === EDriverStatus.WORKING
+      );
     }
   }, [user]);
 
@@ -97,7 +113,7 @@ export default function ProfileSetting() {
               </View>
             ) : (
               <Switch
-                value={isNotification}
+                value={isNotificationsEnabled}
                 disabled={user?.status === EUserStatus.DENIED}
                 onValueChange={onToggleNotificationSwitch}
               />

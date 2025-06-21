@@ -3,10 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import useAuth from "./useAuth";
-import Constants from "expo-constants";
-import { useStoreFcmMutation } from "@/graphql/generated/graphql";
-import { encryption } from "@/utils/crypto";
 
 // --- ฟังก์ชันหลักในการลงทะเบียน Notification ---
 export const registerForPushNotifications = async () => {
@@ -48,46 +44,6 @@ export const unregisterForPushNotifications = async () => {
   await Notifications.unregisterForNotificationsAsync();
   console.log("Unregistered from push notifications locally.");
 };
-
-export function usePushNotification() {
-  const { isAuthenticated } = useAuth(); // 👈 2. ดึงสถานะ `isAuthenticated`
-  const [storeFCMToken] = useStoreFcmMutation();
-
-  async function savedToken(token: string) {
-    console.log("A new push token was generated:", token);
-    const fcmTokenEncryption = encryption(token);
-    await storeFCMToken({
-      variables: { fcmToken: fcmTokenEncryption },
-      onError: (error) => {
-        console.log("----store FCM error---", error);
-      },
-    });
-  }
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      console.log("User is authenticated. Initializing push notifications...");
-      registerForPushNotifications().then(async (token) => {
-        await savedToken(token);
-      });
-
-      const tokenRefreshSubscription = Notifications.addPushTokenListener(
-        async ({ data: token }) => {
-          await savedToken(token);
-        }
-      );
-
-      // Cleanup function
-      return () => {
-        tokenRefreshSubscription.remove();
-      };
-    } else {
-      console.log(
-        "User is not authenticated. Skipping push notification setup."
-      );
-    }
-  }, [isAuthenticated]);
-}
 
 // interface PushNotificationState {
 //   status: boolean;

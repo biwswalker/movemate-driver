@@ -16,6 +16,7 @@ import {
 import { encryption } from "@/utils/crypto";
 import { storage } from "@/utils/mmkv-storage";
 import { ApolloError, useApolloClient } from "@apollo/client";
+import { addPushTokenListener } from "expo-notifications";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { get, isEqual } from "lodash";
@@ -148,6 +149,28 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   }, [data]);
 
+  useEffect(() => {
+      if (isAuthenticated) {
+        console.log("User is authenticated. Initializing push notifications...");
+        initializeFCM()
+  
+        const tokenRefreshSubscription = addPushTokenListener(
+          async ({ data: token }) => {
+            await initializeFCM(token);
+          }
+        );
+  
+        // Cleanup function
+        return () => {
+          tokenRefreshSubscription.remove();
+        };
+      } else {
+        console.log(
+          "User is not authenticated. Skipping push notification setup."
+        );
+      }
+    }, [isAuthenticated]);
+
   // LOGIN
   const handleAuthSuccess = async ({ login }: LoginMutation) => {
     if (login) {
@@ -186,9 +209,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return null;
   };
 
-  async function initializeFCM() {
-    const token = await registerForPushNotifications();
-    const encryptedToken = await getEncryptedFCMToken(token);
+  async function initializeFCM(token?: string) {
+    const _token = token ? token : await registerForPushNotifications();
+    const encryptedToken = await getEncryptedFCMToken(_token);
     if (encryptedToken) {
       await storeFCMToken({
         variables: { fcmToken: encryptedToken },

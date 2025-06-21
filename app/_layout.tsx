@@ -20,8 +20,6 @@ import { SnackbarV2Provider } from "@/contexts/SnackbarV2Context";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { StatusBar } from "expo-status-bar";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { usePushNotification } from '@/hooks/usePushNotification'; 
-
 
 // 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -60,8 +58,6 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
-
-  usePushNotification();
 
   return (
     <ApolloProvider>

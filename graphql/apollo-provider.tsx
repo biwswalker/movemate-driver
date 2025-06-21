@@ -116,7 +116,7 @@ export default function ApolloWrapper({ children }: PropsWithChildren) {
 
       setPersistor(newPersistor);
 
-      const token = await AsyncStorage.getItem("access_token").catch(() => "");
+      const token = storage.getString("access_token")
       const wsLink = createWSLink(token || "");
       const splitLink = split(
         ({ query }) => {

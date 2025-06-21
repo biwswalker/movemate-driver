@@ -1,6 +1,5 @@
 import {
   DefaultTheme,
-  // NavigationContainer,
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
@@ -9,7 +8,6 @@ import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import ApolloProvider from "@/graphql/apollo-provider";
 import RNPaperConfig from "@/configs/RNPaper";
-import * as Notifications from 'expo-notifications';
 
 import { PaperProvider } from "react-native-paper";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -21,17 +19,8 @@ import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { StatusBar } from "expo-status-bar";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
-// 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -68,14 +57,14 @@ export default function RootLayout() {
               <SnackbarProvider>
                 <SnackbarV2Provider>
                   {/* <NavigationContainer> */}
-                    <ActionSheetProvider>
-                      <BottomSheetModalProvider>
-                        <SafeAreaProvider>
-                          <StatusBar style="dark" />
-                          <Slot />
-                        </SafeAreaProvider>
-                      </BottomSheetModalProvider>
-                    </ActionSheetProvider>
+                  <ActionSheetProvider>
+                    <BottomSheetModalProvider>
+                      <SafeAreaProvider>
+                        <StatusBar style="dark" />
+                        <Slot />
+                      </SafeAreaProvider>
+                    </BottomSheetModalProvider>
+                  </ActionSheetProvider>
                   {/* </NavigationContainer> */}
                 </SnackbarV2Provider>
               </SnackbarProvider>

@@ -3,156 +3,122 @@ import { useState, useEffect, useRef } from "react";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 
-// --- ฟังก์ชันหลักในการลงทะเบียน Notification ---
-export const registerForPushNotifications = async () => {
-  if (!Device.isDevice) {
-    console.log("Push notifications are only available on physical devices.");
-    return;
+interface PushNotificationState {
+  status: boolean;
+  refetchPermissionStatus: Function;
+  requestPermission: () => Promise<void>;
+  notification?: Notifications.Notification;
+  expoPushToken?: Notifications.ExpoPushToken;
+  devicePushToken?: Notifications.DevicePushToken;
+}
+
+export const usePushNotifications = (): PushNotificationState => {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+
+  const [devicePushToken, setDevicePushToken] = useState<
+    Notifications.DevicePushToken | undefined
+  >();
+  const [expoPushToken, setExpoPushToken] = useState<
+    Notifications.ExpoPushToken | undefined
+  >();
+  const [notification, setNotification] = useState<
+    Notifications.Notification | undefined
+  >();
+  const [status, setStatus] = useState(false);
+
+  const notificationListener = useRef<Notifications.EventSubscription>();
+  const responsListener = useRef<Notifications.EventSubscription>();
+
+  async function registerForPushNotificationsAsync() {
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      const isGranted = finalStatus === "granted";
+      setStatus(isGranted);
+      if (!isGranted) {
+        // TODO:
+        console.log("Failed to get push token");
+      }
+
+      const expoToken = await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig?.extra?.eas?.projectId,
+      });
+      const deviceToken = await Notifications.getDevicePushTokenAsync();
+
+      if (Platform.OS === "android") {
+        Notifications.setNotificationChannelAsync("default", {
+          name: "default",
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#FF231F7C",
+        });
+      }
+      return { expoToken, deviceToken };
+    } else {
+      console.log("Error: Please use a physical device");
+      return { expoToken: undefined, deviceToken: undefined };
+    }
   }
 
-  try {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== "granted") {
-      console.log("Permission to receive notifications was denied.");
-      return;
+  async function refetchPermissionStatus() {
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      setStatus(existingStatus === "granted");
     }
+  }
 
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
-    }
-
-    const token = (await Notifications.getDevicePushTokenAsync()).data;
-    console.log("Native Push Token obtained:", token);
-
-    return token;
-  } catch (error) {
-    console.error(
-      "An error occurred while registering for push notifications:",
-      error
+  async function requestPermission() {
+    return await registerForPushNotificationsAsync().then(
+      ({ deviceToken, expoToken }) => {
+        if (__DEV__) {
+          console.log("Expo FCM Token: ", expoToken);
+          console.log("Device FCM Token: ", deviceToken);
+        }
+        setDevicePushToken(deviceToken);
+        setExpoPushToken(expoToken);
+      }
     );
   }
+
+  useEffect(() => {
+    requestPermission();
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) =>
+        setNotification(notification)
+      );
+    responsListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("addNotificationResponseReceivedListener: ", response);
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current!
+      );
+      Notifications.removeNotificationSubscription(responsListener.current!);
+    };
+  }, []);
+
+  return {
+    status,
+    refetchPermissionStatus,
+    requestPermission,
+    devicePushToken,
+    expoPushToken,
+    notification,
+  };
 };
-
-export const unregisterForPushNotifications = async () => {
-  console.log("Starting unregistration process...");
-  await Notifications.unregisterForNotificationsAsync();
-  console.log("Unregistered from push notifications locally.");
-};
-
-// interface PushNotificationState {
-//   status: boolean;
-//   refetchPermissionStatus: Function;
-//   requestPermission: () => Promise<void>;
-//   notification?: Notification;
-//   expoPushToken?: ExpoPushToken;
-//   devicePushToken?: DevicePushToken;
-// }
-
-// export const usePushNotifications = (): PushNotificationState => {
-//   setNotificationHandler({
-//     handleNotification: async () => ({
-//       shouldPlaySound: true,
-//       shouldSetBadge: true,
-//       shouldShowAlert: true,
-//     }),
-//   });
-
-//   const [devicePushToken, setDevicePushToken] = useState<
-//     DevicePushToken | undefined
-//   >();
-//   const [expoPushToken, setExpoPushToken] = useState<
-//     ExpoPushToken | undefined
-//   >();
-//   const [notification, setNotification] = useState<Notification | undefined>();
-//   const [status, setStatus] = useState(false);
-
-//   const notificationListener = useRef<Subscription>();
-//   const responsListener = useRef<Subscription>();
-
-//   async function registerForPushNotificationsAsync() {
-//     if (Device.isDevice) {
-//       const { status: existingStatus } = await getPermissionsAsync();
-//       let finalStatus = existingStatus;
-//       if (existingStatus !== "granted") {
-//         const { status } = await requestPermissionsAsync();
-//         finalStatus = status;
-//       }
-//       const isGranted = finalStatus === "granted";
-//       setStatus(isGranted);
-//       if (!isGranted) {
-//         // TODO:
-//         console.log("Failed to get push token");
-//       }
-
-//       const expoToken = await getExpoPushTokenAsync({
-//         projectId: Constants.expoConfig?.extra?.eas?.projectId,
-//       });
-//       const deviceToken = await getDevicePushTokenAsync();
-
-//       if (Platform.OS === "android") {
-//         setNotificationChannelAsync("default", {
-//           name: "default",
-//           importance: AndroidImportance.MAX,
-//           vibrationPattern: [0, 250, 250, 250],
-//           lightColor: "#FF231F7C",
-//         });
-//       }
-//       return { expoToken, deviceToken };
-//     } else {
-//       console.log("Error: Please use a physical device");
-//       return { expoToken: undefined, deviceToken: undefined };
-//     }
-//   }
-
-//   async function refetchPermissionStatus() {
-//     if (Device.isDevice) {
-//       const { status: existingStatus } = await getPermissionsAsync();
-//       setStatus(existingStatus === "granted");
-//     }
-//   }
-
-//   async function requestPermission() {
-//     return await registerForPushNotificationsAsync().then(
-//       ({ deviceToken, expoToken }) => {
-//         if (__DEV__) {
-//           console.log("Expo FCM Token: ", expoToken);
-//           console.log("Device FCM Token: ", deviceToken);
-//         }
-//         setDevicePushToken(deviceToken);
-//         setExpoPushToken(expoToken);
-//       }
-//     );
-//   }
-
-//   useEffect(() => {
-//     requestPermission();
-//     notificationListener.current = addNotificationReceivedListener(
-//       (notification) => setNotification(notification)
-//     );
-//     responsListener.current = addNotificationResponseReceivedListener(
-//       (response) => {
-//         console.log("addNotificationResponseReceivedListener: ", response);
-//       }
-//     );
-
-//     return () => {
-//       removeNotificationSubscription(notificationListener.current!);
-//       removeNotificationSubscription(responsListener.current!);
-//     };
-//   }, []);
-
-//   return {
-//     status,
-//     refetchPermissionStatus,
-//     requestPermission,
-//     devicePushToken,
-//     expoPushToken,
-//     notification,
-//   };
-// };

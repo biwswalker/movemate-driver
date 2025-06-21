@@ -8,16 +8,10 @@ import {
   useRemoveFcmMutation,
   useStoreFcmMutation,
 } from "@/graphql/generated/graphql";
-import {
-  unregisterForPushNotifications,
-  registerForPushNotifications,
-} from "@/hooks/usePushNotification";
-// import { usePushNotifications } from "@/hooks/usePushNotification";
+import { usePushNotifications } from "@/hooks/usePushNotification";
 import { encryption } from "@/utils/crypto";
 import { storage } from "@/utils/mmkv-storage";
 import { ApolloError, useApolloClient } from "@apollo/client";
-import { addPushTokenListener } from "expo-notifications";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { get, isEqual } from "lodash";
 import {
@@ -59,7 +53,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | undefined>(
     undefined
   );
-  // const { devicePushToken } = usePushNotifications();
+  const { devicePushToken } = usePushNotifications();
   const [notificationCount, setNotificationCount] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -149,39 +143,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   }, [data]);
 
-  useEffect(() => {
-      if (isAuthenticated) {
-        console.log("User is authenticated. Initializing push notifications...");
-        initializeFCM()
-  
-        const tokenRefreshSubscription = addPushTokenListener(
-          async ({ data: token }) => {
-            await initializeFCM(token);
-          }
-        );
-  
-        // Cleanup function
-        return () => {
-          tokenRefreshSubscription.remove();
-        };
-      } else {
-        console.log(
-          "User is not authenticated. Skipping push notification setup."
-        );
-      }
-    }, [isAuthenticated]);
-
   // LOGIN
   const handleAuthSuccess = async ({ login }: LoginMutation) => {
     if (login) {
       const userRole = get(login, "user.userRole", "");
       if (isEqual(userRole, EUserRole.DRIVER)) {
-        storage.set("access_token", login.token);
+        await storage.set("access_token", login.token);
         setUser(login.user as User);
         setAuthError(undefined);
         setAuthenticated(true);
         setLoading(false);
-        // await initializeFCM();
+        await initializeFCM();
         setRequireAcceptedPolicy(login.requireAcceptedPolicy);
         setRequirePasswordChange(login.requirePasswordChange);
         refetchMe();
@@ -201,20 +173,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setAuthError(undefined);
   };
 
-  const getEncryptedFCMToken = async (token: string) => {
-    if (token) {
-      const fcmTokenEncryption = encryption(token);
+  const getEncryptedFCMToken = async () => {
+    const fcmToken = devicePushToken?.data;
+    if (fcmToken) {
+      const fcmTokenEncryption = encryption(fcmToken);
       return fcmTokenEncryption;
     }
     return null;
   };
 
-  async function initializeFCM(token?: string) {
-    const _token = token ? token : await registerForPushNotifications();
-    const encryptedToken = await getEncryptedFCMToken(_token);
-    if (encryptedToken) {
+  async function initializeFCM() {
+    const token = await getEncryptedFCMToken();
+    if (token) {
       await storeFCMToken({
-        variables: { fcmToken: encryptedToken },
+        variables: { fcmToken: token },
         onError: (error) => {
           console.log("----error---", error);
         },
@@ -223,7 +195,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   async function removeFCM() {
-    await unregisterForPushNotifications();
     await removeFCMToken();
     await refetchMe();
   }
@@ -250,11 +221,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
   // LOGOUT
   const logout = async () => {
     await signout();
+    storage.delete("access_token");
     setUser(null);
     setAuthenticated(false);
     setIsInitialized(true);
     setAvailableWork(false);
-    storage.delete("access_token");
     await apolloClient.resetStore();
     await apolloClient.clearStore();
   };

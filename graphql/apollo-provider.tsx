@@ -8,7 +8,6 @@ import {
   split,
 } from "@apollo/client";
 import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { get } from "lodash";
@@ -48,8 +47,7 @@ const errorLink = onError(
 
 const authLink = setContext(
   async ({ query, operationName }, { headers, ...prev }) => {
-    const token = storage.getString("accessToken");
-    // const token = await AsyncStorage.getItem("access_token");
+    const token = storage.getString("access_token");
     const existingAuthorization = get(headers, "authorization", "");
     return {
       headers: {

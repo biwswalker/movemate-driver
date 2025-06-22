@@ -10,6 +10,7 @@ import {
   Transaction,
   useGetDriverTransactionDetailQuery,
 } from "@/graphql/generated/graphql";
+import { imagePath } from "@/utils/file";
 import { fDateTime } from "@/utils/formatTime";
 import { normalize } from "@/utils/normalizeSize";
 import { fCurrency } from "@/utils/number";
@@ -17,6 +18,7 @@ import { useLocalSearchParams } from "expo-router";
 import { get, map } from "lodash";
 import { Fragment, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
+import FlexImage from "react-native-flex-image";
 import { ScrollView } from "react-native-gesture-handler";
 import { ActivityIndicator } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -187,6 +189,16 @@ export default function FinancialDetail() {
               )}
             </View>
           </View>
+          <View>
+            {driverPayment?.imageEvidence.filename && (
+              <FlexImage
+                style={styles.flexImageStyle}
+                source={{
+                  uri: imagePath(driverPayment?.imageEvidence.filename),
+                }}
+              />
+            )}
+          </View>
           {transaction.refType === ERefType.EARNING && (
             <FinancialShipmentDetail driverPayment={driverPayment} />
           )}
@@ -233,6 +245,13 @@ const styles = StyleSheet.create({
   },
   listWrapper: {
     gap: normalize(6),
+  },
+  flexImageStyle: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 4,
+    overflow: "hidden",
+    resizeMode: "cover",
   },
 });
 

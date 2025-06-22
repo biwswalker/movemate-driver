@@ -1,5 +1,5 @@
-import React from "react";
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { Dispatch, Fragment, SetStateAction, useState } from "react";
+import { Image, Modal, StyleSheet, TouchableOpacity, View } from "react-native";
 import Text from "@components/Text";
 import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
@@ -11,6 +11,7 @@ import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EUserStatus } from "@/graphql/generated/graphql";
+import Button from "@/components/Button";
 
 const styles = StyleSheet.create({
   container: {
@@ -67,104 +68,105 @@ const styles = StyleSheet.create({
 });
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+
+  const [openLogout, setOpenLogout] = useState(false);
 
   function handleLogout() {
-    logout();
-    router.replace("/landing");
+    setOpenLogout(true);
   }
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.wrapper}>
-        <ScrollView>
-          <View style={styles.contentWrapper}>
-            {user?.status === EUserStatus.PENDING && <PendingApproval />}
-            <View style={styles.userInfoWrapper}>
-              {user?.profileImage ? (
-                <Image
-                  style={{
-                    width: normalize(100),
-                    height: normalize(100),
-                    borderRadius: normalize(50),
-                  }}
-                  source={{ uri: imagePath(user.profileImage.filename) }}
-                />
-              ) : (
-                <Iconify
-                  icon="solar:user-circle-bold-duotone"
-                  size={normalize(100)}
-                  color={colors.text.disabled}
-                />
-              )}
-              <View style={styles.userInfoTextWrapper}>
-                <Text varient="h5">{user?.fullname}</Text>
-                <Text varient="body2" color="secondary">
-                  {user?.username}
+    <Fragment>
+      <View style={styles.container}>
+        <SafeAreaView style={styles.wrapper}>
+          <ScrollView>
+            <View style={styles.contentWrapper}>
+              {user?.status === EUserStatus.PENDING && <PendingApproval />}
+              <View style={styles.userInfoWrapper}>
+                {user?.profileImage ? (
+                  <Image
+                    style={{
+                      width: normalize(100),
+                      height: normalize(100),
+                      borderRadius: normalize(50),
+                    }}
+                    source={{ uri: imagePath(user.profileImage.filename) }}
+                  />
+                ) : (
+                  <Iconify
+                    icon="solar:user-circle-bold-duotone"
+                    size={normalize(100)}
+                    color={colors.text.disabled}
+                  />
+                )}
+                <View style={styles.userInfoTextWrapper}>
+                  <Text varient="h5">{user?.fullname}</Text>
+                  <Text varient="body2" color="secondary">
+                    {user?.username}
+                  </Text>
+                </View>
+              </View>
+              <View style={[styles.menuWrapper]}>
+                <Text
+                  varient="body2"
+                  color="secondary"
+                  style={[{ paddingHorizontal: normalize(16) }]}
+                >
+                  ตั้งค่าโปรไฟล์
                 </Text>
-              </View>
-            </View>
-            <View style={[styles.menuWrapper]}>
-              <Text
-                varient="body2"
-                color="secondary"
-                style={[{ paddingHorizontal: normalize(16) }]}
-              >
-                ตั้งค่าโปรไฟล์
-              </Text>
-              <View style={styles.menuItemWrapper}>
-                <Item
-                  label="ข้อมูลส่วนตัว"
-                  onPress={() => router.push("/profile-detail")}
-                />
-                <Item
-                  label="ข้อมูลเอกสาร"
-                  onPress={() => router.push("/profile-document")}
-                />
-                <Item
-                  label="งานขนส่ง/แจ้งเตือน"
-                  onPress={() => router.push("/profile-setting")}
-                />
-              </View>
-              <Text
-                varient="body2"
-                color="secondary"
-                style={[
-                  {
+                <View style={styles.menuItemWrapper}>
+                  <Item
+                    label="ข้อมูลส่วนตัว"
+                    onPress={() => router.push("/profile-detail")}
+                  />
+                  <Item
+                    label="ข้อมูลเอกสาร"
+                    onPress={() => router.push("/profile-document")}
+                  />
+                  <Item
+                    label="งานขนส่ง/แจ้งเตือน"
+                    onPress={() => router.push("/profile-setting")}
+                  />
+                </View>
+                <Text
+                  varient="body2"
+                  color="secondary"
+                  style={[
+                    {
+                      paddingHorizontal: normalize(16),
+                      paddingTop: normalize(16),
+                    },
+                  ]}
+                >
+                  ข้อกำหนด
+                </Text>
+                <View style={styles.menuItemWrapper}>
+                  <Item
+                    label="ข้อกำหนดการให้บริการ"
+                    onPress={() => router.push("/profile-policy")}
+                  />
+                </View>
+                <View
+                  style={{
+                    alignItems: "flex-start",
                     paddingHorizontal: normalize(16),
                     paddingTop: normalize(16),
-                  },
-                ]}
-              >
-                ข้อกำหนด
-              </Text>
-              <View style={styles.menuItemWrapper}>
-                <Item
-                  label="ข้อกำหนดการให้บริการ"
-                  onPress={() => router.push("/profile-policy")}
-                />
-              </View>
-              <View
-                style={{
-                  alignItems: "flex-start",
-                  paddingHorizontal: normalize(16),
-                  paddingTop: normalize(16),
-                }}
-              >
-                <TouchableOpacity onPress={handleLogout}>
-                  <Text
-                    varient="body1"
-                    style={{ width: normalize(64), color: colors.error.main }}
-                  >
-                    ลงชื่อออก
-                  </Text>
-                </TouchableOpacity>
+                  }}
+                >
+                  <TouchableOpacity onPress={handleLogout}>
+                    <Text varient="body1" style={{ color: colors.error.main }}>
+                      ลงชื่อออก
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </View>
+          </ScrollView>
+        </SafeAreaView>
+      </View>
+      <ConfirmDialog open={openLogout} setOpen={setOpenLogout} />
+    </Fragment>
   );
 }
 
@@ -219,3 +221,86 @@ function Item({ onPress, label }: ItemProps) {
     </TouchableOpacity>
   );
 }
+
+interface IConfirmDialogProps {
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+function ConfirmDialog({ open, setOpen }: IConfirmDialogProps) {
+  const { logout } = useAuth();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  function handleConfirmed() {
+    logout();
+    router.replace("/landing");
+  }
+
+  return (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={open}
+      onRequestClose={handleClose}
+    >
+      <View style={modalStyle.container}>
+        <View style={modalStyle.wrapper}>
+          <View style={modalStyle.titleWrapper}>
+            <Text varient="h4">ออกจากระบบ</Text>
+          </View>
+          <View style={modalStyle.detailWrapper}>
+            <Text>คุณแน่ใจหรือไม่ว่าจะลงชื่อออก?</Text>
+          </View>
+          <View style={modalStyle.actionWrapper}>
+            <Button
+              varient="soft"
+              size="large"
+              fullWidth
+              color="inherit"
+              title="ลงชื่ออก"
+              onPress={handleConfirmed}
+            />
+            <Button
+              varient="contained"
+              color="primary"
+              size="large"
+              fullWidth
+              title="อยู่ต่อ"
+              onPress={handleClose}
+            />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const modalStyle = StyleSheet.create({
+  container: {
+    backgroundColor: hexToRgba(colors.common.black, 0.32),
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: normalize(24),
+  },
+  wrapper: {
+    backgroundColor: colors.common.white,
+    overflow: "hidden",
+    borderRadius: normalize(16),
+    width: "100%",
+    padding: normalize(24),
+  },
+  actionWrapper: {
+    gap: 8,
+    flexDirection: 'row'
+  },
+  titleWrapper: {
+    marginBottom: normalize(16),
+  },
+  detailWrapper: {
+    marginBottom: normalize(24),
+  },
+});

@@ -76,6 +76,7 @@ export type AdditionalServiceCostPricing = {
   available: Scalars["Boolean"]["output"];
   cost: Scalars["Float"]["output"];
   createdAt: Scalars["DateTimeISO"]["output"];
+  name?: Maybe<Scalars["String"]["output"]>;
   price: Scalars["Float"]["output"];
   type: Scalars["String"]["output"];
   updatedAt: Scalars["DateTimeISO"]["output"];
@@ -137,6 +138,15 @@ export type Admin = {
   userNumber: Scalars["String"]["output"];
 };
 
+export type AdminDetailInput = {
+  address?: InputMaybe<Scalars["String"]["input"]>;
+  email?: InputMaybe<Scalars["String"]["input"]>;
+  firstname?: InputMaybe<Scalars["String"]["input"]>;
+  lastname?: InputMaybe<Scalars["String"]["input"]>;
+  permission?: InputMaybe<EAdminPermission>;
+  phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
+};
+
 export type AdminNotificationCountPayload = {
   __typename?: "AdminNotificationCountPayload";
   businessCustomer: Scalars["Int"]["output"];
@@ -160,6 +170,36 @@ export type ApprovalBillingPaymentInput = {
   paymentTime?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   reason?: InputMaybe<Scalars["String"]["input"]>;
   result: Scalars["String"]["input"];
+};
+
+export type AuditLog = {
+  __typename?: "AuditLog";
+  _id: Scalars["ID"]["output"];
+  action: EAuditActions;
+  actionMessage: Scalars["String"]["output"];
+  changes?: Maybe<Scalars["JSONObject"]["output"]>;
+  createdAt: Scalars["DateTimeISO"]["output"];
+  details?: Maybe<Scalars["JSONObject"]["output"]>;
+  entityId?: Maybe<Scalars["String"]["output"]>;
+  entityType: Scalars["String"]["output"];
+  ipAddress: Scalars["String"]["output"];
+  updatedAt: Scalars["DateTimeISO"]["output"];
+  userId: User;
+};
+
+export type AuditLogPaginationPayload = {
+  __typename?: "AuditLogPaginationPayload";
+  docs: Array<AuditLog>;
+  hasNextPage: Scalars["Boolean"]["output"];
+  hasPrevPage: Scalars["Boolean"]["output"];
+  limit: Scalars["Int"]["output"];
+  nextPage?: Maybe<Scalars["Int"]["output"]>;
+  offset?: Maybe<Scalars["Int"]["output"]>;
+  page?: Maybe<Scalars["Int"]["output"]>;
+  pagingCounter: Scalars["Int"]["output"];
+  prevPage?: Maybe<Scalars["Int"]["output"]>;
+  totalDocs: Scalars["Int"]["output"];
+  totalPages: Scalars["Int"]["output"];
 };
 
 export type AuthPayload = {
@@ -329,6 +369,7 @@ export type BusinessCustomerCreditPayment = {
   creditLimit: Scalars["Float"]["output"];
   creditOutstandingBalance: Scalars["Float"]["output"];
   creditUsage: Scalars["Float"]["output"];
+  dataStatus?: Maybe<Scalars["String"]["output"]>;
   financialAddress: Scalars["String"]["output"];
   financialContactEmails: Array<Scalars["String"]["output"]>;
   financialContactNumber: Scalars["String"]["output"];
@@ -362,6 +403,19 @@ export type CalculationInput = {
   vehicleTypeId: Scalars["String"]["input"];
 };
 
+export type CalculationInputWithLabelPayload = {
+  __typename?: "CalculationInputWithLabelPayload";
+  discount?: Maybe<Scalars["String"]["output"]>;
+  discountId?: Maybe<Scalars["String"]["output"]>;
+  isRounded?: Maybe<Scalars["Boolean"]["output"]>;
+  locations?: Maybe<Array<DestinationPayload>>;
+  serviceIds?: Maybe<Array<Scalars["String"]["output"]>>;
+  services?: Maybe<Scalars["String"]["output"]>;
+  shipmentId?: Maybe<Scalars["String"]["output"]>;
+  vehicleName?: Maybe<Scalars["String"]["output"]>;
+  vehicleTypeId?: Maybe<Scalars["String"]["output"]>;
+};
+
 export type CalculationResultPayload = {
   __typename?: "CalculationResultPayload";
   _id: Scalars["ID"]["output"];
@@ -390,6 +444,27 @@ export type CashPaymentInput = {
 export type ConfirmShipmentDateInput = {
   datetime: Scalars["DateTimeISO"]["input"];
   shipmentId: Scalars["String"]["input"];
+};
+
+export type Contact = {
+  __typename?: "Contact";
+  _id: Scalars["ID"]["output"];
+  contactNumber: Scalars["String"]["output"];
+  createdAt: Scalars["DateTimeISO"]["output"];
+  detail: Scalars["String"]["output"];
+  email: Scalars["String"]["output"];
+  fullname: Scalars["String"]["output"];
+  read: Scalars["Boolean"]["output"];
+  title: Scalars["String"]["output"];
+  updatedAt: Scalars["DateTimeISO"]["output"];
+};
+
+export type ContactInput = {
+  contactNumber: Scalars["String"]["input"];
+  detail: Scalars["String"]["input"];
+  email: Scalars["String"]["input"];
+  fullname: Scalars["String"]["input"];
+  title: Scalars["String"]["input"];
 };
 
 export type CreateDriverPaymentInput = {
@@ -492,6 +567,54 @@ export type CutomerIndividualInput = {
   userType: Scalars["String"]["input"];
 };
 
+export type DashboardFinancialPayload = {
+  __typename?: "DashboardFinancialPayload";
+  balance: Scalars["Int"]["output"];
+  balancePercent: Scalars["Int"]["output"];
+  expense: Scalars["Int"]["output"];
+  expensePercent: Scalars["Int"]["output"];
+  income: Scalars["Int"]["output"];
+  incomePercent: Scalars["Int"]["output"];
+  prevBalance: Scalars["Int"]["output"];
+  prevExpense: Scalars["Int"]["output"];
+  prevIncome: Scalars["Int"]["output"];
+  prevTax: Scalars["Int"]["output"];
+  tax: Scalars["Int"]["output"];
+  taxPercent: Scalars["Int"]["output"];
+};
+
+export type DashboardPayload = {
+  __typename?: "DashboardPayload";
+  financial: DashboardFinancialPayload;
+  registered: DashboardRegisteredPayload;
+  shipment: DashboardShipmentPayload;
+};
+
+export type DashboardRegisteredPayload = {
+  __typename?: "DashboardRegisteredPayload";
+  all: Scalars["Int"]["output"];
+  confirmed: Scalars["Int"]["output"];
+  denied: Scalars["Int"]["output"];
+  monthly: Scalars["Int"]["output"];
+  monthlyPercent: Scalars["Int"]["output"];
+  pending: Scalars["Int"]["output"];
+  prevMonthly: Scalars["Int"]["output"];
+};
+
+export type DashboardShipmentPayload = {
+  __typename?: "DashboardShipmentPayload";
+  all: Scalars["Int"]["output"];
+  cancelled: Scalars["Int"]["output"];
+  daily: Scalars["Int"]["output"];
+  dailyPercent: Scalars["Int"]["output"];
+  finish: Scalars["Int"]["output"];
+  monthly: Scalars["Int"]["output"];
+  monthlyPercent: Scalars["Int"]["output"];
+  prevDaily: Scalars["Int"]["output"];
+  prevMonthly: Scalars["Int"]["output"];
+  progressing: Scalars["Int"]["output"];
+};
+
 export type Destination = {
   __typename?: "Destination";
   contactName: Scalars["String"]["output"];
@@ -515,6 +638,17 @@ export type DestinationInput = {
   location: LocationInput;
   name: Scalars["String"]["input"];
   placeId: Scalars["String"]["input"];
+};
+
+export type DestinationPayload = {
+  __typename?: "DestinationPayload";
+  contactName?: Maybe<Scalars["String"]["output"]>;
+  contactNumber?: Maybe<Scalars["String"]["output"]>;
+  customerRemark?: Maybe<Scalars["String"]["output"]>;
+  detail?: Maybe<Scalars["String"]["output"]>;
+  location?: Maybe<LocationPayload>;
+  name?: Maybe<Scalars["String"]["output"]>;
+  placeId?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type DirectionsResult = {
@@ -662,9 +796,11 @@ export type DriverPayment = {
   _id: Scalars["ID"]["output"];
   createdAt: Scalars["DateTimeISO"]["output"];
   createdBy: User;
+  document?: Maybe<BillingDocument>;
   driver: User;
   imageEvidence: File;
   paymentDate: Scalars["DateTimeISO"]["output"];
+  paymentNumber: Scalars["String"]["output"];
   paymentTime: Scalars["DateTimeISO"]["output"];
   shipments: Array<Shipment>;
   subtotal: Scalars["Float"]["output"];
@@ -672,6 +808,8 @@ export type DriverPayment = {
   total: Scalars["Float"]["output"];
   transactions: Array<Transaction>;
   updatedAt: Scalars["DateTimeISO"]["output"];
+  whtBookNo?: Maybe<Scalars["String"]["output"]>;
+  whtNumber: Scalars["String"]["output"];
 };
 
 export type DriverPaymentAggregatePayload = {
@@ -790,6 +928,77 @@ export enum EAdminPermission {
   SUPERVISOR = "SUPERVISOR",
 }
 
+/** Actions performed by users for auditing purposes */
+export enum EAuditActions {
+  ACCEPT_EMPLOYEE_REQUEST = "ACCEPT_EMPLOYEE_REQUEST",
+  ACCEPT_POLICY = "ACCEPT_POLICY",
+  ACCEPT_SHIPMENT = "ACCEPT_SHIPMENT",
+  ADD_ADDITIONAL_SERVICE_COST = "ADD_ADDITIONAL_SERVICE_COST",
+  ADD_EMPLOYEE = "ADD_EMPLOYEE",
+  ADD_FAVORITE_DRIVER = "ADD_FAVORITE_DRIVER",
+  ADD_POD_ADDRESS = "ADD_POD_ADDRESS",
+  APPROVE_BILLING_PAYMENT = "APPROVE_BILLING_PAYMENT",
+  APPROVE_USER = "APPROVE_USER",
+  ASSIGN_SHIPMENT_DRIVER = "ASSIGN_SHIPMENT_DRIVER",
+  CANCEL_SHIPMENT_CUSTOMER = "CANCEL_SHIPMENT_CUSTOMER",
+  CANCEL_SHIPMENT_DRIVER = "CANCEL_SHIPMENT_DRIVER",
+  CANCEL_SHIPMENT_SYSTEM = "CANCEL_SHIPMENT_SYSTEM",
+  CHANGE_DRIVING_STATUS = "CHANGE_DRIVING_STATUS",
+  CHANGE_PASSWORD = "CHANGE_PASSWORD",
+  CONFIRM_SHIPMENT_DATETIME = "CONFIRM_SHIPMENT_DATETIME",
+  CONFIRM_WHT_DOCUMENT_RECEIVED = "CONFIRM_WHT_DOCUMENT_RECEIVED",
+  CONTINUE_MATCHING = "CONTINUE_MATCHING",
+  CREATE_BILLING = "CREATE_BILLING",
+  CREATE_CONTACT_MESSAGE = "CREATE_CONTACT_MESSAGE",
+  CREATE_DRIVER_PAYMENT = "CREATE_DRIVER_PAYMENT",
+  CREATE_SHIPMENT = "CREATE_SHIPMENT",
+  CREATE_USER = "CREATE_USER",
+  DENY_USER = "DENY_USER",
+  FINISH_SHIPMENT_JOB = "FINISH_SHIPMENT_JOB",
+  FORGOT_PASSWORD = "FORGOT_PASSWORD",
+  INITIAL_ADDITIONAL_SERVICE_COST = "INITIAL_ADDITIONAL_SERVICE_COST",
+  INITIAL_VEHICLE_COST = "INITIAL_VEHICLE_COST",
+  LOGIN = "LOGIN",
+  LOGIN_FAILED = "LOGIN_FAILED",
+  LOGOUT = "LOGOUT",
+  MAKE_ADDITIONAL_PAYMENT = "MAKE_ADDITIONAL_PAYMENT",
+  NEXT_SHIPMENT_STEP = "NEXT_SHIPMENT_STEP",
+  REFUND_BILLING_PAYMENT = "REFUND_BILLING_PAYMENT",
+  REGISTER_DRIVER = "REGISTER_DRIVER",
+  REJECT_BILLING_PAYMENT = "REJECT_BILLING_PAYMENT",
+  REJECT_EMPLOYEE_REQUEST = "REJECT_EMPLOYEE_REQUEST",
+  REJECT_SHIPMENT = "REJECT_SHIPMENT",
+  REMOVE_EMPLOYEE = "REMOVE_EMPLOYEE",
+  REMOVE_EVENT = "REMOVE_EVENT",
+  REMOVE_FAVORITE_DRIVER = "REMOVE_FAVORITE_DRIVER",
+  REMOVE_FCM_TOKEN = "REMOVE_FCM_TOKEN",
+  REMOVE_POD_ADDRESS = "REMOVE_POD_ADDRESS",
+  RESET_PASSWORD = "RESET_PASSWORD",
+  SAVE_EVENT = "SAVE_EVENT",
+  SENT_POD_DOCUMENT = "SENT_POD_DOCUMENT",
+  UPDATE_ABOUT_US = "UPDATE_ABOUT_US",
+  UPDATE_ADDITIONAL_SERVICE_COST = "UPDATE_ADDITIONAL_SERVICE_COST",
+  UPDATE_BILLING = "UPDATE_BILLING",
+  UPDATE_BUSINESS_TYPE = "UPDATE_BUSINESS_TYPE",
+  UPDATE_CONTACT_US = "UPDATE_CONTACT_US",
+  UPDATE_CUSTOMER_POLICIES = "UPDATE_CUSTOMER_POLICIES",
+  UPDATE_CUSTOMER_TERMS = "UPDATE_CUSTOMER_TERMS",
+  UPDATE_DISTANCE_COST = "UPDATE_DISTANCE_COST",
+  UPDATE_DRIVER_DETAIL = "UPDATE_DRIVER_DETAIL",
+  UPDATE_DRIVER_POLICIES = "UPDATE_DRIVER_POLICIES",
+  UPDATE_DRIVER_TERMS = "UPDATE_DRIVER_TERMS",
+  UPDATE_FAQ = "UPDATE_FAQ",
+  UPDATE_FCM_TOKEN = "UPDATE_FCM_TOKEN",
+  UPDATE_FINANCIAL_SETTING = "UPDATE_FINANCIAL_SETTING",
+  UPDATE_INSTRUCTION = "UPDATE_INSTRUCTION",
+  UPDATE_SHIPMENT = "UPDATE_SHIPMENT",
+  UPDATE_USER_PROFILE = "UPDATE_USER_PROFILE",
+  UPGRADE_ACCOUNT_REQUEST = "UPGRADE_ACCOUNT_REQUEST",
+  UPLOAD_FILE = "UPLOAD_FILE",
+  VERIFY_EMAIL = "VERIFY_EMAIL",
+  VERIFY_PHONE_NUMBER = "VERIFY_PHONE_NUMBER",
+}
+
 /** Billing criteria state */
 export enum EBillingCriteriaState {
   ALL = "ALL",
@@ -895,6 +1104,13 @@ export enum EPrivilegeStatus {
   INACTIVE = "INACTIVE",
 }
 
+/** Privilege status criteria */
+export enum EPrivilegeStatusCriteria {
+  ACTIVE = "ACTIVE",
+  ALL = "ALL",
+  INACTIVE = "INACTIVE",
+}
+
 /** Payment type to generate each type code */
 export enum EqrPaymentType {
   BANK_ACCOUNT = "BANK_ACCOUNT",
@@ -914,6 +1130,15 @@ export enum ERefType {
 export enum ERegistration {
   APP = "APP",
   WEB = "WEB",
+}
+
+/** Report Type */
+export enum EReportType {
+  BOOKING = "BOOKING",
+  CREDITOR = "CREDITOR",
+  CUSTOMER = "CUSTOMER",
+  DEBTOR = "DEBTOR",
+  DRIVER = "DRIVER",
 }
 
 /** Shipment matching status criteria */
@@ -1118,6 +1343,7 @@ export type FavoriteDriverPayload = {
   acceptPolicyVersion?: Maybe<Scalars["Int"]["output"]>;
   acceptedWork: Scalars["Float"]["output"];
   address?: Maybe<Scalars["String"]["output"]>;
+  addressData?: Maybe<UserAddressPayload>;
   adminDetail?: Maybe<Admin>;
   businessDetail?: Maybe<BusinessCustomer>;
   cancelledWork: Scalars["Float"]["output"];
@@ -1142,6 +1368,7 @@ export type FavoriteDriverPayload = {
   remark?: Maybe<Scalars["String"]["output"]>;
   requestedParents?: Maybe<Array<Scalars["String"]["output"]>>;
   status: EUserStatus;
+  taxId?: Maybe<Scalars["String"]["output"]>;
   updatedAt: Scalars["DateTimeISO"]["output"];
   upgradeRequest?: Maybe<BusinessCustomer>;
   userNumber: Scalars["String"]["output"];
@@ -1267,6 +1494,12 @@ export type LocationInput = {
   longitude: Scalars["Float"]["input"];
 };
 
+export type LocationPayload = {
+  __typename?: "LocationPayload";
+  latitude: Scalars["Float"]["output"];
+  longitude: Scalars["Float"]["output"];
+};
+
 export type LocationRequestLimitPayload = {
   __typename?: "LocationRequestLimitPayload";
   count: Scalars["Int"]["output"];
@@ -1314,6 +1547,7 @@ export type Mutation = {
   confirmReceiveWHTDocument: Scalars["Boolean"]["output"];
   confirmShipmentDatetime: Scalars["Boolean"]["output"];
   continueMatchingShipment: Scalars["Boolean"]["output"];
+  createContact: Scalars["Boolean"]["output"];
   createDriverPayment: Scalars["Boolean"]["output"];
   createShipment: Shipment;
   driverCalcellation: Scalars["Boolean"]["output"];
@@ -1324,6 +1558,7 @@ export type Mutation = {
   file_upload: FileUploadPayload;
   forgotPassword: VerifyPayload;
   generateQRPaymentCodes: Scalars["String"]["output"];
+  getAdminReport: Scalars["String"]["output"];
   getCalculationDetail: PricingCalculationMethodPayload;
   getPreparationPaymentByTransactions: PreparationTransactionPayload;
   initialAdditionalService: Scalars["Boolean"]["output"];
@@ -1342,6 +1577,7 @@ export type Mutation = {
   otpRequest: OtpRequst;
   preregister: Scalars["Boolean"]["output"];
   processBillingRefund: Scalars["Boolean"]["output"];
+  processPendingUser: Scalars["Boolean"]["output"];
   regenerateReceipt: Scalars["Boolean"]["output"];
   register: Scalars["Boolean"]["output"];
   removeEmployee: Scalars["Boolean"]["output"];
@@ -1360,6 +1596,7 @@ export type Mutation = {
   updateAboutus: Scalars["Boolean"]["output"];
   updateAdditionalService: AdditionalService;
   updateAdditionalServiceCost: Scalars["Boolean"]["output"];
+  updateAdmin: Scalars["Boolean"]["output"];
   updateBusinessCustomer: Scalars["Boolean"]["output"];
   updateBusinessType: Scalars["Boolean"]["output"];
   updateContactus: Scalars["Boolean"]["output"];
@@ -1368,6 +1605,7 @@ export type Mutation = {
   updateCustomerTerms: Scalars["Boolean"]["output"];
   updateDistanceCost: Scalars["Boolean"]["output"];
   updateDriverPolicies: Scalars["Boolean"]["output"];
+  updateDriverRequest: Scalars["Boolean"]["output"];
   updateDriverTerms: Scalars["Boolean"]["output"];
   updateFAQ: Scalars["Boolean"]["output"];
   updateFinancial: Scalars["Boolean"]["output"];
@@ -1477,6 +1715,10 @@ export type MutationContinueMatchingShipmentArgs = {
   shipmentId: Scalars["String"]["input"];
 };
 
+export type MutationCreateContactArgs = {
+  data: ContactInput;
+};
+
 export type MutationCreateDriverPaymentArgs = {
   data: CreateDriverPaymentInput;
   driverId: Scalars["String"]["input"];
@@ -1520,6 +1762,11 @@ export type MutationForgotPasswordArgs = {
 export type MutationGenerateQrPaymentCodesArgs = {
   amount: Scalars["Float"]["input"];
   type?: InputMaybe<EqrPaymentType>;
+};
+
+export type MutationGetAdminReportArgs = {
+  ids: Array<Scalars["String"]["input"]>;
+  type: EReportType;
 };
 
 export type MutationGetCalculationDetailArgs = {
@@ -1597,6 +1844,11 @@ export type MutationProcessBillingRefundArgs = {
   data: ProcessBillingRefundInput;
 };
 
+export type MutationProcessPendingUserArgs = {
+  pendingId: Scalars["String"]["input"];
+  status: EUpdateUserStatus;
+};
+
 export type MutationRegenerateReceiptArgs = {
   billingId: Scalars["String"]["input"];
   documentId: Scalars["String"]["input"];
@@ -1667,6 +1919,11 @@ export type MutationUpdateAdditionalServiceCostArgs = {
   id: Scalars["String"]["input"];
 };
 
+export type MutationUpdateAdminArgs = {
+  data: UpdateAdminInput;
+  id: Scalars["String"]["input"];
+};
+
 export type MutationUpdateBusinessCustomerArgs = {
   data: CutomerBusinessInput;
   id: Scalars["String"]["input"];
@@ -1700,6 +1957,11 @@ export type MutationUpdateDistanceCostArgs = {
 
 export type MutationUpdateDriverPoliciesArgs = {
   data: Scalars["String"]["input"];
+};
+
+export type MutationUpdateDriverRequestArgs = {
+  data: DriverUpdateInput;
+  id: Scalars["String"]["input"];
 };
 
 export type MutationUpdateDriverTermsArgs = {
@@ -2056,6 +2318,7 @@ export type Query = {
   calculateRoute: DirectionsResultPayload;
   calculateTransaction: DriverTransactionSummaryPayload;
   checkAvailableToWork: Scalars["Boolean"]["output"];
+  checkUserPendingStatus: Scalars["Boolean"]["output"];
   event: Event;
   events: Array<Event>;
   getAboutusInfo?: Maybe<SettingAboutus>;
@@ -2064,6 +2327,8 @@ export type Query = {
   getAdditionalServicesByVehicleType: Array<AdditionalService>;
   getAddressByPostcode: AddressPayload;
   getAllBillingIds: Array<Scalars["String"]["output"]>;
+  getAuditLog: AuditLog;
+  getAuditLogs: AuditLogPaginationPayload;
   getAvailableDrivers: Array<User>;
   getAvailableShipment: Array<Shipment>;
   getAvailableShipmentByTrackingNumber: Shipment;
@@ -2072,9 +2337,12 @@ export type Query = {
   getBillingStatusCount: Array<TotalBillingRecordPayload>;
   getBookingConfig: BookingConfigPayload;
   getBusinessTypeInfo?: Maybe<Array<SettingBusinessType>>;
+  getContactById: Contact;
+  getContacts: Array<Contact>;
   getContactusInfo?: Maybe<SettingContactUs>;
   getCustomerPoliciesInfo?: Maybe<SettingCustomerPolicies>;
   getCustomerTermsInfo?: Maybe<SettingCustomerTerms>;
+  getDashboard: DashboardPayload;
   getDistrict: Array<District>;
   getDriverPaymentIds: Array<Scalars["String"]["output"]>;
   getDriverPayments: DriverPaymentAggregatePayload;
@@ -2094,6 +2362,7 @@ export type Query = {
   getOtps: OtpPaginationPayload;
   getPODAddress: Array<PodAddress>;
   getParents: Array<User>;
+  getPendingUser: UserPending;
   getPricingCalculationMethod: PricingCalculationMethodPayload;
   getPricingCalculationMethodAvailableVehicle: Array<VehicleCostCalculationPayload>;
   getPrivilege: Privilege;
@@ -2137,6 +2406,7 @@ export type Query = {
   shipments: Array<Shipment>;
   statusCount: Array<TotalRecordPayload>;
   totalAvailableShipment: Scalars["Int"]["output"];
+  totalContact: Scalars["Int"]["output"];
   totalNotification: Scalars["Int"]["output"];
   totalShipment: Scalars["Int"]["output"];
   totalTransaction: Scalars["Int"]["output"];
@@ -2191,6 +2461,10 @@ export type QueryCalculateRouteArgs = {
   origin: LocationInput;
 };
 
+export type QueryCheckUserPendingStatusArgs = {
+  userId: Scalars["String"]["input"];
+};
+
 export type QueryEventArgs = {
   eventName: Scalars["String"]["input"];
 };
@@ -2222,6 +2496,24 @@ export type QueryGetAddressByPostcodeArgs = {
 
 export type QueryGetAllBillingIdsArgs = {
   data?: InputMaybe<GetBillingInput>;
+};
+
+export type QueryGetAuditLogArgs = {
+  id: Scalars["String"]["input"];
+};
+
+export type QueryGetAuditLogsArgs = {
+  action?: InputMaybe<EAuditActions>;
+  endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  entityId?: InputMaybe<Scalars["String"]["input"]>;
+  entityType?: InputMaybe<Scalars["String"]["input"]>;
+  ipAddress?: InputMaybe<Scalars["String"]["input"]>;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  page?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  userId?: InputMaybe<Scalars["ID"]["input"]>;
 };
 
 export type QueryGetAvailableDriversArgs = {
@@ -2259,6 +2551,17 @@ export type QueryGetBillingStatusCountArgs = {
 
 export type QueryGetBusinessTypeInfoArgs = {
   includeOther?: InputMaybe<Scalars["Boolean"]["input"]>;
+};
+
+export type QueryGetContactByIdArgs = {
+  id: Scalars["String"]["input"];
+};
+
+export type QueryGetContactsArgs = {
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  skip?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
 export type QueryGetDistrictArgs = {
@@ -2348,6 +2651,10 @@ export type QueryGetParentsArgs = {
   userId: Scalars["String"]["input"];
 };
 
+export type QueryGetPendingUserArgs = {
+  id: Scalars["String"]["input"];
+};
+
 export type QueryGetPricingCalculationMethodArgs = {
   distance?: InputMaybe<Scalars["Float"]["input"]>;
   dropPoint?: InputMaybe<Scalars["Float"]["input"]>;
@@ -2385,7 +2692,7 @@ export type QueryGetPrivilegesArgs = {
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
   startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<EPrivilegeStatus>;
+  status?: InputMaybe<EPrivilegeStatusCriteria>;
 };
 
 export type QueryGetShipmentByTrackingArgs = {
@@ -2516,7 +2823,7 @@ export type QueryPrivilegesArgs = {
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
   startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<EPrivilegeStatus>;
+  status?: InputMaybe<EPrivilegeStatusCriteria>;
 };
 
 export type QuerySearchHistorysArgs = {
@@ -2757,24 +3064,9 @@ export type RequireDataBeforePayload = {
   requirePasswordChange: Scalars["Boolean"]["output"];
 };
 
-export type SearchHistory = {
-  __typename?: "SearchHistory";
-  _id: Scalars["ID"]["output"];
-  count: Scalars["Int"]["output"];
-  createdAt: Scalars["DateTimeISO"]["output"];
-  inputRaw?: Maybe<Scalars["String"]["output"]>;
-  ipaddress: Scalars["String"]["output"];
-  isCache: Scalars["Boolean"]["output"];
-  limit: Scalars["Int"]["output"];
-  resultRaw?: Maybe<Scalars["String"]["output"]>;
-  type: Scalars["String"]["output"];
-  updatedAt: Scalars["DateTimeISO"]["output"];
-  user?: Maybe<User>;
-};
-
 export type SearchHistoryPaginationPayload = {
   __typename?: "SearchHistoryPaginationPayload";
-  docs: Array<SearchHistory>;
+  docs: Array<SearchHistoryWithDataPayload>;
   hasNextPage: Scalars["Boolean"]["output"];
   hasPrevPage: Scalars["Boolean"]["output"];
   limit: Scalars["Int"]["output"];
@@ -2787,8 +3079,25 @@ export type SearchHistoryPaginationPayload = {
   totalPages: Scalars["Int"]["output"];
 };
 
+export type SearchHistoryWithDataPayload = {
+  __typename?: "SearchHistoryWithDataPayload";
+  _id: Scalars["ID"]["output"];
+  count: Scalars["Int"]["output"];
+  createdAt: Scalars["DateTimeISO"]["output"];
+  input?: Maybe<CalculationInputWithLabelPayload>;
+  inputRaw?: Maybe<Scalars["String"]["output"]>;
+  ipaddress?: Maybe<Scalars["String"]["output"]>;
+  isCache: Scalars["Boolean"]["output"];
+  limit: Scalars["Int"]["output"];
+  result?: Maybe<CalculateQuotationResultPayload>;
+  resultRaw?: Maybe<Scalars["String"]["output"]>;
+  type: Scalars["String"]["output"];
+  updatedAt: Scalars["DateTimeISO"]["output"];
+  user?: Maybe<User>;
+};
+
 export type SentPodDocumentShipmentStepInput = {
-  images?: InputMaybe<Array<FileInput>>;
+  images: Array<FileInput>;
   provider: Scalars["String"]["input"];
   shipmentId: Scalars["String"]["input"];
   trackingNumber: Scalars["String"]["input"];
@@ -3000,6 +3309,7 @@ export type ShipmentAdditionalServicePrice = {
   _id: Scalars["ID"]["output"];
   cost: Scalars["Float"]["output"];
   createdAt: Scalars["DateTimeISO"]["output"];
+  name?: Maybe<Scalars["String"]["output"]>;
   price: Scalars["Float"]["output"];
   reference: AdditionalServiceCostPricing;
   updatedAt: Scalars["DateTimeISO"]["output"];
@@ -3087,6 +3397,8 @@ export type Subscription = {
   listenAvailableShipment: Array<Shipment>;
   listenLocationLimitCount: LocationRequestLimitPayload;
   listenNotificationCount: Scalars["Float"]["output"];
+  listenNotificationGroupMessage: Notification;
+  listenNotificationMessage: Notification;
   listenProgressingShipmentCount: Scalars["Float"]["output"];
   listenUserStatus: Scalars["String"]["output"];
 };
@@ -3180,6 +3492,13 @@ export type UnreadCountPayload = {
   shipment: Scalars["Int"]["output"];
 };
 
+export type UpdateAdminInput = {
+  adminDetail?: InputMaybe<AdminDetailInput>;
+  profileImage?: InputMaybe<FileInput>;
+  status?: InputMaybe<EUserStatus>;
+  username?: InputMaybe<Scalars["String"]["input"]>;
+};
+
 export type UpdateHistory = {
   __typename?: "UpdateHistory";
   _id: Scalars["ID"]["output"];
@@ -3209,6 +3528,7 @@ export type User = {
   acceptPolicyTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
   acceptPolicyVersion?: Maybe<Scalars["Int"]["output"]>;
   address?: Maybe<Scalars["String"]["output"]>;
+  addressData?: Maybe<UserAddressPayload>;
   adminDetail?: Maybe<Admin>;
   businessDetail?: Maybe<BusinessCustomer>;
   contactNumber?: Maybe<Scalars["String"]["output"]>;
@@ -3232,6 +3552,7 @@ export type User = {
   remark?: Maybe<Scalars["String"]["output"]>;
   requestedParents?: Maybe<Array<Scalars["String"]["output"]>>;
   status: EUserStatus;
+  taxId?: Maybe<Scalars["String"]["output"]>;
   updatedAt: Scalars["DateTimeISO"]["output"];
   upgradeRequest?: Maybe<BusinessCustomer>;
   userNumber: Scalars["String"]["output"];
@@ -3241,6 +3562,15 @@ export type User = {
   validationBy?: Maybe<User>;
   validationRejectedMessage?: Maybe<Scalars["String"]["output"]>;
   validationStatus: EUserValidationStatus;
+};
+
+export type UserAddressPayload = {
+  __typename?: "UserAddressPayload";
+  address: Scalars["String"]["output"];
+  district: Scalars["String"]["output"];
+  postcode: Scalars["String"]["output"];
+  province: Scalars["String"]["output"];
+  subDistrict: Scalars["String"]["output"];
 };
 
 export type UserPaginationAggregatePayload = {
@@ -3261,10 +3591,14 @@ export type UserPaginationAggregatePayload = {
 export type UserPending = {
   __typename?: "UserPending";
   _id: Scalars["ID"]["output"];
+  address?: Maybe<Scalars["String"]["output"]>;
   approvalBy?: Maybe<User>;
   businessDetail?: Maybe<BusinessCustomer>;
+  contactNumber?: Maybe<Scalars["String"]["output"]>;
   createdAt: Scalars["DateTimeISO"]["output"];
   driverDetail?: Maybe<DriverDetail>;
+  email?: Maybe<Scalars["String"]["output"]>;
+  fullname?: Maybe<Scalars["String"]["output"]>;
   individualDetail?: Maybe<IndividualCustomer>;
   profileImage?: Maybe<File>;
   status: EUpdateUserStatus;
@@ -28585,6 +28919,25 @@ export type FileUploadMutation = {
   };
 };
 
+export type UpdateProfileMutationVariables = Exact<{
+  id: Scalars["String"]["input"];
+  data: DriverUpdateInput;
+}>;
+
+export type UpdateProfileMutation = {
+  __typename?: "Mutation";
+  updateDriverRequest: boolean;
+};
+
+export type CheckUserPendingStatusQueryVariables = Exact<{
+  id: Scalars["String"]["input"];
+}>;
+
+export type CheckUserPendingStatusQuery = {
+  __typename?: "Query";
+  checkUserPendingStatus: boolean;
+};
+
 export type GetProvinceQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetProvinceQuery = {
@@ -44319,6 +44672,135 @@ export type FileUploadMutationResult =
 export type FileUploadMutationOptions = Apollo.BaseMutationOptions<
   FileUploadMutation,
   FileUploadMutationVariables
+>;
+export const UpdateProfileDocument = gql`
+  mutation UpdateProfile($id: String!, $data: DriverUpdateInput!) {
+    updateDriverRequest(id: $id, data: $data)
+  }
+`;
+export type UpdateProfileMutationFn = Apollo.MutationFunction<
+  UpdateProfileMutation,
+  UpdateProfileMutationVariables
+>;
+
+/**
+ * __useUpdateProfileMutation__
+ *
+ * To run a mutation, you first call `useUpdateProfileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateProfileMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateProfileMutation, { data, loading, error }] = useUpdateProfileMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      data: // value for 'data'
+ *   },
+ * });
+ */
+export function useUpdateProfileMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    UpdateProfileMutation,
+    UpdateProfileMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    UpdateProfileMutation,
+    UpdateProfileMutationVariables
+  >(UpdateProfileDocument, options);
+}
+export type UpdateProfileMutationHookResult = ReturnType<
+  typeof useUpdateProfileMutation
+>;
+export type UpdateProfileMutationResult =
+  Apollo.MutationResult<UpdateProfileMutation>;
+export type UpdateProfileMutationOptions = Apollo.BaseMutationOptions<
+  UpdateProfileMutation,
+  UpdateProfileMutationVariables
+>;
+export const CheckUserPendingStatusDocument = gql`
+  query CheckUserPendingStatus($id: String!) {
+    checkUserPendingStatus(userId: $id)
+  }
+`;
+
+/**
+ * __useCheckUserPendingStatusQuery__
+ *
+ * To run a query within a React component, call `useCheckUserPendingStatusQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCheckUserPendingStatusQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCheckUserPendingStatusQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useCheckUserPendingStatusQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    CheckUserPendingStatusQuery,
+    CheckUserPendingStatusQueryVariables
+  > &
+    (
+      | { variables: CheckUserPendingStatusQueryVariables; skip?: boolean }
+      | { skip: boolean }
+    ),
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<
+    CheckUserPendingStatusQuery,
+    CheckUserPendingStatusQueryVariables
+  >(CheckUserPendingStatusDocument, options);
+}
+export function useCheckUserPendingStatusLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    CheckUserPendingStatusQuery,
+    CheckUserPendingStatusQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    CheckUserPendingStatusQuery,
+    CheckUserPendingStatusQueryVariables
+  >(CheckUserPendingStatusDocument, options);
+}
+export function useCheckUserPendingStatusSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        CheckUserPendingStatusQuery,
+        CheckUserPendingStatusQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<
+    CheckUserPendingStatusQuery,
+    CheckUserPendingStatusQueryVariables
+  >(CheckUserPendingStatusDocument, options);
+}
+export type CheckUserPendingStatusQueryHookResult = ReturnType<
+  typeof useCheckUserPendingStatusQuery
+>;
+export type CheckUserPendingStatusLazyQueryHookResult = ReturnType<
+  typeof useCheckUserPendingStatusLazyQuery
+>;
+export type CheckUserPendingStatusSuspenseQueryHookResult = ReturnType<
+  typeof useCheckUserPendingStatusSuspenseQuery
+>;
+export type CheckUserPendingStatusQueryResult = Apollo.QueryResult<
+  CheckUserPendingStatusQuery,
+  CheckUserPendingStatusQueryVariables
 >;
 export const GetProvinceDocument = gql`
   query GetProvince {

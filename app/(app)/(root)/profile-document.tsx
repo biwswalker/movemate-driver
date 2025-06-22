@@ -187,6 +187,7 @@ export default function ProfileDocument() {
 
   async function onSubmit(values: FormValue) {
     try {
+      // TODO: Add update documents
       // if (params && values) {
       //   const documents = new RegisterUploadsFormValue(values);
       //   const param = JSON.stringify({ detail: params, documents });
@@ -273,22 +274,26 @@ export default function ProfileDocument() {
                     />
                   </View>
                   <RHFUploadButton
+                    disabled={isApproved && !!values.copyVehicleRegistration}
                     file={values.copyVehicleRegistration}
                     name="copyVehicleRegistration"
                     label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
                   />
                   <RHFUploadButton
+                    disabled={isApproved && !!values.copyIDCard}
                     file={values.copyIDCard}
                     name="copyIDCard"
                     label={`สำเนาบัตรประชาชน${isBusinessRegistration ? "" : " (บังคับ)"}`}
                   />
                   <RHFUploadButton
+                    disabled={isApproved && !!values.copyDrivingLicense}
                     file={values.copyDrivingLicense}
                     name="copyDrivingLicense"
                     label={`สำเนาใบขับขี่${isBusinessRegistration ? "" : " (บังคับ)"}`}
                   />
                   {!isOnlyBusinessDriver && (
                     <RHFUploadButton
+                      disabled={isApproved && !!values.copyBookBank}
                       file={values.copyBookBank}
                       name="copyBookBank"
                       label="สำเนาหน้าบัญชีธนาคาร (บังคับ)"
@@ -297,28 +302,31 @@ export default function ProfileDocument() {
                 </Fragment>
               )}
               <RHFUploadButton
+                disabled={isApproved && !!values.copyHouseRegistration}
                 file={values.copyHouseRegistration}
                 name="copyHouseRegistration"
                 label="สำเนาทะเบียนบ้าน"
               />
               <RHFUploadButton
+                disabled={isApproved && !!values.insurancePolicy}
                 file={values.insurancePolicy}
                 name="insurancePolicy"
                 label="กรมธรรม์ประกันรถ"
               />
               <RHFUploadButton
+                disabled={isApproved && !!values.criminalRecordCheckCert}
                 file={values.criminalRecordCheckCert}
                 name="criminalRecordCheckCert"
                 label="หนังสือรับรองตรวจประวัติอาชญากรรม"
               />
-              {/* <View style={styles.submitStyle}>
+              <View style={styles.submitStyle}>
                 <Button
                   fullWidth
                   size="large"
-                  title="ยืนยันการสมัคร"
+                  title="บันทึกข้อมูล"
                   onPress={handleSubmit(onSubmit)}
                 />
-              </View> */}
+              </View>
             </View>
           </FormProvider>
         </View>
@@ -352,5 +360,8 @@ const styles = StyleSheet.create({
   },
   sectionTitleWrapper: {
     // paddingTop: normalize(48),
+  },
+  submitStyle: {
+    paddingTop: normalize(32),
   },
 });

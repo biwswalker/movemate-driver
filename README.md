@@ -7,6 +7,11 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
+0. To connect NoxPlayer using
+   - Setting app > enable android developer mode > open USB Debugging
+   - `adb connect 127.0.0.1:62001` ** note: ** If unusing change back to `adb connect 127.0.0.1:5554`
+   - to check `adb devices`
+
 1. Install dependencies
 
    ```bash

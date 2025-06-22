@@ -1,0 +1,7 @@
+mutation UpdateProfile($id: String!, $data: DriverUpdateInput!) {
+  updateDriverRequest(id: $id, data: $data)
+}
+
+query CheckUserPendingStatus($id: String!) {
+  checkUserPendingStatus(userId: $id)
+}

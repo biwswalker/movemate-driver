@@ -26,6 +26,9 @@ export default function Notifications() {
   const { data, loading, fetchMore, refetch } = useNotificationsQuery({
     variables: { limit: 10, skip: 0 },
     notifyOnNetworkStatusChange: true,
+    onCompleted: () => {
+      refetchMe()
+    },
   });
 
   const totalRecord = useMemo<number>(
@@ -66,7 +69,6 @@ export default function Notifications() {
         } else {
           setHasMore(true);
         }
-        refetchMe()
         return {
           ...prevResult,
           ...fetchMoreResult,
@@ -145,8 +147,8 @@ export default function Notifications() {
         </View>
         <View style={styles.notificationWrapper}>
           <View style={styles.notificationTexts}>
-            {map(item.message, (message) => (
-              <Text varient="body1">{message}</Text>
+            {map(item.message, (message, index) => (
+              <Text varient="body1" key={`${index}-${message}`}>{message}</Text>
             ))}
           </View>
           <Text varient="caption" color="secondary">

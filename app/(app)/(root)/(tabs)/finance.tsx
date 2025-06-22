@@ -59,8 +59,6 @@ export default function Financial() {
     }
   }, [isFocused]);
 
-  console.log("data: ", data);
-
   function handleOnPressFinancial() {
     router.push("/profile-detail");
   }

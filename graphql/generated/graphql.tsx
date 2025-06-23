@@ -210,37 +210,6 @@ export type AuthPayload = {
   user: User;
 };
 
-export type BilledMonth = {
-  __typename?: "BilledMonth";
-  apr: Scalars["Int"]["output"];
-  aug: Scalars["Int"]["output"];
-  dec: Scalars["Int"]["output"];
-  feb: Scalars["Int"]["output"];
-  jan: Scalars["Int"]["output"];
-  jul: Scalars["Int"]["output"];
-  jun: Scalars["Int"]["output"];
-  mar: Scalars["Int"]["output"];
-  may: Scalars["Int"]["output"];
-  nov: Scalars["Int"]["output"];
-  oct: Scalars["Int"]["output"];
-  sep: Scalars["Int"]["output"];
-};
-
-export type BilledMonthInput = {
-  apr: Scalars["Int"]["input"];
-  aug: Scalars["Int"]["input"];
-  dec: Scalars["Int"]["input"];
-  feb: Scalars["Int"]["input"];
-  jan: Scalars["Int"]["input"];
-  jul: Scalars["Int"]["input"];
-  jun: Scalars["Int"]["input"];
-  mar: Scalars["Int"]["input"];
-  may: Scalars["Int"]["input"];
-  nov: Scalars["Int"]["input"];
-  oct: Scalars["Int"]["input"];
-  sep: Scalars["Int"]["input"];
-};
-
 export type Billing = {
   __typename?: "Billing";
   _id: Scalars["ID"]["output"];
@@ -359,10 +328,8 @@ export type BusinessCustomerCreditPayment = {
   __typename?: "BusinessCustomerCreditPayment";
   _id: Scalars["ID"]["output"];
   acceptedFirstCreditTermDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
-  billedDate: BilledMonth;
-  billedDateType: Scalars["String"]["output"];
-  billedRound: BilledMonth;
-  billedRoundType: Scalars["String"]["output"];
+  billingCycle: YearlyBillingCycle;
+  billingCycleType: Scalars["String"]["output"];
   businessRegistrationCertificateFile: File;
   certificateValueAddedTaxRegistrationFile?: Maybe<File>;
   copyIDAuthorizedSignatoryFile: File;
@@ -480,10 +447,8 @@ export type CreateDriverPaymentInput = {
 export type CreditPaymentDetailInput = {
   acceptedFirstCreditTerm: Scalars["Boolean"]["input"];
   acceptedFirstCreditTermDate: Scalars["String"]["input"];
-  billedDate: BilledMonthInput;
-  billedDateType: Scalars["String"]["input"];
-  billedRound: BilledMonthInput;
-  billedRoundType: Scalars["String"]["input"];
+  billingCycle: YearBillingCycleInput;
+  billingCycleType: ECreditBillingCycleType;
   businessRegistrationCertificateFile?: InputMaybe<FileInput>;
   certificateValueAddedTaxRegistrationFile?: InputMaybe<FileInput>;
   copyIDAuthorizedSignatoryFile?: InputMaybe<FileInput>;
@@ -1039,6 +1004,12 @@ export enum EBillingStatus {
   VERIFY = "VERIFY",
 }
 
+/** Credit BillingCycle Type */
+export enum ECreditBillingCycleType {
+  DATES = "DATES",
+  DEFAULT = "DEFAULT",
+}
+
 /** Driver acceptance status */
 export enum EDriverAcceptanceStatus {
   ACCEPTED = "ACCEPTED",
@@ -1522,6 +1493,19 @@ export type Marker = {
   latitude: Scalars["Float"]["output"];
   longitude: Scalars["Float"]["output"];
   placeId: Scalars["String"]["output"];
+};
+
+export type MonthlyBillingCycle = {
+  __typename?: "MonthlyBillingCycle";
+  dueDate: Scalars["Int"]["output"];
+  dueMonth: Scalars["Int"]["output"];
+  issueDate: Scalars["Int"]["output"];
+};
+
+export type MonthlyBillingCycleInput = {
+  dueDate: Scalars["Int"]["input"];
+  dueMonth: Scalars["Int"]["input"];
+  issueDate: Scalars["Int"]["input"];
 };
 
 export type Mutation = {
@@ -3718,6 +3702,37 @@ export type VerifyPayload = {
   duration: Scalars["String"]["output"];
 };
 
+export type YearBillingCycleInput = {
+  apr: MonthlyBillingCycleInput;
+  aug: MonthlyBillingCycleInput;
+  dec: MonthlyBillingCycleInput;
+  feb: MonthlyBillingCycleInput;
+  jan: MonthlyBillingCycleInput;
+  jul: MonthlyBillingCycleInput;
+  jun: MonthlyBillingCycleInput;
+  mar: MonthlyBillingCycleInput;
+  may: MonthlyBillingCycleInput;
+  nov: MonthlyBillingCycleInput;
+  oct: MonthlyBillingCycleInput;
+  sep: MonthlyBillingCycleInput;
+};
+
+export type YearlyBillingCycle = {
+  __typename?: "YearlyBillingCycle";
+  apr: MonthlyBillingCycle;
+  aug: MonthlyBillingCycle;
+  dec: MonthlyBillingCycle;
+  feb: MonthlyBillingCycle;
+  jan: MonthlyBillingCycle;
+  jul: MonthlyBillingCycle;
+  jun: MonthlyBillingCycle;
+  mar: MonthlyBillingCycle;
+  may: MonthlyBillingCycle;
+  nov: MonthlyBillingCycle;
+  oct: MonthlyBillingCycle;
+  sep: MonthlyBillingCycle;
+};
+
 export type PaymentMethodPayload = {
   __typename?: "paymentMethodPayload";
   available: Scalars["Boolean"]["output"];
@@ -3949,41 +3964,85 @@ export type BillingFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -4312,41 +4371,85 @@ export type BillingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -4649,41 +4752,85 @@ export type BillingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -4986,41 +5133,85 @@ export type BillingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -5323,41 +5514,85 @@ export type BillingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -5794,41 +6029,85 @@ export type BillingFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -6173,41 +6452,85 @@ export type BillingFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -6583,41 +6906,85 @@ export type BillingFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -7011,41 +7378,85 @@ export type BillingFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -7349,41 +7760,85 @@ export type BillingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -7707,41 +8162,85 @@ export type BillingFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -8147,41 +8646,85 @@ export type BillingFragmentFragment = {
               financialProvince: string;
               financialDistrict: string;
               financialSubDistrict: string;
-              billedDateType: string;
-              billedRoundType: string;
+              billingCycleType: string;
               acceptedFirstCreditTermDate?: any | null;
               creditLimit: number;
               creditUsage: number;
               creditOutstandingBalance: number;
-              billedDate: {
-                __typename?: "BilledMonth";
-                jan: number;
-                feb: number;
-                mar: number;
-                apr: number;
-                may: number;
-                jun: number;
-                jul: number;
-                aug: number;
-                sep: number;
-                oct: number;
-                nov: number;
-                dec: number;
-              };
-              billedRound: {
-                __typename?: "BilledMonth";
-                jan: number;
-                feb: number;
-                mar: number;
-                apr: number;
-                may: number;
-                jun: number;
-                jul: number;
-                aug: number;
-                sep: number;
-                oct: number;
-                nov: number;
-                dec: number;
+              billingCycle: {
+                __typename?: "YearlyBillingCycle";
+                jan: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                feb: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                mar: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                apr: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                may: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                jun: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                jul: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                aug: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                sep: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                oct: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                nov: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                dec: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
               };
               businessRegistrationCertificateFile: {
                 __typename?: "File";
@@ -8485,41 +9028,85 @@ export type BillingFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -8852,41 +9439,85 @@ export type BillingFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -9190,41 +9821,85 @@ export type BillingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -9528,41 +10203,85 @@ export type BillingFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -9886,41 +10605,85 @@ export type BillingListFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -10369,41 +11132,85 @@ export type BillingListFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -10707,41 +11514,85 @@ export type BillingListFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -11065,41 +11916,85 @@ export type BillingListFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -11505,41 +12400,85 @@ export type BillingListFragmentFragment = {
               financialProvince: string;
               financialDistrict: string;
               financialSubDistrict: string;
-              billedDateType: string;
-              billedRoundType: string;
+              billingCycleType: string;
               acceptedFirstCreditTermDate?: any | null;
               creditLimit: number;
               creditUsage: number;
               creditOutstandingBalance: number;
-              billedDate: {
-                __typename?: "BilledMonth";
-                jan: number;
-                feb: number;
-                mar: number;
-                apr: number;
-                may: number;
-                jun: number;
-                jul: number;
-                aug: number;
-                sep: number;
-                oct: number;
-                nov: number;
-                dec: number;
-              };
-              billedRound: {
-                __typename?: "BilledMonth";
-                jan: number;
-                feb: number;
-                mar: number;
-                apr: number;
-                may: number;
-                jun: number;
-                jul: number;
-                aug: number;
-                sep: number;
-                oct: number;
-                nov: number;
-                dec: number;
+              billingCycle: {
+                __typename?: "YearlyBillingCycle";
+                jan: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                feb: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                mar: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                apr: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                may: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                jun: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                jul: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                aug: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                sep: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                oct: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                nov: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
+                dec: {
+                  __typename?: "MonthlyBillingCycle";
+                  issueDate: number;
+                  dueDate: number;
+                  dueMonth: number;
+                };
               };
               businessRegistrationCertificateFile: {
                 __typename?: "File";
@@ -11843,41 +12782,85 @@ export type BillingListFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -12210,41 +13193,85 @@ export type BillingListFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -12548,41 +13575,85 @@ export type BillingListFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -12886,41 +13957,85 @@ export type BillingListFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -13332,41 +14447,85 @@ export type BillingAdjustmentNoteFragmentFragment = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -13670,41 +14829,85 @@ export type BillingAdjustmentNoteFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -14030,41 +15233,85 @@ export type DistanceCostPricingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -14529,41 +15776,85 @@ export type BillingDocumentFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -14901,41 +16192,85 @@ export type InvoiceFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -15239,41 +16574,85 @@ export type InvoiceFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -15625,41 +17004,85 @@ export type PodAddressFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -16071,41 +17494,85 @@ export type PaymentFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -16409,41 +17876,85 @@ export type PaymentFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -16767,41 +18278,85 @@ export type PrivilegeFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -17126,41 +18681,85 @@ export type PrivilegeWithUsedFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -17574,41 +19173,85 @@ export type QuotationFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -17933,41 +19576,85 @@ export type ReceiptFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -18385,41 +20072,85 @@ export type ShipmentFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -18722,41 +20453,85 @@ export type ShipmentFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -19059,41 +20834,85 @@ export type ShipmentFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -19396,41 +21215,85 @@ export type ShipmentFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -19863,41 +21726,85 @@ export type ShipmentFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -20242,41 +22149,85 @@ export type ShipmentFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -20652,41 +22603,85 @@ export type ShipmentFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -21018,41 +23013,85 @@ export type ShipmentListFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -21355,41 +23394,85 @@ export type ShipmentListFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -21692,41 +23775,85 @@ export type ShipmentListFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -22029,41 +24156,85 @@ export type ShipmentListFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -22496,41 +24667,85 @@ export type ShipmentListFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -22938,41 +25153,85 @@ export type ShipmentListFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -23381,41 +25640,85 @@ export type UpdateHistoryFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -23672,20 +25975,87 @@ export type IndividualCustomerFragmentFragment = {
   fullname?: string | null;
 };
 
-export type BilledMonthFragmentFragment = {
-  __typename?: "BilledMonth";
-  jan: number;
-  feb: number;
-  mar: number;
-  apr: number;
-  may: number;
-  jun: number;
-  jul: number;
-  aug: number;
-  sep: number;
-  oct: number;
-  nov: number;
-  dec: number;
+export type MonthlyBillingCycleFragmentFragment = {
+  __typename?: "MonthlyBillingCycle";
+  issueDate: number;
+  dueDate: number;
+  dueMonth: number;
+};
+
+export type YearlyBillingCycleFragmentFragment = {
+  __typename?: "YearlyBillingCycle";
+  jan: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  feb: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  mar: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  apr: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  may: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  jun: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  jul: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  aug: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  sep: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  oct: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  nov: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
+  dec: {
+    __typename?: "MonthlyBillingCycle";
+    issueDate: number;
+    dueDate: number;
+    dueMonth: number;
+  };
 };
 
 export type BusinessCustomerCreditPaymentFragmentFragment = {
@@ -23701,41 +26071,85 @@ export type BusinessCustomerCreditPaymentFragmentFragment = {
   financialProvince: string;
   financialDistrict: string;
   financialSubDistrict: string;
-  billedDateType: string;
-  billedRoundType: string;
+  billingCycleType: string;
   acceptedFirstCreditTermDate?: any | null;
   creditLimit: number;
   creditUsage: number;
   creditOutstandingBalance: number;
-  billedDate: {
-    __typename?: "BilledMonth";
-    jan: number;
-    feb: number;
-    mar: number;
-    apr: number;
-    may: number;
-    jun: number;
-    jul: number;
-    aug: number;
-    sep: number;
-    oct: number;
-    nov: number;
-    dec: number;
-  };
-  billedRound: {
-    __typename?: "BilledMonth";
-    jan: number;
-    feb: number;
-    mar: number;
-    apr: number;
-    may: number;
-    jun: number;
-    jul: number;
-    aug: number;
-    sep: number;
-    oct: number;
-    nov: number;
-    dec: number;
+  billingCycle: {
+    __typename?: "YearlyBillingCycle";
+    jan: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    feb: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    mar: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    apr: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    may: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    jun: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    jul: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    aug: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    sep: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    oct: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    nov: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
+    dec: {
+      __typename?: "MonthlyBillingCycle";
+      issueDate: number;
+      dueDate: number;
+      dueMonth: number;
+    };
   };
   businessRegistrationCertificateFile: {
     __typename?: "File";
@@ -23809,41 +26223,85 @@ export type BusinessCustomerFragmentFragment = {
     financialProvince: string;
     financialDistrict: string;
     financialSubDistrict: string;
-    billedDateType: string;
-    billedRoundType: string;
+    billingCycleType: string;
     acceptedFirstCreditTermDate?: any | null;
     creditLimit: number;
     creditUsage: number;
     creditOutstandingBalance: number;
-    billedDate: {
-      __typename?: "BilledMonth";
-      jan: number;
-      feb: number;
-      mar: number;
-      apr: number;
-      may: number;
-      jun: number;
-      jul: number;
-      aug: number;
-      sep: number;
-      oct: number;
-      nov: number;
-      dec: number;
-    };
-    billedRound: {
-      __typename?: "BilledMonth";
-      jan: number;
-      feb: number;
-      mar: number;
-      apr: number;
-      may: number;
-      jun: number;
-      jul: number;
-      aug: number;
-      sep: number;
-      oct: number;
-      nov: number;
-      dec: number;
+    billingCycle: {
+      __typename?: "YearlyBillingCycle";
+      jan: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      feb: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      mar: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      apr: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      may: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      jun: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      jul: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      aug: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      sep: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      oct: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      nov: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
+      dec: {
+        __typename?: "MonthlyBillingCycle";
+        issueDate: number;
+        dueDate: number;
+        dueMonth: number;
+      };
     };
     businessRegistrationCertificateFile: {
       __typename?: "File";
@@ -24144,41 +26602,85 @@ export type UserSummaryFragmentFragment = {
       financialProvince: string;
       financialDistrict: string;
       financialSubDistrict: string;
-      billedDateType: string;
-      billedRoundType: string;
+      billingCycleType: string;
       acceptedFirstCreditTermDate?: any | null;
       creditLimit: number;
       creditUsage: number;
       creditOutstandingBalance: number;
-      billedDate: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
-      };
-      billedRound: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
+      billingCycle: {
+        __typename?: "YearlyBillingCycle";
+        jan: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        feb: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        mar: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        apr: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        may: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jun: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jul: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        aug: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        sep: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        oct: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        nov: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        dec: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
       };
       businessRegistrationCertificateFile: {
         __typename?: "File";
@@ -24422,41 +26924,85 @@ export type UserSummaryFragmentFragment = {
       financialProvince: string;
       financialDistrict: string;
       financialSubDistrict: string;
-      billedDateType: string;
-      billedRoundType: string;
+      billingCycleType: string;
       acceptedFirstCreditTermDate?: any | null;
       creditLimit: number;
       creditUsage: number;
       creditOutstandingBalance: number;
-      billedDate: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
-      };
-      billedRound: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
+      billingCycle: {
+        __typename?: "YearlyBillingCycle";
+        jan: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        feb: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        mar: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        apr: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        may: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jun: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jul: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        aug: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        sep: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        oct: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        nov: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        dec: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
       };
       businessRegistrationCertificateFile: {
         __typename?: "File";
@@ -24624,41 +27170,85 @@ export type UserFragmentFragment = {
       financialProvince: string;
       financialDistrict: string;
       financialSubDistrict: string;
-      billedDateType: string;
-      billedRoundType: string;
+      billingCycleType: string;
       acceptedFirstCreditTermDate?: any | null;
       creditLimit: number;
       creditUsage: number;
       creditOutstandingBalance: number;
-      billedDate: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
-      };
-      billedRound: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
+      billingCycle: {
+        __typename?: "YearlyBillingCycle";
+        jan: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        feb: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        mar: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        apr: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        may: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jun: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jul: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        aug: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        sep: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        oct: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        nov: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        dec: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
       };
       businessRegistrationCertificateFile: {
         __typename?: "File";
@@ -24902,41 +27492,85 @@ export type UserFragmentFragment = {
       financialProvince: string;
       financialDistrict: string;
       financialSubDistrict: string;
-      billedDateType: string;
-      billedRoundType: string;
+      billingCycleType: string;
       acceptedFirstCreditTermDate?: any | null;
       creditLimit: number;
       creditUsage: number;
       creditOutstandingBalance: number;
-      billedDate: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
-      };
-      billedRound: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
+      billingCycle: {
+        __typename?: "YearlyBillingCycle";
+        jan: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        feb: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        mar: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        apr: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        may: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jun: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jul: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        aug: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        sep: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        oct: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        nov: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        dec: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
       };
       businessRegistrationCertificateFile: {
         __typename?: "File";
@@ -25091,41 +27725,85 @@ export type UserFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -25369,41 +28047,85 @@ export type UserFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -25772,41 +28494,85 @@ export type UserNonInfoDataFragmentFragment = {
       financialProvince: string;
       financialDistrict: string;
       financialSubDistrict: string;
-      billedDateType: string;
-      billedRoundType: string;
+      billingCycleType: string;
       acceptedFirstCreditTermDate?: any | null;
       creditLimit: number;
       creditUsage: number;
       creditOutstandingBalance: number;
-      billedDate: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
-      };
-      billedRound: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
+      billingCycle: {
+        __typename?: "YearlyBillingCycle";
+        jan: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        feb: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        mar: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        apr: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        may: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jun: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jul: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        aug: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        sep: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        oct: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        nov: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        dec: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
       };
       businessRegistrationCertificateFile: {
         __typename?: "File";
@@ -26135,41 +28901,85 @@ export type UserPendingFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -26413,41 +29223,85 @@ export type UserPendingFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -26602,41 +29456,85 @@ export type UserPendingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -26880,41 +29778,85 @@ export type UserPendingFragmentFragment = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -27043,41 +29985,85 @@ export type UserPendingFragmentFragment = {
       financialProvince: string;
       financialDistrict: string;
       financialSubDistrict: string;
-      billedDateType: string;
-      billedRoundType: string;
+      billingCycleType: string;
       acceptedFirstCreditTermDate?: any | null;
       creditLimit: number;
       creditUsage: number;
       creditOutstandingBalance: number;
-      billedDate: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
-      };
-      billedRound: {
-        __typename?: "BilledMonth";
-        jan: number;
-        feb: number;
-        mar: number;
-        apr: number;
-        may: number;
-        jun: number;
-        jul: number;
-        aug: number;
-        sep: number;
-        oct: number;
-        nov: number;
-        dec: number;
+      billingCycle: {
+        __typename?: "YearlyBillingCycle";
+        jan: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        feb: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        mar: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        apr: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        may: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jun: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        jul: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        aug: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        sep: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        oct: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        nov: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
+        dec: {
+          __typename?: "MonthlyBillingCycle";
+          issueDate: number;
+          dueDate: number;
+          dueMonth: number;
+        };
       };
       businessRegistrationCertificateFile: {
         __typename?: "File";
@@ -27370,41 +30356,85 @@ export type UserPendingFragmentFragment = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -27792,41 +30822,85 @@ export type LoginMutation = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -28070,41 +31144,85 @@ export type LoginMutation = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -28259,41 +31377,85 @@ export type LoginMutation = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -28537,41 +31699,85 @@ export type LoginMutation = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -29107,41 +32313,85 @@ export type GetAvailableShipmentQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -29444,41 +32694,85 @@ export type GetAvailableShipmentQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -29781,41 +33075,85 @@ export type GetAvailableShipmentQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -30118,41 +33456,85 @@ export type GetAvailableShipmentQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -30589,41 +33971,85 @@ export type GetAvailableShipmentQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -30968,41 +34394,85 @@ export type GetAvailableShipmentQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -31378,41 +34848,85 @@ export type GetAvailableShipmentQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -31751,41 +35265,85 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -32088,41 +35646,85 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -32425,41 +36027,85 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -32762,41 +36408,85 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -33233,41 +36923,85 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -33612,41 +37346,85 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -34022,41 +37800,85 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -34393,41 +38215,85 @@ export type GetTodayShipmentQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -34730,41 +38596,85 @@ export type GetTodayShipmentQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -35067,41 +38977,85 @@ export type GetTodayShipmentQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -35404,41 +39358,85 @@ export type GetTodayShipmentQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -35875,41 +39873,85 @@ export type GetTodayShipmentQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -36254,41 +40296,85 @@ export type GetTodayShipmentQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -36664,41 +40750,85 @@ export type GetTodayShipmentQuery = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -37180,41 +41310,85 @@ export type MeQuery = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -37458,41 +41632,85 @@ export type MeQuery = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -37647,41 +41865,85 @@ export type MeQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -37925,41 +42187,85 @@ export type MeQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -38138,41 +42444,85 @@ export type EmployeesQuery = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -38485,41 +42835,85 @@ export type LookupDriverQuery = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -38830,41 +43224,85 @@ export type GetUserQuery = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -39175,41 +43613,85 @@ export type AvailableEmployeesQuery = {
         financialProvince: string;
         financialDistrict: string;
         financialSubDistrict: string;
-        billedDateType: string;
-        billedRoundType: string;
+        billingCycleType: string;
         acceptedFirstCreditTermDate?: any | null;
         creditLimit: number;
         creditUsage: number;
         creditOutstandingBalance: number;
-        billedDate: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
-        };
-        billedRound: {
-          __typename?: "BilledMonth";
-          jan: number;
-          feb: number;
-          mar: number;
-          apr: number;
-          may: number;
-          jun: number;
-          jul: number;
-          aug: number;
-          sep: number;
-          oct: number;
-          nov: number;
-          dec: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
         };
         businessRegistrationCertificateFile: {
           __typename?: "File";
@@ -39626,41 +44108,85 @@ export type ListenAvailableShipmentSubscription = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -39963,41 +44489,85 @@ export type ListenAvailableShipmentSubscription = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -40300,41 +44870,85 @@ export type ListenAvailableShipmentSubscription = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -40637,41 +45251,85 @@ export type ListenAvailableShipmentSubscription = {
           financialProvince: string;
           financialDistrict: string;
           financialSubDistrict: string;
-          billedDateType: string;
-          billedRoundType: string;
+          billingCycleType: string;
           acceptedFirstCreditTermDate?: any | null;
           creditLimit: number;
           creditUsage: number;
           creditOutstandingBalance: number;
-          billedDate: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
-          };
-          billedRound: {
-            __typename?: "BilledMonth";
-            jan: number;
-            feb: number;
-            mar: number;
-            apr: number;
-            may: number;
-            jun: number;
-            jul: number;
-            aug: number;
-            sep: number;
-            oct: number;
-            nov: number;
-            dec: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
           };
           businessRegistrationCertificateFile: {
             __typename?: "File";
@@ -41108,41 +45766,85 @@ export type ListenAvailableShipmentSubscription = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -41487,41 +46189,85 @@ export type ListenAvailableShipmentSubscription = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -41897,41 +46643,85 @@ export type ListenAvailableShipmentSubscription = {
             financialProvince: string;
             financialDistrict: string;
             financialSubDistrict: string;
-            billedDateType: string;
-            billedRoundType: string;
+            billingCycleType: string;
             acceptedFirstCreditTermDate?: any | null;
             creditLimit: number;
             creditUsage: number;
             creditOutstandingBalance: number;
-            billedDate: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
-            };
-            billedRound: {
-              __typename?: "BilledMonth";
-              jan: number;
-              feb: number;
-              mar: number;
-              apr: number;
-              may: number;
-              jun: number;
-              jul: number;
-              aug: number;
-              sep: number;
-              oct: number;
-              nov: number;
-              dec: number;
+            billingCycle: {
+              __typename?: "YearlyBillingCycle";
+              jan: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              feb: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              mar: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              apr: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              may: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jun: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              jul: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              aug: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              sep: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              oct: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              nov: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
+              dec: {
+                __typename?: "MonthlyBillingCycle";
+                issueDate: number;
+                dueDate: number;
+                dueMonth: number;
+              };
             };
             businessRegistrationCertificateFile: {
               __typename?: "File";
@@ -42199,21 +46989,53 @@ export const IndividualCustomerFragmentFragmentDoc = gql`
     fullname
   }
 `;
-export const BilledMonthFragmentFragmentDoc = gql`
-  fragment BilledMonthFragment on BilledMonth {
-    jan
-    feb
-    mar
-    apr
-    may
-    jun
-    jul
-    aug
-    sep
-    oct
-    nov
-    dec
+export const MonthlyBillingCycleFragmentFragmentDoc = gql`
+  fragment MonthlyBillingCycleFragment on MonthlyBillingCycle {
+    issueDate
+    dueDate
+    dueMonth
   }
+`;
+export const YearlyBillingCycleFragmentFragmentDoc = gql`
+  fragment YearlyBillingCycleFragment on YearlyBillingCycle {
+    jan {
+      ...MonthlyBillingCycleFragment
+    }
+    feb {
+      ...MonthlyBillingCycleFragment
+    }
+    mar {
+      ...MonthlyBillingCycleFragment
+    }
+    apr {
+      ...MonthlyBillingCycleFragment
+    }
+    may {
+      ...MonthlyBillingCycleFragment
+    }
+    jun {
+      ...MonthlyBillingCycleFragment
+    }
+    jul {
+      ...MonthlyBillingCycleFragment
+    }
+    aug {
+      ...MonthlyBillingCycleFragment
+    }
+    sep {
+      ...MonthlyBillingCycleFragment
+    }
+    oct {
+      ...MonthlyBillingCycleFragment
+    }
+    nov {
+      ...MonthlyBillingCycleFragment
+    }
+    dec {
+      ...MonthlyBillingCycleFragment
+    }
+  }
+  ${MonthlyBillingCycleFragmentFragmentDoc}
 `;
 export const FileFragmentFragmentDoc = gql`
   fragment FileFragment on File {
@@ -42238,13 +47060,9 @@ export const BusinessCustomerCreditPaymentFragmentFragmentDoc = gql`
     financialProvince
     financialDistrict
     financialSubDistrict
-    billedDateType
-    billedDate {
-      ...BilledMonthFragment
-    }
-    billedRoundType
-    billedRound {
-      ...BilledMonthFragment
+    billingCycleType
+    billingCycle {
+      ...YearlyBillingCycleFragment
     }
     acceptedFirstCreditTermDate
     businessRegistrationCertificateFile {
@@ -42260,7 +47078,7 @@ export const BusinessCustomerCreditPaymentFragmentFragmentDoc = gql`
     creditUsage
     creditOutstandingBalance
   }
-  ${BilledMonthFragmentFragmentDoc}
+  ${YearlyBillingCycleFragmentFragmentDoc}
   ${FileFragmentFragmentDoc}
 `;
 export const BusinessCustomerCashPaymentFragmentFragmentDoc = gql`

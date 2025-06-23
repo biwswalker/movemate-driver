@@ -34,19 +34,49 @@ fragment IndividualCustomerFragment on IndividualCustomer {
   fullname
 }
 
-fragment BilledMonthFragment on BilledMonth {
-  jan
-  feb
-  mar
-  apr
-  may
-  jun
-  jul
-  aug
-  sep
-  oct
-  nov
-  dec
+fragment MonthlyBillingCycleFragment on MonthlyBillingCycle {
+  issueDate
+  dueDate
+  dueMonth
+}
+
+fragment YearlyBillingCycleFragment on YearlyBillingCycle {
+  jan {
+    ...MonthlyBillingCycleFragment
+  }
+  feb {
+    ...MonthlyBillingCycleFragment
+  }
+  mar {
+    ...MonthlyBillingCycleFragment
+  }
+  apr {
+    ...MonthlyBillingCycleFragment
+  }
+  may {
+    ...MonthlyBillingCycleFragment
+  }
+  jun {
+    ...MonthlyBillingCycleFragment
+  }
+  jul {
+    ...MonthlyBillingCycleFragment
+  }
+  aug {
+    ...MonthlyBillingCycleFragment
+  }
+  sep {
+    ...MonthlyBillingCycleFragment
+  }
+  oct {
+    ...MonthlyBillingCycleFragment
+  }
+  nov {
+    ...MonthlyBillingCycleFragment
+  }
+  dec {
+    ...MonthlyBillingCycleFragment
+  }
 }
 
 fragment BusinessCustomerCreditPaymentFragment on BusinessCustomerCreditPayment {
@@ -61,13 +91,9 @@ fragment BusinessCustomerCreditPaymentFragment on BusinessCustomerCreditPayment 
   financialProvince
   financialDistrict
   financialSubDistrict
-  billedDateType
-  billedDate {
-    ...BilledMonthFragment
-  }
-  billedRoundType
-  billedRound {
-    ...BilledMonthFragment
+  billingCycleType
+  billingCycle {
+    ...YearlyBillingCycleFragment
   }
   acceptedFirstCreditTermDate
   businessRegistrationCertificateFile {

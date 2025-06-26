@@ -4,6 +4,7 @@ import Text from "@/components/Text";
 import colors from "@constants/colors";
 import {
   EShipmentMatchingCriteria,
+  EShipmentStatus,
   Shipment,
   useAcceptShipmentMutation,
   useGetAvailableShipmentByTrackingNumberQuery,
@@ -15,7 +16,7 @@ import { ApolloError } from "@apollo/client";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import hexToRgba from "hex-to-rgba";
-import { last, sortBy } from "lodash";
+import { isEqual, last, sortBy } from "lodash";
 import {
   Dispatch,
   Fragment,
@@ -26,16 +27,18 @@ import {
 } from "react";
 import { BackHandler, Modal, StyleSheet, View } from "react-native";
 import { DropdownAlertType } from "react-native-dropdownalert";
-import { ScrollView } from "react-native-gesture-handler";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Overview from "@/components/Shipment/WorkDetail/Overview";
 import Detail from "@/components/Shipment/WorkDetail/Detail";
+import useAuth from "@/hooks/useAuth";
 
 export default function ShipmentOverview() {
+  const { user } = useAuth()
   const [confirmOpen, setConfirmOpen] = useState(false);
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
 
-  const { data } = useGetAvailableShipmentByTrackingNumberQuery({
+  const { data, loading } = useGetAvailableShipmentByTrackingNumberQuery({
     variables: { tracking: searchParam?.trackingNumber || "" },
   });
 
@@ -50,6 +53,24 @@ export default function ShipmentOverview() {
     );
     return () => backHandler.remove();
   }, []);
+
+  useEffect(() => {
+    if (data?.getAvailableShipmentByTrackingNumber) {
+      const _shipment = data?.getAvailableShipmentByTrackingNumber
+      const _shipmentStatus = _shipment.status
+
+      const _statusNotInclude = _shipmentStatus !== EShipmentStatus.IDLE
+
+      if(_statusNotInclude) {
+        if(_shipmentStatus === EShipmentStatus.PROGRESSING && isEqual(_shipment.driver?._id, user?._id)) {
+          // Navigate to working
+          handleOnClose()
+          router.push({ pathname: "/shipment-working", params: { trackingNumber: _shipment.trackingNumber } });
+          return () => { }
+        }
+      }
+    }
+  }, [data])
 
   const shipment = useMemo<Shipment>(
     () => data?.getAvailableShipmentByTrackingNumber as Shipment,
@@ -88,9 +109,9 @@ export default function ShipmentOverview() {
               </View>
             }
           />
-          <ScrollView style={styles.scrollContainer}>
+          <ScrollView style={styles.scrollContainer} refreshControl={<RefreshControl refreshing={loading} />}>
             {shipment && <Overview shipment={shipment} />}
-            {shipment && <Detail shipment={shipment} />}
+            {shipment && shipment.status === EShipmentStatus.IDLE && <Detail shipment={shipment} />}
             <View style={styles.spacingBox} />
           </ScrollView>
           <View style={styles.actionButton}>
@@ -110,6 +131,7 @@ export default function ShipmentOverview() {
                 varient="soft"
                 size="large"
                 fullWidth
+                disabled={shipment.status !== EShipmentStatus.IDLE}
                 title="รับงาน"
                 onPress={handleOnAccept}
               />

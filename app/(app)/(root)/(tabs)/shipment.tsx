@@ -37,6 +37,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { useIsFocused } from "@react-navigation/native";
 import { ICarouselInstance } from "react-native-reanimated-carousel";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
   const tabsRef = useRef<ICarouselInstance>(null);
@@ -706,6 +707,7 @@ function Shipments({ status }: ShipmentsProps) {
   return (
     <View style={[{ paddingTop: normalize(16) }]}>
       <FlashList
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} />}
         data={shipments}
         renderItem={Item}
         keyExtractor={(item, index) => `${index}-${item._id}`}

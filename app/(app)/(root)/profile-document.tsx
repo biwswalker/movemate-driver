@@ -10,16 +10,37 @@ import { normalize } from "@/utils/normalizeSize";
 import { fData } from "@/utils/number";
 import Yup from "@/utils/yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { get, includes, isEmpty } from "lodash";
-import { Fragment, useEffect, useMemo } from "react";
+import { forEach, get, includes, isEmpty, omit, pick } from "lodash";
+import {
+  Dispatch,
+  Fragment,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useForm } from "react-hook-form";
-import { StyleSheet, View } from "react-native";
+import { Modal, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  FileInput as FileInputGraph,
   EDriverType,
   EUserStatus,
   EUserValidationStatus,
+  useCheckUserPendingStatusQuery,
+  useUpdateProfileMutation,
+  EUserType,
+  DriverDocumentInput,
 } from "@/graphql/generated/graphql";
+import { fileUploadAPI } from "@/services/upload";
+import { DriverFormValue } from "./re-register/types";
+import { YUP_VALIDATION_ERROR_TYPE } from "@/constants/error";
+import { ApolloError } from "@apollo/client";
+import { useSnackbarV2 } from "@/hooks/useSnackbar";
+import { useFocusEffect } from "expo-router";
+import { DropdownAlertType } from "react-native-dropdownalert";
+import Iconify from "@/components/Iconify";
+import hexToRgba from "hex-to-rgba";
 
 interface FormValue {
   frontOfVehicle: FileInput | string;
@@ -41,12 +62,22 @@ export const MAX_FILE_SIZE = 10 * 1000 * 1000;
 const MAXIMUM_FILE_SIZE_TEXT = `ขนาดไฟล์ไม่เกิน ${fData(MAX_FILE_SIZE)}`;
 
 export default function ProfileDocument() {
-  const { user } = useAuth();
+  const { user, refetchMe } = useAuth();
+  const { showSnackbar } = useSnackbarV2();
+
+  const [open, setOpen] = useState(false);
+
+  const { data: checkPendingStatusRaw, refetch: refetchGetStatus } =
+    useCheckUserPendingStatusQuery({ variables: { id: user?._id || "" } });
+
+  const [updateProfile, { loading: updateLoading }] =
+    useUpdateProfileMutation();
 
   const isApproved =
     user?.status === EUserStatus.ACTIVE &&
     user.validationStatus === EUserValidationStatus.APPROVE;
 
+  const driverInfo = useMemo(() => user?.driverDetail, [user]);
   const documents = useMemo(() => user?.driverDetail?.documents, [user]);
   const isBusinessRegistration = useMemo(() => {
     if (user?.driverDetail) {
@@ -55,6 +86,7 @@ export default function ProfileDocument() {
     return false;
   }, [user]);
 
+  const isAgent = user?.userType === EUserType.BUSINESS;
   const isOnlyBusinessDriver = useMemo(() => {
     const driverTypes = get(user, "driverDetail.driverType", []);
     if (user?.driverDetail) {
@@ -64,6 +96,16 @@ export default function ProfileDocument() {
     }
     return false;
   }, [user]);
+
+  const isPendingReview = useMemo(
+    () => checkPendingStatusRaw?.checkUserPendingStatus || false,
+    [checkPendingStatusRaw]
+  );
+
+  useFocusEffect(() => {
+    refetchMe();
+    refetchGetStatus();
+  });
 
   const RegisterUploadSchema = Yup.object().shape({
     frontOfVehicle: Yup.mixed()
@@ -166,7 +208,7 @@ export default function ProfileDocument() {
           ? imagePath(documents.certificateValueAddedTaxRegistration.filename)
           : undefined,
     }),
-    []
+    [documents]
   );
 
   const methods = useForm<FormValue>({
@@ -175,7 +217,7 @@ export default function ProfileDocument() {
     disabled: !isApproved,
   });
 
-  const { handleSubmit, reset, watch } = methods;
+  const { handleSubmit, reset, watch, setError, setFocus } = methods;
   const values = watch();
 
   useEffect(() => {
@@ -185,153 +227,389 @@ export default function ProfileDocument() {
     }
   }, [documents]);
 
+  async function reformUpload(
+    file: FileInput | string
+  ): Promise<FileInputGraph | undefined> {
+    try {
+      if (typeof file === "string") {
+        return undefined;
+      } else if (file) {
+        console.log("uri: ", file);
+        const response = await fileUploadAPI({
+          name: file.name,
+          type: file.trueType || "",
+          uri: file.uri,
+        });
+        const responseFile = get(response, "data", undefined);
+        return pick(responseFile, [
+          "fileId",
+          "filename",
+          "mimetype",
+        ]) as FileInputGraph;
+      }
+      return undefined;
+    } catch (error: any) {
+      console.error("Network error occurred during file upload:", error);
+      if (error.response) {
+        // Server returned a response with error details
+        console.error("Response data:", error.response.data);
+      } else if (error.request) {
+        // No response received (network error)
+        console.error(
+          "Request was made but no response received:",
+          JSON.stringify(error.request)
+        );
+      } else {
+        // Some error occurred during request setup
+        console.error("Error setting up the request:", error.message);
+      }
+      return undefined;
+    }
+  }
+
+  function handleErrorVerified(error: ApolloError) {
+    const graphQLErrors = get(error, "graphQLErrors", []);
+    if (error.graphQLErrors) {
+      graphQLErrors.forEach((graphQLError) => {
+        const code = get(graphQLError, "extensions.code", "") || "";
+        const errors = (get(graphQLError, "extensions.errors", []) ||
+          []) as any[];
+        switch (code) {
+          case YUP_VALIDATION_ERROR_TYPE:
+            const errorlength = get(errors, "length", 0);
+            if (errorlength > 0) {
+              showSnackbar({
+                title: "พบข้อผิดพลาด",
+                message: `ไม่สามารถบันทึกได้ พบ ${errorlength} ข้อผิดพลาด`,
+                type: DropdownAlertType.Warn,
+              });
+            }
+            forEach(errors, ({ path, ...message }) => setError(path, message));
+            setFocus(get(errors, "0.path", ""));
+            break;
+          default:
+            showSnackbar({
+              title: "พบข้อผิดพลาด",
+              message: graphQLError?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+              type: DropdownAlertType.Warn,
+            });
+            break;
+        }
+      });
+    } else {
+      console.log("error: ", error);
+      showSnackbar({
+        title: "พบข้อผิดพลาด",
+        message: error.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+        type: DropdownAlertType.Warn,
+      });
+    }
+  }
+
+  function handleVerifySuccess() {
+    setOpen(true);
+    refetchMe();
+    refetchGetStatus();
+  }
+
   async function onSubmit(values: FormValue) {
     try {
-      // TODO: Add update documents
-      // if (params && values) {
-      //   const documents = new RegisterUploadsFormValue(values);
-      //   const param = JSON.stringify({ detail: params, documents });
-      //   console.log('---param---', param)
-      //   router.push({ pathname: "/register/preview", params: { param } });
-      // }
+      const frontOfVehicle = (await reformUpload(
+        values.frontOfVehicle
+      )) as FileInputGraph;
+      const backOfVehicle = (await reformUpload(
+        values.backOfVehicle
+      )) as FileInputGraph;
+      const leftOfVehicle = (await reformUpload(
+        values.leftOfVehicle
+      )) as FileInputGraph;
+      const rigthOfVehicle = (await reformUpload(
+        values.rigthOfVehicle
+      )) as FileInputGraph;
+      const copyVehicleRegistration = (await reformUpload(
+        values.copyVehicleRegistration
+      )) as FileInputGraph;
+      const copyIDCard = (await reformUpload(
+        values.copyIDCard
+      )) as FileInputGraph;
+      const copyDrivingLicense = (await reformUpload(
+        values.copyDrivingLicense
+      )) as FileInputGraph;
+      const copyBookBank = await reformUpload(values.copyBookBank);
+      const copyHouseRegistration = await reformUpload(
+        values.copyHouseRegistration
+      );
+      const insurancePolicy = await reformUpload(values.insurancePolicy);
+      const criminalRecordCheckCert = await reformUpload(
+        values.criminalRecordCheckCert
+      );
+      const businessRegistrationCertificate = await reformUpload(
+        values.businessRegistrationCertificate
+      );
+      const certificateValueAddedTaxRegistration = await reformUpload(
+        values.certificateValueAddedTaxRegistration
+      );
+
+      const detailData = new DriverFormValue({
+        policyVersion: user?.acceptPolicyVersion || -1,
+        driverType: isAgent
+          ? EDriverType.BUSINESS
+          : isOnlyBusinessDriver
+            ? EDriverType.BUSINESS_DRIVER
+            : EDriverType.INDIVIDUAL_DRIVER,
+        title: driverInfo?.title || "",
+        otherTitle: driverInfo?.otherTitle || "",
+        firstname: driverInfo?.firstname || "",
+        lastname: driverInfo?.lastname || "",
+        businessName: driverInfo?.businessName || "",
+        businessBranch: driverInfo?.businessBranch || "",
+        taxNumber: driverInfo?.taxNumber || "",
+        phoneNumber: driverInfo?.phoneNumber || "",
+        lineId: driverInfo?.lineId || "",
+        password: "",
+        address: driverInfo?.address || "",
+        province: driverInfo?.province || "",
+        district: driverInfo?.district || "",
+        subDistrict: driverInfo?.subDistrict || "",
+        postcode: driverInfo?.postcode || "",
+        bank: driverInfo?.bank || "",
+        bankBranch: driverInfo?.bankBranch || "",
+        bankName: driverInfo?.bankName || "",
+        bankNumber: driverInfo?.bankNumber || "",
+        serviceVehicleTypes:
+          driverInfo?.serviceVehicleTypes?.map((type) => type._id) || [],
+      });
+
+      const documentData: DriverDocumentInput = {
+        ...(frontOfVehicle ? { frontOfVehicle } : {}),
+        ...(backOfVehicle ? { backOfVehicle } : {}),
+        ...(leftOfVehicle ? { leftOfVehicle } : {}),
+        ...(rigthOfVehicle ? { rigthOfVehicle } : {}),
+        ...(copyVehicleRegistration ? { copyVehicleRegistration } : {}),
+        ...(copyIDCard ? { copyIDCard } : {}),
+        ...(copyDrivingLicense ? { copyDrivingLicense } : {}),
+        ...(copyBookBank ? { copyBookBank } : {}),
+        ...(copyHouseRegistration ? { copyHouseRegistration } : {}),
+        ...(insurancePolicy ? { insurancePolicy } : {}),
+        ...(criminalRecordCheckCert ? { criminalRecordCheckCert } : {}),
+        ...(businessRegistrationCertificate
+          ? { businessRegistrationCertificate }
+          : {}),
+        ...(certificateValueAddedTaxRegistration
+          ? { certificateValueAddedTaxRegistration }
+          : {}),
+      };
+
+      updateProfile({
+        variables: {
+          id: user?._id || "",
+          data: {
+            detail: omit(detailData, [
+              "policyVersion",
+              "driverType",
+              "password",
+            ]),
+            documents: documentData,
+          },
+        },
+        onCompleted: handleVerifySuccess,
+        onError: handleErrorVerified,
+      });
     } catch (error) {
       console.log("errors: ", error);
     }
   }
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.wrapper}>
-        <NavigationBar title="ข้อมูลเอกสาร" />
-        <View style={styles.content}>
-          <FormProvider
-            methods={methods}
-            containerStyle={styles.sectionContainer}
-          >
-            <View style={styles.documentList}>
-              {isBusinessRegistration && (
-                <Fragment>
-                  <RHFUploadButton
-                    file={values.businessRegistrationCertificate}
-                    name="businessRegistrationCertificate"
-                    label="หนังสือรับรองบริษัท (บังคับ)"
-                  />
-                  <RHFUploadButton
-                    file={values.copyIDCard}
-                    name="copyIDCard"
-                    label="สำเนาบัตรประชาชน (บังคับ)"
-                  />
-                  <RHFUploadButton
-                    file={values.certificateValueAddedTaxRegistration}
-                    name="certificateValueAddedTaxRegistration"
-                    label="ภพ 20"
-                  />
-                  <RHFUploadButton
-                    file={values.copyBookBank}
-                    name="copyBookBank"
-                    label="สำเนาหน้าบัญชีธนาคาร (บังคับ)"
-                  />
-                </Fragment>
-              )}
-
-              {!isBusinessRegistration && (
-                <Fragment>
-                  <View>
-                    <Text>
-                      รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
-                    </Text>
-                  </View>
-                  <View style={styles.rowWrapper}>
+    <Fragment>
+      <View style={styles.container}>
+        <SafeAreaView style={styles.wrapper}>
+          <NavigationBar title="ข้อมูลเอกสาร" />
+          <View style={styles.content}>
+            {isPendingReview && <PendingReview />}
+            <FormProvider
+              methods={methods}
+              containerStyle={styles.sectionContainer}
+            >
+              <View style={styles.documentList}>
+                {isBusinessRegistration && (
+                  <Fragment>
                     <RHFUploadButton
-                      file={values.frontOfVehicle}
-                      name="frontOfVehicle"
-                      label="ด้านหน้ารถ"
-                      isImagePreview
-                      actionMenus={["CAMERA", "GALLERY"]}
+                      disabled={
+                        (isApproved &&
+                          !!values.businessRegistrationCertificate) ||
+                        isPendingReview
+                      }
+                      file={values.businessRegistrationCertificate}
+                      name="businessRegistrationCertificate"
+                      label="หนังสือรับรองบริษัท (บังคับ)"
                     />
                     <RHFUploadButton
-                      file={values.backOfVehicle}
-                      name="backOfVehicle"
-                      label="ด้านหลังรถ"
-                      isImagePreview
-                      actionMenus={["CAMERA", "GALLERY"]}
-                    />
-                  </View>
-                  <View style={styles.rowWrapper}>
-                    <RHFUploadButton
-                      file={values.leftOfVehicle}
-                      name="leftOfVehicle"
-                      label="ด้านข้าง ซ้ายรถ"
-                      isImagePreview
-                      actionMenus={["CAMERA", "GALLERY"]}
+                      disabled={
+                        (isApproved && !!values.copyIDCard) || isPendingReview
+                      }
+                      file={values.copyIDCard}
+                      name="copyIDCard"
+                      label="สำเนาบัตรประชาชน (บังคับ)"
                     />
                     <RHFUploadButton
-                      file={values.rigthOfVehicle}
-                      name="rigthOfVehicle"
-                      label="ด้านข้าง ขวารถ"
-                      isImagePreview
-                      actionMenus={["CAMERA", "GALLERY"]}
+                      disabled={
+                        (isApproved &&
+                          !!values.certificateValueAddedTaxRegistration) ||
+                        isPendingReview
+                      }
+                      file={values.certificateValueAddedTaxRegistration}
+                      name="certificateValueAddedTaxRegistration"
+                      label="ภพ 20"
                     />
-                  </View>
-                  <RHFUploadButton
-                    disabled={isApproved && !!values.copyVehicleRegistration}
-                    file={values.copyVehicleRegistration}
-                    name="copyVehicleRegistration"
-                    label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
-                  />
-                  <RHFUploadButton
-                    disabled={isApproved && !!values.copyIDCard}
-                    file={values.copyIDCard}
-                    name="copyIDCard"
-                    label={`สำเนาบัตรประชาชน${isBusinessRegistration ? "" : " (บังคับ)"}`}
-                  />
-                  <RHFUploadButton
-                    disabled={isApproved && !!values.copyDrivingLicense}
-                    file={values.copyDrivingLicense}
-                    name="copyDrivingLicense"
-                    label={`สำเนาใบขับขี่${isBusinessRegistration ? "" : " (บังคับ)"}`}
-                  />
-                  {!isOnlyBusinessDriver && (
                     <RHFUploadButton
-                      disabled={isApproved && !!values.copyBookBank}
+                      disabled={
+                        (isApproved && !!values.copyBookBank) || isPendingReview
+                      }
                       file={values.copyBookBank}
                       name="copyBookBank"
                       label="สำเนาหน้าบัญชีธนาคาร (บังคับ)"
                     />
-                  )}
-                </Fragment>
-              )}
-              <RHFUploadButton
-                disabled={isApproved && !!values.copyHouseRegistration}
-                file={values.copyHouseRegistration}
-                name="copyHouseRegistration"
-                label="สำเนาทะเบียนบ้าน"
-              />
-              <RHFUploadButton
-                disabled={isApproved && !!values.insurancePolicy}
-                file={values.insurancePolicy}
-                name="insurancePolicy"
-                label="กรมธรรม์ประกันรถ"
-              />
-              <RHFUploadButton
-                disabled={isApproved && !!values.criminalRecordCheckCert}
-                file={values.criminalRecordCheckCert}
-                name="criminalRecordCheckCert"
-                label="หนังสือรับรองตรวจประวัติอาชญากรรม"
-              />
-              <View style={styles.submitStyle}>
-                <Button
-                  fullWidth
-                  size="large"
-                  title="บันทึกข้อมูล"
-                  onPress={handleSubmit(onSubmit)}
+                  </Fragment>
+                )}
+
+                {!isBusinessRegistration && (
+                  <Fragment>
+                    <View>
+                      <Text>
+                        รูปถ่ายรถยนต์{isBusinessRegistration ? "" : " (บังคับ)"}
+                      </Text>
+                    </View>
+                    <View style={styles.rowWrapper}>
+                      <RHFUploadButton
+                        disabled={
+                          (isApproved && !!values.frontOfVehicle) ||
+                          isPendingReview
+                        }
+                        file={values.frontOfVehicle}
+                        name="frontOfVehicle"
+                        label="ด้านหน้ารถ"
+                        isImagePreview
+                        actionMenus={["CAMERA", "GALLERY"]}
+                      />
+                      <RHFUploadButton
+                        disabled={
+                          (isApproved && !!values.backOfVehicle) ||
+                          isPendingReview
+                        }
+                        file={values.backOfVehicle}
+                        name="backOfVehicle"
+                        label="ด้านหลังรถ"
+                        isImagePreview
+                        actionMenus={["CAMERA", "GALLERY"]}
+                      />
+                    </View>
+                    <View style={styles.rowWrapper}>
+                      <RHFUploadButton
+                        disabled={
+                          (isApproved && !!values.leftOfVehicle) ||
+                          isPendingReview
+                        }
+                        file={values.leftOfVehicle}
+                        name="leftOfVehicle"
+                        label="ด้านข้าง ซ้ายรถ"
+                        isImagePreview
+                        actionMenus={["CAMERA", "GALLERY"]}
+                      />
+                      <RHFUploadButton
+                        disabled={
+                          (isApproved && !!values.rigthOfVehicle) ||
+                          isPendingReview
+                        }
+                        file={values.rigthOfVehicle}
+                        name="rigthOfVehicle"
+                        label="ด้านข้าง ขวารถ"
+                        isImagePreview
+                        actionMenus={["CAMERA", "GALLERY"]}
+                      />
+                    </View>
+                    <RHFUploadButton
+                      disabled={
+                        (isApproved && !!values.copyVehicleRegistration) ||
+                        isPendingReview
+                      }
+                      file={values.copyVehicleRegistration}
+                      name="copyVehicleRegistration"
+                      label={`สำเนาทะเบียนรถ${isBusinessRegistration ? "" : " (บังคับ)"}`}
+                    />
+                    <RHFUploadButton
+                      disabled={
+                        (isApproved && !!values.copyIDCard) || isPendingReview
+                      }
+                      file={values.copyIDCard}
+                      name="copyIDCard"
+                      label={`สำเนาบัตรประชาชน${isBusinessRegistration ? "" : " (บังคับ)"}`}
+                    />
+                    <RHFUploadButton
+                      disabled={
+                        (isApproved && !!values.copyDrivingLicense) ||
+                        isPendingReview
+                      }
+                      file={values.copyDrivingLicense}
+                      name="copyDrivingLicense"
+                      label={`สำเนาใบขับขี่${isBusinessRegistration ? "" : " (บังคับ)"}`}
+                    />
+                    {!isOnlyBusinessDriver && (
+                      <RHFUploadButton
+                        disabled={
+                          (isApproved && !!values.copyBookBank) ||
+                          isPendingReview
+                        }
+                        file={values.copyBookBank}
+                        name="copyBookBank"
+                        label="สำเนาหน้าบัญชีธนาคาร (บังคับ)"
+                      />
+                    )}
+                  </Fragment>
+                )}
+                <RHFUploadButton
+                  disabled={
+                    (isApproved && !!values.copyHouseRegistration) ||
+                    isPendingReview
+                  }
+                  file={values.copyHouseRegistration}
+                  name="copyHouseRegistration"
+                  label="สำเนาทะเบียนบ้าน"
                 />
+                <RHFUploadButton
+                  disabled={
+                    (isApproved && !!values.insurancePolicy) || isPendingReview
+                  }
+                  file={values.insurancePolicy}
+                  name="insurancePolicy"
+                  label="กรมธรรม์ประกันรถ"
+                />
+                <RHFUploadButton
+                  disabled={
+                    (isApproved && !!values.criminalRecordCheckCert) ||
+                    isPendingReview
+                  }
+                  file={values.criminalRecordCheckCert}
+                  name="criminalRecordCheckCert"
+                  label="หนังสือรับรองตรวจประวัติอาชญากรรม"
+                />
+                <View style={styles.submitStyle}>
+                  <Button
+                    fullWidth
+                    size="large"
+                    title="บันทึกข้อมูล"
+                    disabled={!isApproved || isPendingReview}
+                    onPress={handleSubmit(onSubmit)}
+                    loading={updateLoading}
+                  />
+                </View>
               </View>
-            </View>
-          </FormProvider>
-        </View>
-      </SafeAreaView>
-    </View>
+            </FormProvider>
+          </View>
+        </SafeAreaView>
+      </View>
+      <ConfirmDialog open={open} setOpen={setOpen} />
+    </Fragment>
   );
 }
 
@@ -363,5 +641,145 @@ const styles = StyleSheet.create({
   },
   submitStyle: {
     paddingTop: normalize(32),
+  },
+});
+
+function PendingReview() {
+  return (
+    <View style={pendingStyle.infoTextContainer}>
+      <View style={pendingStyle.infoTextWrapper}>
+        <Iconify
+          icon="iconoir:warning-circle-solid"
+          size={normalize(18)}
+          color={colors.warning.dark}
+          style={pendingStyle.iconWrapper}
+        />
+        <Text varient="body2" style={pendingStyle.infoText}>
+          โปรไฟล์ของคุณกำลังอยู่ระหว่างการตรวจสอบ
+          ไม่สามารถแก้ไขข้อมูลได้ในขณะนี้
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const pendingStyle = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.common.white,
+  },
+  wrapper: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  inputWrapper: {
+    paddingHorizontal: normalize(16),
+  },
+  actionWrapper: {
+    paddingVertical: normalize(32),
+  },
+  formSubtitle: {
+    paddingTop: normalize(32),
+    paddingLeft: normalize(8),
+  },
+  helperText: {
+    marginTop: normalize(8),
+    paddingLeft: normalize(12),
+  },
+  inputWrapperColumn: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  infoTextContainer: {
+    paddingHorizontal: normalize(16),
+    paddingBottom: normalize(16),
+  },
+  infoTextWrapper: {
+    backgroundColor: hexToRgba(colors.warning.main, 0.08),
+    padding: normalize(16),
+    borderRadius: normalize(8),
+    gap: normalize(8),
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconWrapper: {
+    minWidth: normalize(24),
+    alignSelf: "flex-start",
+  },
+  infoText: {
+    color: colors.warning.dark,
+    flex: 1,
+  },
+});
+
+interface IConfirmDialogProps {
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+function ConfirmDialog({ open, setOpen }: IConfirmDialogProps) {
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={open}
+      onRequestClose={handleClose}
+    >
+      <View style={modalStyle.container}>
+        <View style={modalStyle.wrapper}>
+          <View style={modalStyle.titleWrapper}>
+            <Text varient="h4">เพื่อทราบ</Text>
+          </View>
+          <View style={modalStyle.detailWrapper}>
+            <Text>บันทึกข้อมูลสำเร็จ</Text>
+            <Text>ข้อมูลจะยังไม่เปลี่ยนแปลงจนกว่า</Text>
+            <Text>ผู้ดูแลระบบยืนยันข้อมูลแล้ว</Text>
+          </View>
+          <View style={modalStyle.actionWrapper}>
+            <Button
+              varient="soft"
+              size="large"
+              fullWidth
+              color="inherit"
+              title="รับทราบ"
+              onPress={handleClose}
+            />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const modalStyle = StyleSheet.create({
+  container: {
+    backgroundColor: hexToRgba(colors.common.black, 0.32),
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: normalize(24),
+  },
+  wrapper: {
+    backgroundColor: colors.common.white,
+    overflow: "hidden",
+    borderRadius: normalize(16),
+    width: "100%",
+    padding: normalize(24),
+  },
+  actionWrapper: {
+    gap: 8,
+    flexDirection: "row",
+  },
+  titleWrapper: {
+    marginBottom: normalize(16),
+  },
+  detailWrapper: {
+    marginBottom: normalize(24),
   },
 });

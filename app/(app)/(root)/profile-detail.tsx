@@ -104,6 +104,7 @@ export default function ProfileDetail() {
 
   useFocusEffect(() => {
     refetchMe();
+    refetchGetStatus()
   });
 
   const { data: vehicleData } = useGetVehicleTypeAvailableQuery();
@@ -314,7 +315,15 @@ export default function ProfileDetail() {
         onCompleted: handleVerifySuccess,
         onError: handleErrorVerified,
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log("error: ", error);
+      const errorMessage = get(error, "message", "เกิดข้อผิดพลาด กรุณาลองใหม่");
+      showSnackbar({
+        title: "พบข้อผิดพลาด",
+        message: errorMessage || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+        type: DropdownAlertType.Warn,
+      });
+    }
   }
 
   function handleSelectedVehicle() {

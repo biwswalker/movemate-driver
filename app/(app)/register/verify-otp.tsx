@@ -23,7 +23,7 @@ import { encryption } from "@utils/crypto";
 import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
-import { IndividualRegisterParam } from "./types";
+import { IndividualRegisterParam } from "@/types/register";
 
 export default function RegisterOTPVerifyScreen() {
   const [code, setCode] = useState("");

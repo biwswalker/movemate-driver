@@ -19,7 +19,7 @@ import {
   EmployeeDriverFormValue,
   EmployeeDriverFormValueType,
   EmployeeRegisterParam,
-} from "./types";
+} from "@/types/employee";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ApolloError } from "@apollo/client";

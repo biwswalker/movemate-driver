@@ -34,7 +34,7 @@ import Detail from "@/components/Shipment/WorkDetail/Detail";
 import useAuth from "@/hooks/useAuth";
 
 export default function ShipmentOverview() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
 
@@ -56,21 +56,24 @@ export default function ShipmentOverview() {
 
   useEffect(() => {
     if (data?.getAvailableShipmentByTrackingNumber) {
-      const _shipment = data?.getAvailableShipmentByTrackingNumber
-      const _shipmentStatus = _shipment.status
+      const _shipment = data?.getAvailableShipmentByTrackingNumber;
+      const _shipmentStatus = _shipment?.status;
+      const _statusNotInclude = _shipmentStatus !== EShipmentStatus.IDLE;
 
-      const _statusNotInclude = _shipmentStatus !== EShipmentStatus.IDLE
-
-      if(_statusNotInclude) {
-        if(_shipmentStatus === EShipmentStatus.PROGRESSING && isEqual(_shipment.driver?._id, user?._id)) {
+      if (_statusNotInclude) {
+        if (
+          _shipmentStatus === EShipmentStatus.PROGRESSING &&
+          isEqual(_shipment.driver?._id, user?._id)
+        ) {
           // Navigate to working
-          handleOnClose()
-          router.push({ pathname: "/shipment-working", params: { trackingNumber: _shipment.trackingNumber } });
-          return () => { }
+          // router.push({
+          //   pathname: "/shipment-working",
+          //   params: { trackingNumber: _shipment.trackingNumber },
+          // });
         }
       }
     }
-  }, [data])
+  }, [data]);
 
   const shipment = useMemo<Shipment>(
     () => data?.getAvailableShipmentByTrackingNumber as Shipment,
@@ -109,9 +112,14 @@ export default function ShipmentOverview() {
               </View>
             }
           />
-          <ScrollView style={styles.scrollContainer} refreshControl={<RefreshControl refreshing={loading} />}>
+          <ScrollView
+            style={styles.scrollContainer}
+            refreshControl={<RefreshControl refreshing={loading} />}
+          >
             {shipment && <Overview shipment={shipment} />}
-            {shipment && shipment.status === EShipmentStatus.IDLE && <Detail shipment={shipment} />}
+            {shipment && shipment.status === EShipmentStatus.IDLE && (
+              <Detail shipment={shipment} />
+            )}
             <View style={styles.spacingBox} />
           </ScrollView>
           <View style={styles.actionButton}>
@@ -131,7 +139,7 @@ export default function ShipmentOverview() {
                 varient="soft"
                 size="large"
                 fullWidth
-                disabled={shipment.status !== EShipmentStatus.IDLE}
+                disabled={shipment?.status !== EShipmentStatus.IDLE}
                 title="รับงาน"
                 onPress={handleOnAccept}
               />

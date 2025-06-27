@@ -33,7 +33,7 @@ import {
   DriverDocumentInput,
 } from "@/graphql/generated/graphql";
 import { fileUploadAPI } from "@/services/upload";
-import { DriverFormValue } from "./re-register/types";
+import { DriverFormValue } from "@/types/re-register";
 import { YUP_VALIDATION_ERROR_TYPE } from "@/constants/error";
 import { ApolloError } from "@apollo/client";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";

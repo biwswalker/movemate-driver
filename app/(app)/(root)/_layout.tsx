@@ -1,102 +1,63 @@
 import useAuth from "@/hooks/useAuth";
+import { useNotificationObserver } from "@/hooks/useNotificationObserver";
 import { Redirect, router, SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
-import {
-  addNotificationResponseReceivedListener,
-  getLastNotificationResponseAsync,
-  Notification,
-} from "expo-notifications";
-
-enum ENavigationType {
-  INDEX = "index",
-  EMPLOYEE = "employee",
-  SHIPMENT = "shipment",
-  SHIPMENT_WORK = "shipment-work",
-  FINANCE = "finance",
-  NOTIFICATION = "notification",
-  PROFILE = "profile",
-  PROFILE_DETAIL = "profile-detail",
-  PROFILE_DOCUMENT = "profile-document",
-}
-
-function useNotificationObserver() {
-  useEffect(() => {
-    let isMounted = true;
-
-    function redirect(notification: Notification) {
-      const data = notification.request.content.data;
-      if (data) {
-        if (data.navigation === ENavigationType.SHIPMENT) {
-          if (data.trackingNumber) {
-            router.push({
-              pathname: "/shipment-overview",
-              params: { trackingNumber: data.trackingNumber },
-            });
-          }
-        } else if (data.navigation === ENavigationType.SHIPMENT_WORK) {
-          if (data.trackingNumber) {
-            router.push({
-              pathname: "/shipment-working",
-              params: { trackingNumber: data.trackingNumber },
-            });
-          }
-        } else if (data.navigation === ENavigationType.NOTIFICATION) {
-        } else if (data.navigation === ENavigationType.EMPLOYEE) {
-          router.push("/employee/employees");
-          // if (data.driverId) { }
-        } else if (data.navigation === ENavigationType.INDEX) {
-          router.push("/");
-        }
-      }
-    }
-
-    getLastNotificationResponseAsync().then((response) => {
-      if (!isMounted || !response?.notification) {
-        return;
-      }
-      redirect(response?.notification);
-    });
-
-    const subscription = addNotificationResponseReceivedListener((response) => {
-      redirect(response.notification);
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.remove();
-    };
-  }, []);
-}
 
 export default function RootLayout() {
   useNotificationObserver();
+
   const {
     isAuthenticated,
     isInitialized,
     requireAcceptedPolicy,
     requirePasswordChange,
   } = useAuth();
+
   useEffect(() => {
-    console.log("root mounted");
+    // console.log("root mounted");
+    // if (isAuthenticated) {
+    //   if (requirePasswordChange) {
+    //     router.replace("/change-password");
+    //   } else if (requireAcceptedPolicy) {
+    //     router.replace("/readfirst");
+    //   } else {
+    //     router.replace("/(app)/(root)/(tabs)");
+    //   }
+    // }
+    if (!isInitialized) {
+      return;
+    }
+    SplashScreen.hideAsync();
     if (isAuthenticated) {
       if (requirePasswordChange) {
         router.replace("/change-password");
       } else if (requireAcceptedPolicy) {
         router.replace("/readfirst");
       } else {
+        console.log('GGGGGGGGGGGGGGG')
         router.replace("/(app)/(root)/(tabs)");
       }
+    } else {
+      router.replace("/landing");
     }
-  }, [isAuthenticated, requirePasswordChange, requireAcceptedPolicy]);
+  }, [
+    isInitialized,
+    // isAuthenticated,
+    // requirePasswordChange,
+    // requireAcceptedPolicy,
+  ]);
 
   useEffect(() => {
     if (isInitialized) {
-      SplashScreen.hideAsync();
     }
   }, [isInitialized]);
 
+  if (!isInitialized) {
+    return null;
+  }
+
   if (!isAuthenticated) {
-    return <Redirect href="/landing" />;
+    return null; //<Redirect href="/landing" />;
   }
 
   return (

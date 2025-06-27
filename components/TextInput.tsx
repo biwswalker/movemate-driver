@@ -44,16 +44,16 @@ export default forwardRef(function TextInput(
 ) {
   // This temporary solve Label text disapear on first enter
   // https://github.com/callstack/react-native-paper/issues/4127#issuecomment-1918036374
-  useEffect(() => {
-    setTimeout(() => {
-      Animated.timing(new Animated.Value(0), {
-        toValue: 1,
-        duration: 1,
-        delay: 10,
-        useNativeDriver: true,
-      }).start();
-    }, 1);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     Animated.timing(new Animated.Value(0), {
+  //       toValue: 1,
+  //       duration: 1,
+  //       delay: 10,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   }, 1);
+  // }, []);
 
   return (
     <Pressable

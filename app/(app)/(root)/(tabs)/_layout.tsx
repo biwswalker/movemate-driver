@@ -31,7 +31,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: [tabStyles.shadow, tabStyles.tabBar],
-        animation: 'shift',
+        animation: "shift",
       }}
     >
       <Tabs.Screen name="index" options={{ tabBarButton: IconItem("home") }} />

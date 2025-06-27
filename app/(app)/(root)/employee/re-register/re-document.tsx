@@ -15,7 +15,7 @@ import RHFUploadButton from "@/components/HookForm/RHFUploadButton";
 import Button from "@/components/Button";
 import { normalize } from "@/utils/normalizeSize";
 import { imagePath } from "@/utils/file";
-import { RegisterUploadsFormValue, EmployeeRegisterParam } from "./types";
+import { RegisterUploadsFormValue, EmployeeRegisterParam } from "@/types/employee-re-register";
 import { useGetUserQuery } from "@/graphql/generated/graphql";
 
 export const MAX_FILE_SIZE = 10 * 1000 * 1000;

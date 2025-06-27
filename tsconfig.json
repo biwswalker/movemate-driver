@@ -12,6 +12,7 @@
       "@constants/*": ["./constants/*"],
       "@graphql/*": ["./graphql/*"],
       "@services/*": ["./services/*"],
+      "@types/*": ["./types/*"],
     }
   },
   "include": [

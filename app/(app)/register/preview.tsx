@@ -21,7 +21,7 @@ import hexToRgba from "hex-to-rgba";
 import { BANKPROVIDER } from "@constants/values";
 import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
-import { IndividualRegisterParam } from "./types";
+import { IndividualRegisterParam } from "@/types/register";
 
 const styles = StyleSheet.create({
   container: {

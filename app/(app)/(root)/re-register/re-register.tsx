@@ -54,7 +54,7 @@ import {
   DriverFormValue,
   DriverFormValueType,
   IndividualRegisterParam,
-} from "./types";
+} from "@/types/re-register";
 
 type FormValues = Omit<
   DriverFormValueType,

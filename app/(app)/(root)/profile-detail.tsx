@@ -54,14 +54,14 @@ import {
 import { useForm } from "react-hook-form";
 import { Modal, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DriverFormValueType } from "../register/types";
+import { DriverFormValueType } from "@/types/register";
 import CustomTextInput from "@components/TextInput";
 import { TextInput } from "react-native-paper";
 import Iconify from "@/components/Iconify";
 import VehicleSelectorModal, {
   VehicleSelectorRef,
 } from "@/components/Modals/vehicle-selector";
-import { DriverFormValue } from "./re-register/types";
+import { DriverFormValue } from "@/types/re-register";
 import hexToRgba from "hex-to-rgba";
 import { DropdownAlertType } from "react-native-dropdownalert";
 

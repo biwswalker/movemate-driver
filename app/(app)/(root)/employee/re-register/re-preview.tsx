@@ -23,7 +23,7 @@ import { BANKPROVIDER } from "@constants/values";
 import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { fileUploadAPI } from "@/services/upload";
-import { EmployeeRegisterParam } from "./types";
+import { EmployeeRegisterParam } from "@/types/employee-re-register";
 
 const styles = StyleSheet.create({
   container: {

@@ -36,7 +36,7 @@ import {
   DriverFormValue,
   DriverFormValueType,
   IndividualRegisterParam,
-} from "./types";
+} from "@/types/register";
 import VehicleSelectorModal, {
   VehicleSelectorRef,
 } from "@/components/Modals/vehicle-selector";

@@ -29,7 +29,7 @@ import {
 import { isEmpty } from "lodash";
 import colors from "@constants/colors";
 import { Href, router, useLocalSearchParams } from "expo-router";
-import useSnackbar, { useSnackbarV2 } from "@/hooks/useSnackbar";
+import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { ActivityIndicator } from "react-native-paper";
 import {
   DropdownAlertPosition,

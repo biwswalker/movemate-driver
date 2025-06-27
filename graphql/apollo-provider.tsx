@@ -81,7 +81,6 @@ const SCHEMA_VERSION_KEY = "apollo-schema-version";
 
 export default function ApolloWrapper({ children }: PropsWithChildren) {
   const [client, setClient] = useState<ApolloClient<any> | null>(null);
-  const [persistor, setPersistor] = useState<CachePersistor<any>>();
 
   if (__DEV__) {
     loadDevMessages();
@@ -95,26 +94,7 @@ export default function ApolloWrapper({ children }: PropsWithChildren) {
   async function initialClient() {
     try {
       const cache = new InMemoryCache();
-      const newPersistor = new CachePersistor({
-        cache,
-        storage: mmkvStorageAdapter as any,
-        debug: __DEV__,
-        trigger: "write",
-      });
-
-      const currentVersion = storage.getString(SCHEMA_VERSION_KEY); // 👈 3. ใช้ MMKV โดยตรง
-      const isCompatible = currentVersion === SCHEMA_VERSION;
-
-      if (isCompatible) {
-        await newPersistor.restore();
-      } else {
-        await newPersistor.purge();
-        storage.set(SCHEMA_VERSION_KEY, SCHEMA_VERSION); // 👈 4. ใช้ MMKV โดยตรง
-      }
-
-      setPersistor(newPersistor);
-
-      const token = storage.getString("access_token")
+      const token = storage.getString("access_token");
       const wsLink = createWSLink(token || "");
       const splitLink = split(
         ({ query }) => {

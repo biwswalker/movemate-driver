@@ -39,7 +39,7 @@ import {
   DriverFormValue,
   DriverFormValueType,
   EmployeeRegisterParam,
-} from "./types";
+} from "@/types/employee-re-register";
 
 type FormValues = DriverFormValueType;
 

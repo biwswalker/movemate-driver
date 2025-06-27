@@ -20,7 +20,7 @@ import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
 import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
-import { EmployeeRegisterParam } from "./types";
+import { EmployeeRegisterParam } from "@/types/employee";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { fileUploadAPI } from "@/services/upload";
 import FlexImage from "react-native-flex-image";

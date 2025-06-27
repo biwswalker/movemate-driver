@@ -14,8 +14,8 @@ import { isEmpty } from "lodash";
 import { fData } from "@utils/number";
 import { router, useLocalSearchParams } from "expo-router";
 import { normalize } from "@/utils/normalizeSize";
-import { IndividualRegisterParam, RegisterUploadsFormValue } from "./types";
 import { EDriverType } from "@/graphql/generated/graphql";
+import { IndividualRegisterParam, RegisterUploadsFormValue } from "@/types/register";
 
 const styles = StyleSheet.create({
   container: {

@@ -32,13 +32,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import { normalize } from "@/utils/normalizeSize";
 import { TextInput } from "react-native-paper";
 import { DropdownAlertType } from "react-native-dropdownalert";
-import { DriverFormValue, DriverFormValueType, IndividualRegisterParam } from "./types";
 import VehicleSelectorModal, {
   VehicleSelectorRef,
 } from "@/components/Modals/vehicle-selector";
 import Iconify from "@/components/Iconify";
 import { TouchableOpacity } from "@gorhom/bottom-sheet";
 import { MaterialIcons } from "@expo/vector-icons";
+import { DriverFormValue, DriverFormValueType, IndividualRegisterParam } from "@/types/register";
 
 export default function RegisterBusinessScreen() {
   const bottomSheetModalRef = useRef<VehicleSelectorRef>(null);

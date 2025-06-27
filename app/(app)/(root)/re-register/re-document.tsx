@@ -17,7 +17,7 @@ import { normalize } from "@/utils/normalizeSize";
 import { EDriverType } from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
 import { imagePath } from "@/utils/file";
-import { IndividualRegisterParam, RegisterUploadsFormValue } from "./types";
+import { IndividualRegisterParam, RegisterUploadsFormValue } from "@/types/re-register";
 
 export const MAX_FILE_SIZE = 10 * 1000 * 1000;
 const MAXIMUM_FILE_SIZE_TEXT = `ขนาดไฟล์ไม่เกิน ${fData(MAX_FILE_SIZE)}`;

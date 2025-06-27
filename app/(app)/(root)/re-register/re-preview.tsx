@@ -22,7 +22,7 @@ import hexToRgba from "hex-to-rgba";
 import { BANKPROVIDER } from "@constants/values";
 import colors from "@constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
-import { IndividualRegisterParam } from "../../register/types";
+import { IndividualRegisterParam } from "@/types/register";
 import { fileUploadAPI } from "@/services/upload";
 
 const styles = StyleSheet.create({

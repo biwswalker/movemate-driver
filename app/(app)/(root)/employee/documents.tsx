@@ -1,6 +1,6 @@
 import { fData } from "@/utils/number";
 import { router, useLocalSearchParams } from "expo-router";
-import { EmployeeRegisterParam, RegisterUploadsFormValue } from "./types";
+import { EmployeeRegisterParam, RegisterUploadsFormValue } from "@/types/employee";
 import Yup from "@/utils/yup";
 import { isEmpty } from "lodash";
 import { useMemo } from "react";

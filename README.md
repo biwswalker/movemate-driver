@@ -23,6 +23,10 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    ```bash
     npx expo start
    ```
+3. Release app
+   ```bash
+   npm run submit:android -- --version 1.0.0-beta.1
+   ```
 
 In the output, you'll find options to open the app in a
 

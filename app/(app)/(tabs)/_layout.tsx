@@ -11,12 +11,6 @@ import { get, includes } from "lodash";
 export default function TabLayout() {
   const { refetchMe, user } = useAuth();
 
-  // Subscription
-  const driverType = get(user, "driverDetail.driverType", []);
-  const isOnlyBusinessDriver =
-    driverType.length > 1
-      ? false
-      : includes(driverType, EDriverType.BUSINESS_DRIVER);
   function handleListenUserStatusData(data: any) {
     console.log("handleListenUserStatusData: ", data);
     refetchMe();
@@ -24,6 +18,13 @@ export default function TabLayout() {
   useListenUserStatusSubscription({
     onData: handleListenUserStatusData,
   });
+
+  // Subscription
+  const driverType = get(user, "driverDetail.driverType", []);
+  const isOnlyBusinessDriver =
+    driverType.length > 1
+      ? false
+      : includes(driverType, EDriverType.BUSINESS_DRIVER);
 
   return (
     <Tabs

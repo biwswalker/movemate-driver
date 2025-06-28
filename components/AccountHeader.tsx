@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  View,
-  ViewStyle,
-} from "react-native";
+import { Image, StyleSheet, View, ViewStyle } from "react-native";
 import Text, { getFontVarient } from "./Text";
 import ButtonIcon from "./ButtonIcon";
 import { Iconify } from "react-native-iconify";
@@ -40,7 +34,7 @@ const styles = StyleSheet.create({
   notificationBadge: {
     backgroundColor: colors.error.dark,
     color: colors.common.white,
-    ...getFontVarient("overline"),
+    fontFamily: getFontVarient("overline").fontFamily,
     position: "absolute",
     top: 0,
     right: 0,
@@ -56,7 +50,7 @@ export default function AccountHeader({
 }: AccountHeaderProps) {
   const { user, notificationCount } = useAuth();
 
-  const validated = user?.validationStatus === EUserValidationStatus.APPROVE
+  const validated = user?.validationStatus === EUserValidationStatus.APPROVE;
 
   function handleViewNotifications() {
     router.push("/notifications");
@@ -83,7 +77,7 @@ export default function AccountHeader({
           {user?.fullname}
         </Text>
         <Text varient="body2" color="secondary">
-          {validated ? user?.userNumber : '-'}
+          {validated ? user?.userNumber : "-"}
         </Text>
       </View>
       <View style={styles.accountActionWrapper}>
@@ -94,12 +88,7 @@ export default function AccountHeader({
             color={colors.text.secondary}
           />
           {notificationCount > 0 && (
-            <Badge
-              style={[styles.notificationBadge]}
-              theme={{
-                fonts: { default: { fontFamily: getFontVarient().fontFamily } },
-              }}
-            >
+            <Badge style={[styles.notificationBadge]}>
               {notificationCount > 99 ? "99+" : notificationCount}
             </Badge>
           )}

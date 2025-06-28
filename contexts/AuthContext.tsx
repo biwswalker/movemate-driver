@@ -220,14 +220,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   // LOGOUT
   const logout = async () => {
-    await signout();
-    storage.delete("access_token");
-    setUser(null);
-    setAuthenticated(false);
-    setIsInitialized(true);
-    setAvailableWork(false);
-    await apolloClient.resetStore();
-    await apolloClient.clearStore();
+    try {
+      await signout();
+      await storage.delete("access_token");
+      await apolloClient.clearStore();
+    } catch (error) {
+      console.log("error: ", error);
+    } finally {
+      setUser(null);
+      setAvailableWork(false);
+      setIsInitialized(true);
+      setTimeout(() => {
+        setAuthenticated(false);
+      }, 256)
+    }
+    // await apolloClient.resetStore();
   };
 
   return (

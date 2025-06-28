@@ -236,7 +236,6 @@ function ConfirmDialog({ open, setOpen }: IConfirmDialogProps) {
 
   function handleConfirmed() {
     logout();
-    router.replace("/landing");
   }
 
   return (

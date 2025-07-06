@@ -3,20 +3,25 @@ import React from "react";
 import { tabStyles, IconItem } from "@/components/navigation/TabBarIcon";
 import {
   EDriverType,
+  EUserStatus,
   useListenUserStatusSubscription,
 } from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
 import { get, includes } from "lodash";
 
 export default function TabLayout() {
-  const { refetchMe, user } = useAuth();
+  const { refetchMe, user, logout } = useAuth();
 
-  function handleListenUserStatusData(data: any) {
-    console.log("handleListenUserStatusData: ", data);
-    refetchMe();
-  }
   useListenUserStatusSubscription({
-    onData: handleListenUserStatusData,
+    onData: (response) => {
+      const userStatus = response.data.data?.listenUserStatus;
+      console.log("handleListenUserStatusData: ", userStatus);
+      if (includes([EUserStatus.BANNED], userStatus)) {
+        logout();
+        return;
+      }
+      refetchMe();
+    },
   });
 
   // Subscription

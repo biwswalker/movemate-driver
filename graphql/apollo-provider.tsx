@@ -75,10 +75,6 @@ function createWSLink(access_token: string) {
   );
 }
 
-// const uploadLink = createUploadLink({ uri: `${API_URL}/graphql` });
-const SCHEMA_VERSION = "1";
-const SCHEMA_VERSION_KEY = "apollo-schema-version";
-
 export default function ApolloWrapper({ children }: PropsWithChildren) {
   const [client, setClient] = useState<ApolloClient<any> | null>(null);
 
@@ -123,6 +119,8 @@ export default function ApolloWrapper({ children }: PropsWithChildren) {
   if (!client) {
     return <SplashScreen />; // Alternatively, render a loading screen or placeholder
   }
+
+  console.log("client: ", client)
 
   return <ApolloProvider client={client}>{children}</ApolloProvider>;
 }

@@ -55,14 +55,22 @@ import Button from "@/components/Button";
 import ConfirmAssignShipmentModal, {
   ConfirmAssignShipmentModalRef,
 } from "@/components/Modals/confirm-assign-shipment";
+import ConfirmCancelShipmentModal, {
+  ConfirmCancelShipmentModalRef,
+} from "@/components/Modals/confirm-cancel-shipment";
+import { useSnackbarV2 } from "@/hooks/useSnackbar";
+import { differenceInMinutes } from "date-fns";
 
 export default function ShipmentDetail() {
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
   const shipmentStepModalRef = useRef<BottomSheetModal>(null);
   const assignDriverModalRef = useRef<AssingDriverModalRef>(null);
+  const cancelShipmentModalRef = useRef<ConfirmCancelShipmentModalRef>(null);
+  // const { showSnackbar, DropdownType } = useSnackbarV2();
 
   const { data, refetch } = useGetAvailableShipmentByTrackingNumberQuery({
     variables: { tracking: searchParam.trackingNumber },
+    fetchPolicy: "network-only",
   });
 
   const snapPoints = useMemo(() => ["15%", "90%"], []); // "85%"
@@ -87,6 +95,28 @@ export default function ShipmentDetail() {
     currentStepDefinition?.step === EStepDefinition.FINISH &&
     currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
     shipment?.status === EShipmentStatus.PROGRESSING;
+
+  const isAbleToCancel = useMemo(() => {
+    if (shipment?.status !== EShipmentStatus.PROGRESSING) {
+      return false;
+    }
+    const confirmDateTimeStep = find(steps || [], [
+      "step",
+      EStepDefinition.CONFIRM_DATETIME,
+    ]);
+    if (!confirmDateTimeStep) {
+      return false;
+    } else if ((currentStepDefinition?.seq || 0) > confirmDateTimeStep.seq) {
+      return false;
+    }
+    const currentData = new Date();
+    const bookingDate = new Date(shipment?.bookingDateTime);
+    const differredMinute = differenceInMinutes(bookingDate, currentData);
+    if (differredMinute <= 180) {
+      return false;
+    }
+    return true;
+  }, [currentStepDefinition, shipment]);
 
   useEffect(() => {
     const backAction = () => {
@@ -138,6 +168,52 @@ export default function ShipmentDetail() {
 
   function handleAssignSuccess() {
     handleRefetch();
+  }
+
+  function handleOnCancelShipmenSuccess() {
+    if (cancelShipmentModalRef.current) {
+      cancelShipmentModalRef.current.close();
+    }
+    handleRefetch();
+  }
+
+  function handleOnCancelShipment() {
+    let notIncludedCondition = false;
+    if (shipment?.status !== EShipmentStatus.PROGRESSING) {
+      notIncludedCondition = true;
+    }
+    if (!currentStepDefinition) {
+      notIncludedCondition = true;
+    }
+
+    const confirmDateTimeStep = find(steps || [], [
+      "step",
+      EStepDefinition.CONFIRM_DATETIME,
+    ]);
+    if (!confirmDateTimeStep) {
+      notIncludedCondition = true;
+    } else if ((currentStepDefinition?.seq || 0) > confirmDateTimeStep.seq) {
+      notIncludedCondition = true;
+    }
+
+    const currentData = new Date();
+    const bookingDate = new Date(shipment?.bookingDateTime);
+    const differredMinute = differenceInMinutes(bookingDate, currentData);
+    if (differredMinute < 180) {
+      notIncludedCondition = true;
+    }
+
+    if (notIncludedCondition) {
+      // showSnackbar({
+      //   title: "ไม่สามารถยกเลิกงานขนส่งได้",
+      //   message: "เนื่องจากหมดช่วยเวลาของการยกเลิกแล้ว",
+      //   type: DropdownType.Error,
+      // });
+      return;
+    }
+    if (cancelShipmentModalRef.current) {
+      cancelShipmentModalRef.current.present(shipment);
+    }
   }
 
   function handleOnShipmentComplete() {
@@ -242,12 +318,28 @@ export default function ShipmentDetail() {
             <Fragment>
               <Overview shipment={shipment} />
               <Detail shipment={shipment} />
+              {isAbleToCancel && (
+                <View style={{ ...styles.detailActionWrapper, paddingTop: 40 }}>
+                  <Button
+                    title="ยกเลิกงานขนส่ง"
+                    color="error"
+                    size="medium"
+                    varient="outlined"
+                    fullWidth
+                    onPress={handleOnCancelShipment}
+                  />
+                </View>
+              )}
             </Fragment>
           )}
         </ScrollView>
       </SafeAreaView>
       {/*  */}
       <ShipmentWorkingModal />
+      <ConfirmCancelShipmentModal
+        ref={cancelShipmentModalRef}
+        onCallback={handleOnCancelShipmenSuccess}
+      />
       {isPendingAssignDriver && (
         <AssingDriverModal
           ref={assignDriverModalRef}

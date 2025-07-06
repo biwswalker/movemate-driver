@@ -152,7 +152,9 @@ export type AdminNotificationCountPayload = {
   businessCustomer: Scalars["Int"]["output"];
   businessDriver: Scalars["Int"]["output"];
   customer: Scalars["Int"]["output"];
+  customerPending: Scalars["Int"]["output"];
   driver: Scalars["Int"]["output"];
+  driverPending: Scalars["Int"]["output"];
   financial: Scalars["Int"]["output"];
   financialCash: Scalars["Int"]["output"];
   financialCredit: Scalars["Int"]["output"];
@@ -321,7 +323,7 @@ export type BusinessCustomer = {
 export type BusinessCustomerCashPayment = {
   __typename?: "BusinessCustomerCashPayment";
   _id: Scalars["ID"]["output"];
-  acceptedEReceiptDate: Scalars["DateTimeISO"]["output"];
+  acceptedEReceiptDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
 };
 
 export type BusinessCustomerCreditPayment = {
@@ -1247,6 +1249,7 @@ export enum EUserType {
 export enum EUserValidationStatus {
   APPROVE = "APPROVE",
   DENIED = "DENIED",
+  IDLE = "IDLE",
   PENDING = "PENDING",
 }
 
@@ -1400,6 +1403,7 @@ export type GetShipmentInput = {
   driverName?: InputMaybe<Scalars["String"]["input"]>;
   endWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   paymentMethod?: InputMaybe<EPaymentMethod>;
+  sortOrder?: InputMaybe<Array<EShipmentStatus>>;
   startWorkingDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   status?: InputMaybe<EShipmentStatusCriteria>;
   trackingNumber?: InputMaybe<Scalars["String"]["input"]>;
@@ -1521,6 +1525,7 @@ export type Mutation = {
   addPODAddress: Scalars["String"]["output"];
   addPrivilege: Scalars["Boolean"]["output"];
   addVehicleType: Scalars["Boolean"]["output"];
+  adminResetPassword: Scalars["Boolean"]["output"];
   approvalBillingPayment: Scalars["Boolean"]["output"];
   approvalUser: User;
   assignShipment: Scalars["Boolean"]["output"];
@@ -1651,6 +1656,10 @@ export type MutationAddPrivilegeArgs = {
 
 export type MutationAddVehicleTypeArgs = {
   data: VehicleTypeInput;
+};
+
+export type MutationAdminResetPasswordArgs = {
+  userId: Scalars["String"]["input"];
 };
 
 export type MutationApprovalBillingPaymentArgs = {
@@ -2133,6 +2142,7 @@ export type PaymentAmounts = {
 
 export type PaymentEvidence = {
   __typename?: "PaymentEvidence";
+  amount?: Maybe<Scalars["Float"]["output"]>;
   bank?: Maybe<Scalars["String"]["output"]>;
   bankName?: Maybe<Scalars["String"]["output"]>;
   bankNumber?: Maybe<Scalars["String"]["output"]>;
@@ -2277,6 +2287,7 @@ export type PrivilegeUsedPayload = {
 };
 
 export type ProcessBillingRefundInput = {
+  amount?: InputMaybe<Scalars["Float"]["input"]>;
   billingId: Scalars["String"]["input"];
   imageEvidence?: InputMaybe<FileInput>;
   isRefunded: Scalars["Boolean"]["input"];
@@ -3377,6 +3388,7 @@ export type SubDistrict = {
 
 export type Subscription = {
   __typename?: "Subscription";
+  forceLogout: Scalars["String"]["output"];
   getAdminNotificationCount: AdminNotificationCountPayload;
   listenAvailableShipment: Array<Shipment>;
   listenLocationLimitCount: LocationRequestLimitPayload;
@@ -3385,6 +3397,23 @@ export type Subscription = {
   listenNotificationMessage: Notification;
   listenProgressingShipmentCount: Scalars["Float"]["output"];
   listenUserStatus: Scalars["String"]["output"];
+  realtimeNotifications: Array<Notification>;
+  realtimeShipments: Array<Shipment>;
+};
+
+export type SubscriptionRealtimeNotificationsArgs = {
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  skip?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+};
+
+export type SubscriptionRealtimeShipmentsArgs = {
+  filters: GetShipmentInput;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  skip?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
 export type TotalBillingRecordPayload = {
@@ -4075,7 +4104,7 @@ export type BillingFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -4482,7 +4511,7 @@ export type BillingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -4863,7 +4892,7 @@ export type BillingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -5244,7 +5273,7 @@ export type BillingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -5625,7 +5654,7 @@ export type BillingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -6140,7 +6169,7 @@ export type BillingFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -6563,7 +6592,7 @@ export type BillingFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -7017,7 +7046,7 @@ export type BillingFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -7489,7 +7518,7 @@ export type BillingFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -7871,7 +7900,7 @@ export type BillingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -8273,7 +8302,7 @@ export type BillingFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -8757,7 +8786,7 @@ export type BillingFragmentFragment = {
             cashPayment?: {
               __typename?: "BusinessCustomerCashPayment";
               _id: string;
-              acceptedEReceiptDate: any;
+              acceptedEReceiptDate?: any | null;
             } | null;
           } | null;
           driverDetail?: {
@@ -9139,7 +9168,7 @@ export type BillingFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -9550,7 +9579,7 @@ export type BillingFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -9932,7 +9961,7 @@ export type BillingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -10314,7 +10343,7 @@ export type BillingFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -10716,7 +10745,7 @@ export type BillingListFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -11243,7 +11272,7 @@ export type BillingListFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -11625,7 +11654,7 @@ export type BillingListFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -12027,7 +12056,7 @@ export type BillingListFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -12511,7 +12540,7 @@ export type BillingListFragmentFragment = {
             cashPayment?: {
               __typename?: "BusinessCustomerCashPayment";
               _id: string;
-              acceptedEReceiptDate: any;
+              acceptedEReceiptDate?: any | null;
             } | null;
           } | null;
           driverDetail?: {
@@ -12893,7 +12922,7 @@ export type BillingListFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -13304,7 +13333,7 @@ export type BillingListFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -13686,7 +13715,7 @@ export type BillingListFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -14068,7 +14097,7 @@ export type BillingListFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -14558,7 +14587,7 @@ export type BillingAdjustmentNoteFragmentFragment = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -14940,7 +14969,7 @@ export type BillingAdjustmentNoteFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -15344,7 +15373,7 @@ export type DistanceCostPricingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -15887,7 +15916,7 @@ export type BillingDocumentFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -16303,7 +16332,7 @@ export type InvoiceFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -16685,7 +16714,7 @@ export type InvoiceFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -17115,7 +17144,7 @@ export type PodAddressFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -17605,7 +17634,7 @@ export type PaymentFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -17987,7 +18016,7 @@ export type PaymentFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -18389,7 +18418,7 @@ export type PrivilegeFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -18792,7 +18821,7 @@ export type PrivilegeWithUsedFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -19284,7 +19313,7 @@ export type QuotationFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -19687,7 +19716,7 @@ export type ReceiptFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -20183,7 +20212,7 @@ export type ShipmentFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -20564,7 +20593,7 @@ export type ShipmentFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -20945,7 +20974,7 @@ export type ShipmentFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -21326,7 +21355,7 @@ export type ShipmentFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -21837,7 +21866,7 @@ export type ShipmentFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -22260,7 +22289,7 @@ export type ShipmentFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -22714,7 +22743,7 @@ export type ShipmentFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -23124,7 +23153,7 @@ export type ShipmentListFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -23505,7 +23534,7 @@ export type ShipmentListFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -23886,7 +23915,7 @@ export type ShipmentListFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -24267,7 +24296,7 @@ export type ShipmentListFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -24778,7 +24807,7 @@ export type ShipmentListFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -25264,7 +25293,7 @@ export type ShipmentListFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -25751,7 +25780,7 @@ export type UpdateHistoryFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -26183,7 +26212,7 @@ export type BusinessCustomerCreditPaymentFragmentFragment = {
 export type BusinessCustomerCashPaymentFragmentFragment = {
   __typename?: "BusinessCustomerCashPayment";
   _id: string;
-  acceptedEReceiptDate: any;
+  acceptedEReceiptDate?: any | null;
 };
 
 export type BusinessCustomerFragmentFragment = {
@@ -26334,7 +26363,7 @@ export type BusinessCustomerFragmentFragment = {
   cashPayment?: {
     __typename?: "BusinessCustomerCashPayment";
     _id: string;
-    acceptedEReceiptDate: any;
+    acceptedEReceiptDate?: any | null;
   } | null;
 };
 
@@ -26713,7 +26742,7 @@ export type UserSummaryFragmentFragment = {
     cashPayment?: {
       __typename?: "BusinessCustomerCashPayment";
       _id: string;
-      acceptedEReceiptDate: any;
+      acceptedEReceiptDate?: any | null;
     } | null;
   } | null;
   driverDetail?: {
@@ -27035,7 +27064,7 @@ export type UserSummaryFragmentFragment = {
     cashPayment?: {
       __typename?: "BusinessCustomerCashPayment";
       _id: string;
-      acceptedEReceiptDate: any;
+      acceptedEReceiptDate?: any | null;
     } | null;
   } | null;
   profileImage?: {
@@ -27281,7 +27310,7 @@ export type UserFragmentFragment = {
     cashPayment?: {
       __typename?: "BusinessCustomerCashPayment";
       _id: string;
-      acceptedEReceiptDate: any;
+      acceptedEReceiptDate?: any | null;
     } | null;
   } | null;
   driverDetail?: {
@@ -27603,7 +27632,7 @@ export type UserFragmentFragment = {
     cashPayment?: {
       __typename?: "BusinessCustomerCashPayment";
       _id: string;
-      acceptedEReceiptDate: any;
+      acceptedEReceiptDate?: any | null;
     } | null;
   } | null;
   profileImage?: {
@@ -27836,7 +27865,7 @@ export type UserFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -28158,7 +28187,7 @@ export type UserFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     profileImage?: {
@@ -28605,7 +28634,7 @@ export type UserNonInfoDataFragmentFragment = {
     cashPayment?: {
       __typename?: "BusinessCustomerCashPayment";
       _id: string;
-      acceptedEReceiptDate: any;
+      acceptedEReceiptDate?: any | null;
     } | null;
   } | null;
   driverDetail?: {
@@ -29012,7 +29041,7 @@ export type UserPendingFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -29334,7 +29363,7 @@ export type UserPendingFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     profileImage?: {
@@ -29567,7 +29596,7 @@ export type UserPendingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -29889,7 +29918,7 @@ export type UserPendingFragmentFragment = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       profileImage?: {
@@ -30096,7 +30125,7 @@ export type UserPendingFragmentFragment = {
     cashPayment?: {
       __typename?: "BusinessCustomerCashPayment";
       _id: string;
-      acceptedEReceiptDate: any;
+      acceptedEReceiptDate?: any | null;
     } | null;
   } | null;
   driverDetail?: {
@@ -30467,7 +30496,7 @@ export type UserPendingFragmentFragment = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -30933,7 +30962,7 @@ export type LoginMutation = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -31255,7 +31284,7 @@ export type LoginMutation = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       profileImage?: {
@@ -31488,7 +31517,7 @@ export type LoginMutation = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -31810,7 +31839,7 @@ export type LoginMutation = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         profileImage?: {
@@ -31899,6 +31928,16 @@ export type VerifyResetPasswordMutationVariables = Exact<{
 export type VerifyResetPasswordMutation = {
   __typename?: "Mutation";
   verifyResetPassword: boolean;
+};
+
+export type CancelShipmentMutationVariables = Exact<{
+  shipmentId: Scalars["String"]["input"];
+  reason: Scalars["String"]["input"];
+}>;
+
+export type CancelShipmentMutation = {
+  __typename?: "Mutation";
+  driverCalcellation: boolean;
 };
 
 export type DriverRegisterMutationVariables = Exact<{
@@ -32424,7 +32463,7 @@ export type GetAvailableShipmentQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -32805,7 +32844,7 @@ export type GetAvailableShipmentQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -33186,7 +33225,7 @@ export type GetAvailableShipmentQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -33567,7 +33606,7 @@ export type GetAvailableShipmentQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -34082,7 +34121,7 @@ export type GetAvailableShipmentQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -34505,7 +34544,7 @@ export type GetAvailableShipmentQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -34959,7 +34998,7 @@ export type GetAvailableShipmentQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -35376,7 +35415,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -35757,7 +35796,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -36138,7 +36177,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -36519,7 +36558,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -37034,7 +37073,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -37457,7 +37496,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -37911,7 +37950,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -38326,7 +38365,7 @@ export type GetTodayShipmentQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -38707,7 +38746,7 @@ export type GetTodayShipmentQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -39088,7 +39127,7 @@ export type GetTodayShipmentQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -39469,7 +39508,7 @@ export type GetTodayShipmentQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -39984,7 +40023,7 @@ export type GetTodayShipmentQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -40407,7 +40446,7 @@ export type GetTodayShipmentQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -40861,7 +40900,7 @@ export type GetTodayShipmentQuery = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -41421,7 +41460,7 @@ export type MeQuery = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -41743,7 +41782,7 @@ export type MeQuery = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     profileImage?: {
@@ -41976,7 +42015,7 @@ export type MeQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -42298,7 +42337,7 @@ export type MeQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       profileImage?: {
@@ -42555,7 +42594,7 @@ export type EmployeesQuery = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -42946,7 +42985,7 @@ export type LookupDriverQuery = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -43335,7 +43374,7 @@ export type GetUserQuery = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -43724,7 +43763,7 @@ export type AvailableEmployeesQuery = {
       cashPayment?: {
         __typename?: "BusinessCustomerCashPayment";
         _id: string;
-        acceptedEReceiptDate: any;
+        acceptedEReceiptDate?: any | null;
       } | null;
     } | null;
     driverDetail?: {
@@ -44219,7 +44258,7 @@ export type ListenAvailableShipmentSubscription = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -44600,7 +44639,7 @@ export type ListenAvailableShipmentSubscription = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -44981,7 +45020,7 @@ export type ListenAvailableShipmentSubscription = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -45362,7 +45401,7 @@ export type ListenAvailableShipmentSubscription = {
         cashPayment?: {
           __typename?: "BusinessCustomerCashPayment";
           _id: string;
-          acceptedEReceiptDate: any;
+          acceptedEReceiptDate?: any | null;
         } | null;
       } | null;
       driverDetail?: {
@@ -45877,7 +45916,7 @@ export type ListenAvailableShipmentSubscription = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -46300,7 +46339,7 @@ export type ListenAvailableShipmentSubscription = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -46754,7 +46793,7 @@ export type ListenAvailableShipmentSubscription = {
           cashPayment?: {
             __typename?: "BusinessCustomerCashPayment";
             _id: string;
-            acceptedEReceiptDate: any;
+            acceptedEReceiptDate?: any | null;
           } | null;
         } | null;
         driverDetail?: {
@@ -48608,6 +48647,55 @@ export type VerifyResetPasswordMutationResult =
 export type VerifyResetPasswordMutationOptions = Apollo.BaseMutationOptions<
   VerifyResetPasswordMutation,
   VerifyResetPasswordMutationVariables
+>;
+export const CancelShipmentDocument = gql`
+  mutation CancelShipment($shipmentId: String!, $reason: String!) {
+    driverCalcellation(shipmentId: $shipmentId, reason: $reason)
+  }
+`;
+export type CancelShipmentMutationFn = Apollo.MutationFunction<
+  CancelShipmentMutation,
+  CancelShipmentMutationVariables
+>;
+
+/**
+ * __useCancelShipmentMutation__
+ *
+ * To run a mutation, you first call `useCancelShipmentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCancelShipmentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [cancelShipmentMutation, { data, loading, error }] = useCancelShipmentMutation({
+ *   variables: {
+ *      shipmentId: // value for 'shipmentId'
+ *      reason: // value for 'reason'
+ *   },
+ * });
+ */
+export function useCancelShipmentMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CancelShipmentMutation,
+    CancelShipmentMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    CancelShipmentMutation,
+    CancelShipmentMutationVariables
+  >(CancelShipmentDocument, options);
+}
+export type CancelShipmentMutationHookResult = ReturnType<
+  typeof useCancelShipmentMutation
+>;
+export type CancelShipmentMutationResult =
+  Apollo.MutationResult<CancelShipmentMutation>;
+export type CancelShipmentMutationOptions = Apollo.BaseMutationOptions<
+  CancelShipmentMutation,
+  CancelShipmentMutationVariables
 >;
 export const DriverRegisterDocument = gql`
   mutation DriverRegister($data: DriverRegisterInput!) {

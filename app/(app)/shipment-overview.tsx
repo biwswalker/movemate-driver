@@ -40,6 +40,7 @@ export default function ShipmentOverview() {
 
   const { data, loading } = useGetAvailableShipmentByTrackingNumberQuery({
     variables: { tracking: searchParam?.trackingNumber || "" },
+    fetchPolicy: "network-only",
   });
 
   useEffect(() => {

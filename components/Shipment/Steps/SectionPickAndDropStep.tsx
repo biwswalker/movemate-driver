@@ -39,7 +39,7 @@ export function ProgressPickAndDrop({
   }
 
   function handleConfirmError(error: ApolloError) {
-    setLoading(false)
+    setLoading(false);
     const message = error.message || "พบข้อผิดพลาด";
     showSnackbar({
       message,
@@ -78,7 +78,7 @@ export function ProgressPickAndDrop({
       const images = await Promise.all(
         map(usedFiles, (file) => reformUpload(file))
       );
-      setLoading(true)
+      setLoading(true);
       nextShipmentStep({
         variables: {
           data: {
@@ -158,7 +158,10 @@ export function ProgressPickAndDrop({
   );
 }
 
-export function DonePickAndDrop({ definition, shipment }: ProgressPickAndDropProps) {
+export function DonePickAndDrop({
+  definition,
+  shipment,
+}: ProgressPickAndDropProps) {
   const isHiddenInfo = includes(
     [
       EShipmentStatus.DELIVERED,
@@ -167,8 +170,8 @@ export function DonePickAndDrop({ definition, shipment }: ProgressPickAndDropPro
     ],
     shipment?.status
   );
-  if(isHiddenInfo) {
-    return <Fragment />
+  if (isHiddenInfo) {
+    return <Fragment />;
   }
   return (
     <View style={styles.wrapper}>

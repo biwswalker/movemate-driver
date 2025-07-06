@@ -10,8 +10,9 @@ import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EUserStatus } from "@/graphql/generated/graphql";
+import { EUserStatus, User } from "@/graphql/generated/graphql";
 import Button from "@/components/Button";
+import Label from "@/components/Label";
 
 const styles = StyleSheet.create({
   container: {
@@ -76,6 +77,23 @@ export default function Profile() {
     setOpenLogout(true);
   }
 
+  function getUserStatus(_user: User): { text: string; color: TColorSchema } {
+    switch (_user.status) {
+      case EUserStatus.ACTIVE:
+        return { color: "success", text: "ใช้งานปกติ" };
+      case EUserStatus.PENDING:
+        return { color: "warning", text: "รอการอนุมัติ" };
+      case EUserStatus.INACTIVE:
+        return { color: "warning", text: "ห้ามใช้งาน" };
+      case EUserStatus.BANNED:
+        return { color: "error", text: "บัญชีถูกระงับการใช้งาน" };
+      case EUserStatus.DENIED:
+        return { color: "error", text: "ปฏิเสธการอนุมัติ" };
+      default:
+        return { color: "inherit", text: "-" };
+    }
+  }
+
   return (
     <Fragment>
       <View style={styles.container}>
@@ -87,25 +105,33 @@ export default function Profile() {
                 {user?.profileImage ? (
                   <Image
                     style={{
-                      width: normalize(100),
-                      height: normalize(100),
-                      borderRadius: normalize(50),
+                      width: normalize(88),
+                      height: normalize(88),
+                      borderRadius: normalize(44),
                     }}
                     source={{ uri: imagePath(user.profileImage.filename) }}
                   />
                 ) : (
                   <Iconify
                     icon="solar:user-circle-bold-duotone"
-                    size={normalize(100)}
+                    size={normalize(88)}
                     color={colors.text.disabled}
                   />
                 )}
-                <View style={styles.userInfoTextWrapper}>
-                  <Text varient="h5">{user?.fullname}</Text>
-                  <Text varient="body2" color="secondary">
-                    {user?.username}
-                  </Text>
-                </View>
+                {user && (
+                  <View style={styles.userInfoTextWrapper}>
+                    <Text varient="h5">{user?.fullname}</Text>
+                    <Text varient="body2" color="secondary">
+                      {user?.username}
+                    </Text>
+                    <View style={{ alignSelf: "center", paddingTop: 4 }}>
+                      <Label
+                        text={getUserStatus(user).text}
+                        color={getUserStatus(user).color}
+                      />
+                    </View>
+                  </View>
+                )}
               </View>
               <View style={[styles.menuWrapper]}>
                 <Text
@@ -294,7 +320,7 @@ const modalStyle = StyleSheet.create({
   },
   actionWrapper: {
     gap: 8,
-    flexDirection: 'row'
+    flexDirection: "row",
   },
   titleWrapper: {
     marginBottom: normalize(16),

@@ -1,0 +1,3 @@
+mutation CancelShipment($shipmentId: String!, $reason: String!) {
+  driverCalcellation(shipmentId: $shipmentId, reason: $reason)
+}

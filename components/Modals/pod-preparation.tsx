@@ -20,7 +20,11 @@ import {
   View,
   ViewProps,
 } from "react-native";
-import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetModal,
+  BottomSheetScrollView,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import SheetBackdrop from "../Sheets/SheetBackdrop";
 import Animated, {
   AnimatedProps,
@@ -118,7 +122,7 @@ function Content({ data = () => {} }: ContentProps) {
   return (
     <BottomSheetView style={styles.container}>
       {/* <PressSwipe /> */}
-      <View
+      {/* <View
         style={{
           paddingHorizontal: normalize(16),
           flexShrink: 1,
@@ -133,7 +137,7 @@ function Content({ data = () => {} }: ContentProps) {
           source={require("@assets/images/pod/sample_1.jpg")}
           resizeMode="cover"
         />
-      </View>
+      </View> */}
       <View style={[styles.textContainer]}>
         <Text
           varient="h4"
@@ -141,12 +145,77 @@ function Content({ data = () => {} }: ContentProps) {
         >
           วิธีการถ่ายรูปใบปะหน้า
         </Text>
-        <Text varient="body2" color="secondary">
-          · กรุณาอัพโหลดรูปเอกสารใบปะหน้าให้ชัดเจน
+        <Text
+          varient="body1"
+          color="primary"
+          style={{ paddingBottom: normalize(16) }}
+        >
+          เพื่อให้การส่งมอบสำเร็จสมบูรณ์
+          โปรดถ่ายรูปสินค้าที่ปลายทางให้ชัดเจนและถูกต้อง
         </Text>
-        <Text varient="body2" color="secondary">
-          · ให้เห็นข้อความ/ตัวเลขบนใบปะหน้า
-        </Text>
+        <View>
+          <Text varient="body2" color="primary">
+            · เห็นสินค้าและป้ายที่อยู่ชัดเจน
+          </Text>
+          <Text
+            varient="body2"
+            color="secondary"
+            style={{
+              paddingHorizontal: normalize(8),
+              marginBottom: normalize(8),
+            }}
+          >
+            จัดวางสินค้าให้เห็นครบทุกชิ้น
+            และหันป้ายที่อยู่หรือใบนำส่งให้กล้องเห็นได้ชัด
+          </Text>
+        </View>
+        <View>
+          <Text varient="body2" color="primary">
+            · ถ่ายในที่สว่าง ไม่เบลอ
+          </Text>
+          <Text
+            varient="body2"
+            color="secondary"
+            style={{
+              paddingHorizontal: normalize(8),
+              marginBottom: normalize(8),
+            }}
+          >
+            ตรวจสอบให้แน่ใจว่าภาพคมชัดและมีแสงสว่างเพียงพอ
+          </Text>
+        </View>
+        <View>
+          <Text varient="body2" color="primary">
+            · เห็นสถานที่จัดส่ง
+          </Text>
+          <Text
+            varient="body2"
+            color="secondary"
+            style={{
+              paddingHorizontal: normalize(8),
+              marginBottom: normalize(8),
+            }}
+          >
+            ถ่ายภาพในมุมกว้างพอที่จะเห็นสภาพแวดล้อม เช่น หน้าประตูบ้าน,
+            บริเวณหน้าออฟฟิศ หรือจุดที่ลูกค้าระบุไว้
+          </Text>
+        </View>
+        {/* <View>
+            <Text varient="body2" color="primary">
+              · กรณีฝากส่งกับบุคคลอื่น
+            </Text>
+            <Text
+              varient="body2"
+              color="secondary"
+              style={{
+                paddingHorizontal: normalize(8),
+                marginBottom: normalize(8),
+              }}
+            >
+              หากลูกค้าไม่อยู่และอนุญาตให้ฝากของไว้กับบุคคลอื่น (เช่น นิติบุคคล,
+              รปภ.) ควรถ่ายให้เห็นบุคคลนั้นกำลังรับของ (หากได้รับอนุญาต)
+            </Text>
+          </View> */}
       </View>
       <View style={styles.actionContainer}>
         <Button

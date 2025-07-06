@@ -17,7 +17,6 @@ import { Fragment, useEffect, useMemo } from "react";
 import {
   BackHandler,
   Image,
-  ImageSourcePropType,
   Platform,
   StyleSheet,
   View,
@@ -34,6 +33,7 @@ export default function _Deprecated_ShipmentDetail() {
 
   const { data } = useGetAvailableShipmentByTrackingNumberQuery({
     variables: { tracking: searchParam?.trackingNumber || "" },
+    fetchPolicy: "network-only",
   });
 
   useEffect(() => {

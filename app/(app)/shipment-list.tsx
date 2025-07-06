@@ -24,6 +24,7 @@ export default function ShipmentList() {
   const [hasMore, setHasMore] = useState(false);
   const { data, loading, fetchMore } = useGetAvailableShipmentQuery({
     variables: { limit: 5, skip: 0, status: EShipmentMatchingCriteria.NEW },
+    fetchPolicy: "network-only",
     onError: (error) => {
       console.log("error: ", error);
     },

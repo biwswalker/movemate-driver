@@ -1,6 +1,6 @@
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot, useRouter } from "expo-router";
+import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import ApolloProvider from "@/graphql/apollo-provider";
@@ -17,7 +17,6 @@ import { StatusBar } from "expo-status-bar";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useEffect, useState } from "react";
 import useAuth from "@/hooks/useAuth";
-import { AppState } from "react-native";
 import SplashScreenCustom from "@components/SplashScreen";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -73,56 +72,53 @@ const AppProviders = ({ children }: { children: React.ReactNode }) => (
 
 const RootLayoutNav = () => {
   const router = useRouter();
+  const segments = useSegments();
   const {
+    isFirstLaunch,
     isAuthenticated,
     isInitialized,
     requirePasswordChange,
     requireAcceptedPolicy,
   } = useAuth();
-  const [appState, setAppState] = useState(AppState.currentState);
   const [fontLoaded, fontLoadError] = useAppFonts();
 
   useEffect(() => {
-    const _subscription = AppState.addEventListener(
-      "change",
-      (nextAppState) => {
-        setAppState(nextAppState);
-      }
-    );
-
-    return () => {
-      _subscription.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    // ถ้ามี Error จากการโหลดฟอนต์ ให้แสดง Error ทันที
     if (fontLoadError) throw fontLoadError;
 
-    // รอจนกว่าฟอนต์จะโหลดเสร็จ และ AuthContext จะพร้อมใช้งาน
-    if (!fontLoaded || !isInitialized) return;
-
-    // เมื่อทุกอย่างพร้อม ให้ซ่อน Splash Screen
-    SplashScreen.hideAsync();
-
-    if (appState !== "active") {
+    // รอจนกว่าฟอนต์และ auth จะพร้อม
+    if (!fontLoaded || !isInitialized) {
       return;
     }
 
-    // --- ส่วน Logic การ Redirect ที่สมบูรณ์ ---
+    // ตรวจสอบว่าผู้ใช้อยู่ในกลุ่ม route ที่ถูกต้องหรือยัง
+    const inAuthGroup = segments[0] === "(auth)";
+    const inAppGroup = segments[0] === "(app)";
+
+    // --- 5. ปรับปรุง Logic การ Redirect ---
     if (isAuthenticated) {
+      // เมื่อผู้ใช้ล็อกอินแล้ว
       if (requirePasswordChange) {
+        // บังคับไปหน้าเปลี่ยนรหัสผ่าน
         router.replace("/(app)/change-password");
       } else if (requireAcceptedPolicy) {
+        // บังคับไปหน้ายอมรับนโยบาย
         router.replace("/(app)/readfirst");
-      } else {
-        // ถ้าทุกอย่างเรียบร้อยดี ให้ไปที่หน้าหลักของแอป
+      } else if (!inAppGroup) {
+        // ถ้าล็อกอินแล้ว แต่ไม่ได้อยู่ในโซน (app) ให้ส่งไปหน้าหลัก
+        // คำสั่งนี้จะทำงานแค่ครั้งแรกที่เข้าแอป หรือตอนที่ล็อกอินสำเร็จ
         router.replace("/(app)/(tabs)");
       }
-    } else {
-      // ถ้ายังไม่ Login ให้ไปที่หน้า Login
-      router.replace("/(auth)/login");
+    } else if (!inAuthGroup) {
+      // เมื่อผู้ใช้ยังไม่ได้ล็อกอิน และไม่ได้อยู่ในโซน (auth) ให้ส่งไปหน้าล็อกอิน
+      if (isFirstLaunch) {
+        router.replace("/(auth)");
+      } else {
+        router.replace("/(auth)/landing");
+      }
     }
+
+    // ซ่อน Splash screen หลังจากจัดการ routing เรียบร้อยแล้ว
+    SplashScreen.hideAsync();
   }, [
     fontLoaded,
     fontLoadError,
@@ -130,7 +126,7 @@ const RootLayoutNav = () => {
     isAuthenticated,
     requirePasswordChange,
     requireAcceptedPolicy,
-    appState,
+    segments, // เพิ่ม segments เข้าไปใน dependency array
     router,
   ]);
 

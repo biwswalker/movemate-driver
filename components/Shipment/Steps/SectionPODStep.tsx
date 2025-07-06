@@ -32,15 +32,13 @@ import Animated from "react-native-reanimated";
 
 const SENDER_PROVIDER = [
   { value: "ไปรษณีย์ไทย", label: "ไปรษณีย์ไทย" },
-  { value: "Kerry Express", label: "Kerry Express" },
-  { value: "Best Express", label: "Best Express" },
-  { value: "Ninja Van", label: "Ninja Van" },
-  { value: "J&T Express", label: "J&T Express" },
-  { value: "Flash Express", label: "Flash Express" },
+  { value: "Lalamove", label: "Lalamove" },
+  { value: "Grab", label: "Grab" },
+  { value: "Lineman", label: "Lineman" },
+  { value: "Flash", label: "Flash" },
+  { value: "J&T", label: "J&T" },
+  { value: "KEX", label: "KEX" },
   { value: "SCG Express", label: "SCG Express" },
-  { value: "DHL Express", label: "DHL Express" },
-  { value: "LALAMOVE", label: "LALAMOVE" },
-  { value: "Deliveree", label: "Deliveree" },
 ];
 
 export function ProgressPOD({

@@ -119,6 +119,21 @@ export type AddressPayload = {
   subDistrict: SubDistrict;
 };
 
+export type AdjustmentItem = {
+  __typename?: "AdjustmentItem";
+  amount: Scalars["Float"]["output"];
+  description: Scalars["String"]["output"];
+  serviceDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  shipmentNumber?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type AdjustmentItemInput = {
+  amount: Scalars["Float"]["input"];
+  description: Scalars["String"]["input"];
+  serviceDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  shipmentNumber?: InputMaybe<Scalars["String"]["input"]>;
+};
+
 export type Admin = {
   __typename?: "Admin";
   _id: Scalars["ID"]["output"];
@@ -167,6 +182,7 @@ export type AdminNotificationCountPayload = {
 export type ApprovalBillingPaymentInput = {
   billingId: Scalars["String"]["input"];
   imageEvidence?: InputMaybe<FileInput>;
+  newBookingDateTime?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   paymentDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   paymentId: Scalars["String"]["input"];
   paymentTime?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
@@ -240,16 +256,20 @@ export type Billing = {
 export type BillingAdjustmentNote = {
   __typename?: "BillingAdjustmentNote";
   _id: Scalars["ID"]["output"];
-  adjustmentAmount: Scalars["Float"]["output"];
   adjustmentNumber: Scalars["String"]["output"];
-  adjustmentReason?: Maybe<Scalars["String"]["output"]>;
+  adjustmentSubTotal: Scalars["Float"]["output"];
   adjustmentType: EAdjustmentNoteType;
-  billingId: Scalars["String"]["output"];
-  createdAt: Scalars["DateTimeISO"]["output"];
+  billing: Billing;
+  createdBy: User;
+  document?: Maybe<BillingDocument>;
   issueDate: Scalars["DateTimeISO"]["output"];
-  payment?: Maybe<Payment>;
-  status: EBillingStatus;
-  updatedAt: Scalars["DateTimeISO"]["output"];
+  items: Array<AdjustmentItem>;
+  newSubTotal: Scalars["Float"]["output"];
+  originalSubTotal: Scalars["Float"]["output"];
+  previousDocumentRef: PreviousDocumentReference;
+  remarks?: Maybe<Scalars["String"]["output"]>;
+  taxAmount: Scalars["Float"]["output"];
+  totalAmount: Scalars["Float"]["output"];
 };
 
 export type BillingDocument = {
@@ -434,6 +454,14 @@ export type ContactInput = {
   email: Scalars["String"]["input"];
   fullname: Scalars["String"]["input"];
   title: Scalars["String"]["input"];
+};
+
+export type CreateAdjustmentNoteInput = {
+  adjustmentType: EAdjustmentNoteType;
+  billingId: Scalars["String"]["input"];
+  issueDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  items: Array<AdjustmentItemInput>;
+  remarks?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type CreateDriverPaymentInput = {
@@ -1394,6 +1422,7 @@ export type GetBillingInput = {
 
 export type GetShipmentInput = {
   _id?: InputMaybe<Scalars["String"]["input"]>;
+  billingStatus?: InputMaybe<EBillingStatus>;
   customerId?: InputMaybe<Scalars["String"]["input"]>;
   customerName?: InputMaybe<Scalars["String"]["input"]>;
   dateRangeEnd?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
@@ -1536,6 +1565,7 @@ export type Mutation = {
   confirmReceiveWHTDocument: Scalars["Boolean"]["output"];
   confirmShipmentDatetime: Scalars["Boolean"]["output"];
   continueMatchingShipment: Scalars["Boolean"]["output"];
+  createBillingAdjustmentNote: Scalars["Boolean"]["output"];
   createContact: Scalars["Boolean"]["output"];
   createDriverPayment: Scalars["Boolean"]["output"];
   createShipment: Shipment;
@@ -1577,6 +1607,7 @@ export type Mutation = {
   resentBillingDocumentToEmail: Scalars["Boolean"]["output"];
   resentEmail: VerifyPayload;
   resentOTP: VerifyOtpPayload;
+  revertRejectedPayment: Scalars["Boolean"]["output"];
   saveEvent: Scalars["Boolean"]["output"];
   sentPODDocument: Scalars["Boolean"]["output"];
   storeFCM: Scalars["Boolean"]["output"];
@@ -1706,6 +1737,10 @@ export type MutationConfirmShipmentDatetimeArgs = {
 
 export type MutationContinueMatchingShipmentArgs = {
   shipmentId: Scalars["String"]["input"];
+};
+
+export type MutationCreateBillingAdjustmentNoteArgs = {
+  data: CreateAdjustmentNoteInput;
 };
 
 export type MutationCreateContactArgs = {
@@ -1880,6 +1915,11 @@ export type MutationResentEmailArgs = {
 
 export type MutationResentOtpArgs = {
   userId?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type MutationRevertRejectedPaymentArgs = {
+  billingId: Scalars["String"]["input"];
+  paymentId: Scalars["String"]["input"];
 };
 
 export type MutationSaveEventArgs = {
@@ -2159,6 +2199,12 @@ export type PreparationTransactionPayload = {
   transactions: Array<Transaction>;
 };
 
+export type PreviousDocumentReference = {
+  __typename?: "PreviousDocumentReference";
+  documentNumber: Scalars["String"]["output"];
+  documentType: Scalars["String"]["output"];
+};
+
 export type Price = {
   __typename?: "Price";
   acturePrice: Scalars["Float"]["output"];
@@ -2313,7 +2359,9 @@ export type Query = {
   calculateRoute: DirectionsResultPayload;
   calculateTransaction: DriverTransactionSummaryPayload;
   checkAvailableToWork: Scalars["Boolean"]["output"];
+  checkShipmentTime: ShipmentTimeCheckPayload;
   checkUserPendingStatus: Scalars["Boolean"]["output"];
+  countShipmentStatus: Array<TotalRecordPayload>;
   event: Event;
   events: Array<Event>;
   getAboutusInfo?: Maybe<SettingAboutus>;
@@ -2366,6 +2414,7 @@ export type Query = {
   getPrivileges: PrivilegePaginationPayload;
   getProvince: Array<Province>;
   getShipmentByTracking: Shipment;
+  getShipmentList: Array<ShipmentListPayload>;
   getSubDistrict: Array<SubDistrict>;
   getTodayShipment?: Maybe<Shipment>;
   getTotalMonthBilling: Scalars["Int"]["output"];
@@ -2396,10 +2445,6 @@ export type Query = {
   searchHistorys: SearchHistoryPaginationPayload;
   searchLocations: Array<LocationAutocomplete>;
   searchPrivilegeByCode: Array<PrivilegeUsedPayload>;
-  shipment: Shipment;
-  shipmentList: ShipmentPaginationPayload;
-  shipments: Array<Shipment>;
-  statusCount: Array<TotalRecordPayload>;
   totalAvailableShipment: Scalars["Int"]["output"];
   totalContact: Scalars["Int"]["output"];
   totalNotification: Scalars["Int"]["output"];
@@ -2456,8 +2501,17 @@ export type QueryCalculateRouteArgs = {
   origin: LocationInput;
 };
 
+export type QueryCheckShipmentTimeArgs = {
+  newDateTime?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  shipmentId: Scalars["String"]["input"];
+};
+
 export type QueryCheckUserPendingStatusArgs = {
   userId: Scalars["String"]["input"];
+};
+
+export type QueryCountShipmentStatusArgs = {
+  data: GetShipmentInput;
 };
 
 export type QueryEventArgs = {
@@ -2694,6 +2748,14 @@ export type QueryGetShipmentByTrackingArgs = {
   trackingNumber: Scalars["String"]["input"];
 };
 
+export type QueryGetShipmentListArgs = {
+  data: GetShipmentInput;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  skip?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+};
+
 export type QueryGetSubDistrictArgs = {
   districtName?: InputMaybe<Scalars["String"]["input"]>;
 };
@@ -2839,30 +2901,6 @@ export type QuerySearchLocationsArgs = {
 
 export type QuerySearchPrivilegeByCodeArgs = {
   code: Scalars["String"]["input"];
-};
-
-export type QueryShipmentArgs = {
-  id: Scalars["String"]["input"];
-};
-
-export type QueryShipmentListArgs = {
-  data: GetShipmentInput;
-  limit?: InputMaybe<Scalars["Int"]["input"]>;
-  page?: InputMaybe<Scalars["Int"]["input"]>;
-  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
-  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
-};
-
-export type QueryShipmentsArgs = {
-  data: GetShipmentInput;
-  limit?: InputMaybe<Scalars["Int"]["input"]>;
-  skip?: InputMaybe<Scalars["Int"]["input"]>;
-  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
-  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
-};
-
-export type QueryStatusCountArgs = {
-  data: GetShipmentInput;
 };
 
 export type QueryTotalAvailableShipmentArgs = {
@@ -3264,7 +3302,9 @@ export type Shipment = {
   adminAcceptanceStatus: EAdminAcceptanceStatus;
   agentDriver?: Maybe<User>;
   bookingDateTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  cancellationBy?: Maybe<User>;
   cancellationDetail?: Maybe<Scalars["String"]["output"]>;
+  cancellationFee?: Maybe<Scalars["Float"]["output"]>;
   cancellationReason?: Maybe<Scalars["String"]["output"]>;
   cancelledDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   createdAt: Scalars["DateTimeISO"]["output"];
@@ -3332,6 +3372,34 @@ export type ShipmentInput = {
   vehicleId: Scalars["String"]["input"];
 };
 
+export type ShipmentListPayload = {
+  __typename?: "ShipmentListPayload";
+  _id: Scalars["ID"]["output"];
+  adminAcceptanceStatus?: Maybe<EAdminAcceptanceStatus>;
+  agentDriverName?: Maybe<Scalars["String"]["output"]>;
+  agentDriverTitle?: Maybe<Scalars["String"]["output"]>;
+  billingState?: Maybe<EBillingState>;
+  billingStatus?: Maybe<EBillingStatus>;
+  bookingDateTime: Scalars["DateTimeISO"]["output"];
+  cancellationFee?: Maybe<Scalars["Float"]["output"]>;
+  createdAt: Scalars["DateTimeISO"]["output"];
+  customerName: Scalars["String"]["output"];
+  customerTitle: Scalars["String"]["output"];
+  destinations: Array<Destination>;
+  driverAcceptanceStatus?: Maybe<EDriverAcceptanceStatus>;
+  driverName?: Maybe<Scalars["String"]["output"]>;
+  driverNumber?: Maybe<Scalars["String"]["output"]>;
+  driverProfileImage?: Maybe<Scalars["String"]["output"]>;
+  driverTitle?: Maybe<Scalars["String"]["output"]>;
+  paymentMethod: EPaymentMethod;
+  refId?: Maybe<Scalars["String"]["output"]>;
+  status: EShipmentStatus;
+  step?: Maybe<StepDefinition>;
+  trackingNumber: Scalars["String"]["output"];
+  vehicleImage: Scalars["String"]["output"];
+  vehicleName: Scalars["String"]["output"];
+};
+
 export type ShipmentPodAddress = {
   __typename?: "ShipmentPODAddress";
   _id: Scalars["ID"]["output"];
@@ -3347,19 +3415,11 @@ export type ShipmentPodAddress = {
   trackingNumber?: Maybe<Scalars["String"]["output"]>;
 };
 
-export type ShipmentPaginationPayload = {
-  __typename?: "ShipmentPaginationPayload";
-  docs: Array<Shipment>;
-  hasNextPage: Scalars["Boolean"]["output"];
-  hasPrevPage: Scalars["Boolean"]["output"];
-  limit: Scalars["Int"]["output"];
-  nextPage?: Maybe<Scalars["Int"]["output"]>;
-  offset?: Maybe<Scalars["Int"]["output"]>;
-  page?: Maybe<Scalars["Int"]["output"]>;
-  pagingCounter: Scalars["Int"]["output"];
-  prevPage?: Maybe<Scalars["Int"]["output"]>;
-  totalDocs: Scalars["Int"]["output"];
-  totalPages: Scalars["Int"]["output"];
+export type ShipmentTimeCheckPayload = {
+  __typename?: "ShipmentTimeCheckPayload";
+  isCriticalTime: Scalars["Boolean"]["output"];
+  isWarningTime: Scalars["Boolean"]["output"];
+  timeDifferenceInMinutes: Scalars["Int"]["output"];
 };
 
 export type StepDefinition = {
@@ -3390,6 +3450,7 @@ export type Subscription = {
   __typename?: "Subscription";
   forceLogout: Scalars["String"]["output"];
   getAdminNotificationCount: AdminNotificationCountPayload;
+  getRealtimeShipmentList: Array<ShipmentListPayload>;
   listenAvailableShipment: Array<Shipment>;
   listenLocationLimitCount: LocationRequestLimitPayload;
   listenNotificationCount: Scalars["Float"]["output"];
@@ -3398,18 +3459,17 @@ export type Subscription = {
   listenProgressingShipmentCount: Scalars["Float"]["output"];
   listenUserStatus: Scalars["String"]["output"];
   realtimeNotifications: Array<Notification>;
-  realtimeShipments: Array<Shipment>;
 };
 
-export type SubscriptionRealtimeNotificationsArgs = {
+export type SubscriptionGetRealtimeShipmentListArgs = {
+  filters: GetShipmentInput;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   skip?: InputMaybe<Scalars["Int"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
-export type SubscriptionRealtimeShipmentsArgs = {
-  filters: GetShipmentInput;
+export type SubscriptionRealtimeNotificationsArgs = {
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   skip?: InputMaybe<Scalars["Int"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
@@ -4310,6 +4370,7 @@ export type BillingFragmentFragment = {
     updatedAt: any;
     cancellationReason?: string | null;
     cancellationDetail?: string | null;
+    cancellationFee?: number | null;
     deliveredDate?: any | null;
     cancelledDate?: any | null;
     notificationCount: number;
@@ -5458,6 +5519,387 @@ export type BillingFragmentFragment = {
       } | null;
     } | null;
     agentDriver?: {
+      __typename?: "User";
+      _id: string;
+      username: string;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      status: EUserStatus;
+      parents?: Array<string> | null;
+      fullname?: string | null;
+      email?: string | null;
+      contactNumber?: string | null;
+      address?: string | null;
+      adminDetail?: {
+        __typename?: "Admin";
+        _id: string;
+        userNumber: string;
+        permission: EAdminPermission;
+        email: string;
+        title?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      individualDetail?: {
+        __typename?: "IndividualCustomer";
+        _id: string;
+        userNumber: string;
+        email: string;
+        title: string;
+        otherTitle?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      businessDetail?: {
+        __typename?: "BusinessCustomer";
+        _id: string;
+        userNumber: string;
+        businessTitle: string;
+        businessName: string;
+        businessBranch?: string | null;
+        businessType: string;
+        businessTypeOther?: string | null;
+        taxNumber: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        contactNumber: string;
+        businessEmail: string;
+        paymentMethod: EPaymentMethod;
+        acceptedEDocumentDate?: any | null;
+        acceptedPoliciesVersion?: number | null;
+        acceptedPoliciesDate?: any | null;
+        acceptedTermConditionVersion?: number | null;
+        acceptedTermConditionDate?: any | null;
+        changePaymentMethodRequest?: boolean | null;
+        creditPayment?: {
+          __typename?: "BusinessCustomerCreditPayment";
+          _id: string;
+          isSameAddress?: boolean | null;
+          financialFirstname: string;
+          financialLastname: string;
+          financialContactNumber: string;
+          financialContactEmails: Array<string>;
+          financialAddress: string;
+          financialPostcode: string;
+          financialProvince: string;
+          financialDistrict: string;
+          financialSubDistrict: string;
+          billingCycleType: string;
+          acceptedFirstCreditTermDate?: any | null;
+          creditLimit: number;
+          creditUsage: number;
+          creditOutstandingBalance: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+          };
+          businessRegistrationCertificateFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          copyIDAuthorizedSignatoryFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          certificateValueAddedTaxRegistrationFile?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        } | null;
+        cashPayment?: {
+          __typename?: "BusinessCustomerCashPayment";
+          _id: string;
+          acceptedEReceiptDate?: any | null;
+        } | null;
+      } | null;
+      driverDetail?: {
+        __typename?: "DriverDetail";
+        _id: string;
+        driverType: Array<EDriverType>;
+        title: string;
+        otherTitle: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
+        phoneNumber: string;
+        lineId: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
+        balance: number;
+        fullname?: string | null;
+        serviceVehicleTypes?: Array<{
+          __typename?: "VehicleType";
+          _id: string;
+          type: string;
+          isPublic?: boolean | null;
+          isLarger?: boolean | null;
+          name: string;
+          width: number;
+          length: number;
+          height: number;
+          maxCapacity: number;
+          maxDroppoint?: number | null;
+          details?: string | null;
+          createdAt: any;
+          updatedAt: any;
+          image: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+        }> | null;
+        documents: {
+          __typename?: "DriverDocument";
+          _id: string;
+          frontOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          backOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          leftOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          rigthOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyVehicleRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyIDCard?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyDrivingLicense?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyBookBank?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyHouseRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          insurancePolicy?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          criminalRecordCheckCert?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          businessRegistrationCertificate?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          certificateValueAddedTaxRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        };
+      } | null;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      } | null;
+    } | null;
+    cancellationBy?: {
       __typename?: "User";
       _id: string;
       username: string;
@@ -8492,866 +8934,30 @@ export type BillingFragmentFragment = {
     __typename?: "BillingAdjustmentNote";
     _id: string;
     adjustmentNumber: string;
-    status: EBillingStatus;
-    billingId: string;
     adjustmentType: EAdjustmentNoteType;
-    adjustmentAmount: number;
-    adjustmentReason?: string | null;
+    originalSubTotal: number;
+    adjustmentSubTotal: number;
+    newSubTotal: number;
+    taxAmount: number;
+    totalAmount: number;
     issueDate: any;
-    createdAt: any;
-    updatedAt: any;
-    payment?: {
-      __typename?: "Payment";
+    remarks?: string | null;
+    items: Array<{
+      __typename?: "AdjustmentItem";
+      description: string;
+      amount: number;
+      serviceDate?: any | null;
+      shipmentNumber?: string | null;
+    }>;
+    previousDocumentRef: {
+      __typename?: "PreviousDocumentReference";
+      documentNumber: string;
+      documentType: string;
+    };
+    document?: {
+      __typename?: "BillingDocument";
       _id: string;
-      paymentNumber: string;
-      status: EPaymentStatus;
-      type: EPaymentType;
-      paymentMethod: EPaymentMethod;
-      createdAt: any;
-      updatedAt: any;
-      total: number;
-      subTotal: number;
-      tax: number;
-      evidence?: Array<{
-        __typename?: "PaymentEvidence";
-        paymentDate: any;
-        paymentTime: any;
-        bank?: string | null;
-        bankName?: string | null;
-        bankNumber?: string | null;
-        image: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        };
-      }> | null;
-      quotations: Array<{
-        __typename?: "Quotation";
-        _id: string;
-        quotationNumber: string;
-        quotationDate: any;
-        createdAt: any;
-        updatedAt: any;
-        total: number;
-        subTotal: number;
-        tax: number;
-        price: {
-          __typename?: "Price";
-          acturePrice: number;
-          droppoint: number;
-          rounded: number;
-          roundedPercent: number;
-          total: number;
-          subTotal: number;
-          tax: number;
-        };
-        cost: {
-          __typename?: "Price";
-          acturePrice: number;
-          droppoint: number;
-          rounded: number;
-          roundedPercent: number;
-          total: number;
-          subTotal: number;
-          tax: number;
-        };
-        detail: {
-          __typename?: "QuotationDetail";
-          total: number;
-          subTotal: number;
-          tax: number;
-          shippingPrices: Array<{
-            __typename?: "PriceItem";
-            label: string;
-            price: number;
-            cost: number;
-          }>;
-          additionalServices: Array<{
-            __typename?: "PriceItem";
-            label: string;
-            price: number;
-            cost: number;
-          }>;
-          discounts: Array<{
-            __typename?: "PriceItem";
-            label: string;
-            price: number;
-            cost: number;
-          }>;
-          taxs: Array<{
-            __typename?: "PriceItem";
-            label: string;
-            price: number;
-            cost: number;
-          }>;
-        };
-        updatedBy?: {
-          __typename?: "User";
-          _id: string;
-          username: string;
-          userNumber: string;
-          userRole: EUserRole;
-          userType: EUserType;
-          status: EUserStatus;
-          parents?: Array<string> | null;
-          fullname?: string | null;
-          email?: string | null;
-          contactNumber?: string | null;
-          address?: string | null;
-          adminDetail?: {
-            __typename?: "Admin";
-            _id: string;
-            userNumber: string;
-            permission: EAdminPermission;
-            email: string;
-            title?: string | null;
-            firstname: string;
-            lastname: string;
-            phoneNumber: string;
-            taxId?: string | null;
-            address?: string | null;
-            province?: string | null;
-            district?: string | null;
-            subDistrict?: string | null;
-            postcode?: string | null;
-            fullname?: string | null;
-          } | null;
-          individualDetail?: {
-            __typename?: "IndividualCustomer";
-            _id: string;
-            userNumber: string;
-            email: string;
-            title: string;
-            otherTitle?: string | null;
-            firstname: string;
-            lastname: string;
-            phoneNumber: string;
-            taxId?: string | null;
-            address?: string | null;
-            province?: string | null;
-            district?: string | null;
-            subDistrict?: string | null;
-            postcode?: string | null;
-            fullname?: string | null;
-          } | null;
-          businessDetail?: {
-            __typename?: "BusinessCustomer";
-            _id: string;
-            userNumber: string;
-            businessTitle: string;
-            businessName: string;
-            businessBranch?: string | null;
-            businessType: string;
-            businessTypeOther?: string | null;
-            taxNumber: string;
-            address: string;
-            province: string;
-            district: string;
-            subDistrict: string;
-            postcode: string;
-            contactNumber: string;
-            businessEmail: string;
-            paymentMethod: EPaymentMethod;
-            acceptedEDocumentDate?: any | null;
-            acceptedPoliciesVersion?: number | null;
-            acceptedPoliciesDate?: any | null;
-            acceptedTermConditionVersion?: number | null;
-            acceptedTermConditionDate?: any | null;
-            changePaymentMethodRequest?: boolean | null;
-            creditPayment?: {
-              __typename?: "BusinessCustomerCreditPayment";
-              _id: string;
-              isSameAddress?: boolean | null;
-              financialFirstname: string;
-              financialLastname: string;
-              financialContactNumber: string;
-              financialContactEmails: Array<string>;
-              financialAddress: string;
-              financialPostcode: string;
-              financialProvince: string;
-              financialDistrict: string;
-              financialSubDistrict: string;
-              billingCycleType: string;
-              acceptedFirstCreditTermDate?: any | null;
-              creditLimit: number;
-              creditUsage: number;
-              creditOutstandingBalance: number;
-              billingCycle: {
-                __typename?: "YearlyBillingCycle";
-                jan: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                feb: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                mar: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                apr: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                may: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                jun: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                jul: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                aug: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                sep: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                oct: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                nov: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                dec: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-              };
-              businessRegistrationCertificateFile: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              };
-              copyIDAuthorizedSignatoryFile: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              };
-              certificateValueAddedTaxRegistrationFile?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-            } | null;
-            cashPayment?: {
-              __typename?: "BusinessCustomerCashPayment";
-              _id: string;
-              acceptedEReceiptDate?: any | null;
-            } | null;
-          } | null;
-          driverDetail?: {
-            __typename?: "DriverDetail";
-            _id: string;
-            driverType: Array<EDriverType>;
-            title: string;
-            otherTitle: string;
-            firstname?: string | null;
-            lastname?: string | null;
-            businessName?: string | null;
-            businessBranch?: string | null;
-            taxNumber: string;
-            phoneNumber: string;
-            lineId: string;
-            address: string;
-            province: string;
-            district: string;
-            subDistrict: string;
-            postcode: string;
-            bank?: string | null;
-            bankBranch?: string | null;
-            bankName?: string | null;
-            bankNumber?: string | null;
-            balance: number;
-            fullname?: string | null;
-            serviceVehicleTypes?: Array<{
-              __typename?: "VehicleType";
-              _id: string;
-              type: string;
-              isPublic?: boolean | null;
-              isLarger?: boolean | null;
-              name: string;
-              width: number;
-              length: number;
-              height: number;
-              maxCapacity: number;
-              maxDroppoint?: number | null;
-              details?: string | null;
-              createdAt: any;
-              updatedAt: any;
-              image: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              };
-            }> | null;
-            documents: {
-              __typename?: "DriverDocument";
-              _id: string;
-              frontOfVehicle?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              backOfVehicle?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              leftOfVehicle?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              rigthOfVehicle?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyVehicleRegistration?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyIDCard?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyDrivingLicense?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyBookBank?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyHouseRegistration?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              insurancePolicy?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              criminalRecordCheckCert?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              businessRegistrationCertificate?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              certificateValueAddedTaxRegistration?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-            };
-          } | null;
-          profileImage?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-        } | null;
-      }>;
-      updatedBy?: {
-        __typename?: "User";
-        _id: string;
-        username: string;
-        userNumber: string;
-        userRole: EUserRole;
-        userType: EUserType;
-        status: EUserStatus;
-        parents?: Array<string> | null;
-        fullname?: string | null;
-        email?: string | null;
-        contactNumber?: string | null;
-        address?: string | null;
-        adminDetail?: {
-          __typename?: "Admin";
-          _id: string;
-          userNumber: string;
-          permission: EAdminPermission;
-          email: string;
-          title?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        individualDetail?: {
-          __typename?: "IndividualCustomer";
-          _id: string;
-          userNumber: string;
-          email: string;
-          title: string;
-          otherTitle?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        businessDetail?: {
-          __typename?: "BusinessCustomer";
-          _id: string;
-          userNumber: string;
-          businessTitle: string;
-          businessName: string;
-          businessBranch?: string | null;
-          businessType: string;
-          businessTypeOther?: string | null;
-          taxNumber: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          contactNumber: string;
-          businessEmail: string;
-          paymentMethod: EPaymentMethod;
-          acceptedEDocumentDate?: any | null;
-          acceptedPoliciesVersion?: number | null;
-          acceptedPoliciesDate?: any | null;
-          acceptedTermConditionVersion?: number | null;
-          acceptedTermConditionDate?: any | null;
-          changePaymentMethodRequest?: boolean | null;
-          creditPayment?: {
-            __typename?: "BusinessCustomerCreditPayment";
-            _id: string;
-            isSameAddress?: boolean | null;
-            financialFirstname: string;
-            financialLastname: string;
-            financialContactNumber: string;
-            financialContactEmails: Array<string>;
-            financialAddress: string;
-            financialPostcode: string;
-            financialProvince: string;
-            financialDistrict: string;
-            financialSubDistrict: string;
-            billingCycleType: string;
-            acceptedFirstCreditTermDate?: any | null;
-            creditLimit: number;
-            creditUsage: number;
-            creditOutstandingBalance: number;
-            billingCycle: {
-              __typename?: "YearlyBillingCycle";
-              jan: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              feb: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              mar: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              apr: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              may: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jun: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jul: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              aug: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              sep: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              oct: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              nov: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              dec: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-            };
-            businessRegistrationCertificateFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            copyIDAuthorizedSignatoryFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            certificateValueAddedTaxRegistrationFile?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          } | null;
-          cashPayment?: {
-            __typename?: "BusinessCustomerCashPayment";
-            _id: string;
-            acceptedEReceiptDate?: any | null;
-          } | null;
-        } | null;
-        driverDetail?: {
-          __typename?: "DriverDetail";
-          _id: string;
-          driverType: Array<EDriverType>;
-          title: string;
-          otherTitle: string;
-          firstname?: string | null;
-          lastname?: string | null;
-          businessName?: string | null;
-          businessBranch?: string | null;
-          taxNumber: string;
-          phoneNumber: string;
-          lineId: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          bank?: string | null;
-          bankBranch?: string | null;
-          bankName?: string | null;
-          bankNumber?: string | null;
-          balance: number;
-          fullname?: string | null;
-          serviceVehicleTypes?: Array<{
-            __typename?: "VehicleType";
-            _id: string;
-            type: string;
-            isPublic?: boolean | null;
-            isLarger?: boolean | null;
-            name: string;
-            width: number;
-            length: number;
-            height: number;
-            maxCapacity: number;
-            maxDroppoint?: number | null;
-            details?: string | null;
-            createdAt: any;
-            updatedAt: any;
-            image: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-          }> | null;
-          documents: {
-            __typename?: "DriverDocument";
-            _id: string;
-            frontOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            backOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            leftOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            rigthOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyVehicleRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyIDCard?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyDrivingLicense?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyBookBank?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyHouseRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            insurancePolicy?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            criminalRecordCheckCert?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            businessRegistrationCertificate?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            certificateValueAddedTaxRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          };
-        } | null;
-        profileImage?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      } | null;
+      filename: string;
     } | null;
   }>;
   reasons?: Array<{
@@ -10955,6 +10561,7 @@ export type BillingListFragmentFragment = {
     cancelledDate?: any | null;
     notificationCount: number;
     isNotificationPause: boolean;
+    cancellationFee?: number | null;
     destinations: Array<{
       __typename?: "Destination";
       placeId: string;
@@ -12246,866 +11853,30 @@ export type BillingListFragmentFragment = {
     __typename?: "BillingAdjustmentNote";
     _id: string;
     adjustmentNumber: string;
-    status: EBillingStatus;
-    billingId: string;
     adjustmentType: EAdjustmentNoteType;
-    adjustmentAmount: number;
-    adjustmentReason?: string | null;
+    originalSubTotal: number;
+    adjustmentSubTotal: number;
+    newSubTotal: number;
+    taxAmount: number;
+    totalAmount: number;
     issueDate: any;
-    createdAt: any;
-    updatedAt: any;
-    payment?: {
-      __typename?: "Payment";
+    remarks?: string | null;
+    items: Array<{
+      __typename?: "AdjustmentItem";
+      description: string;
+      amount: number;
+      serviceDate?: any | null;
+      shipmentNumber?: string | null;
+    }>;
+    previousDocumentRef: {
+      __typename?: "PreviousDocumentReference";
+      documentNumber: string;
+      documentType: string;
+    };
+    document?: {
+      __typename?: "BillingDocument";
       _id: string;
-      paymentNumber: string;
-      status: EPaymentStatus;
-      type: EPaymentType;
-      paymentMethod: EPaymentMethod;
-      createdAt: any;
-      updatedAt: any;
-      total: number;
-      subTotal: number;
-      tax: number;
-      evidence?: Array<{
-        __typename?: "PaymentEvidence";
-        paymentDate: any;
-        paymentTime: any;
-        bank?: string | null;
-        bankName?: string | null;
-        bankNumber?: string | null;
-        image: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        };
-      }> | null;
-      quotations: Array<{
-        __typename?: "Quotation";
-        _id: string;
-        quotationNumber: string;
-        quotationDate: any;
-        createdAt: any;
-        updatedAt: any;
-        total: number;
-        subTotal: number;
-        tax: number;
-        price: {
-          __typename?: "Price";
-          acturePrice: number;
-          droppoint: number;
-          rounded: number;
-          roundedPercent: number;
-          total: number;
-          subTotal: number;
-          tax: number;
-        };
-        cost: {
-          __typename?: "Price";
-          acturePrice: number;
-          droppoint: number;
-          rounded: number;
-          roundedPercent: number;
-          total: number;
-          subTotal: number;
-          tax: number;
-        };
-        detail: {
-          __typename?: "QuotationDetail";
-          total: number;
-          subTotal: number;
-          tax: number;
-          shippingPrices: Array<{
-            __typename?: "PriceItem";
-            label: string;
-            price: number;
-            cost: number;
-          }>;
-          additionalServices: Array<{
-            __typename?: "PriceItem";
-            label: string;
-            price: number;
-            cost: number;
-          }>;
-          discounts: Array<{
-            __typename?: "PriceItem";
-            label: string;
-            price: number;
-            cost: number;
-          }>;
-          taxs: Array<{
-            __typename?: "PriceItem";
-            label: string;
-            price: number;
-            cost: number;
-          }>;
-        };
-        updatedBy?: {
-          __typename?: "User";
-          _id: string;
-          username: string;
-          userNumber: string;
-          userRole: EUserRole;
-          userType: EUserType;
-          status: EUserStatus;
-          parents?: Array<string> | null;
-          fullname?: string | null;
-          email?: string | null;
-          contactNumber?: string | null;
-          address?: string | null;
-          adminDetail?: {
-            __typename?: "Admin";
-            _id: string;
-            userNumber: string;
-            permission: EAdminPermission;
-            email: string;
-            title?: string | null;
-            firstname: string;
-            lastname: string;
-            phoneNumber: string;
-            taxId?: string | null;
-            address?: string | null;
-            province?: string | null;
-            district?: string | null;
-            subDistrict?: string | null;
-            postcode?: string | null;
-            fullname?: string | null;
-          } | null;
-          individualDetail?: {
-            __typename?: "IndividualCustomer";
-            _id: string;
-            userNumber: string;
-            email: string;
-            title: string;
-            otherTitle?: string | null;
-            firstname: string;
-            lastname: string;
-            phoneNumber: string;
-            taxId?: string | null;
-            address?: string | null;
-            province?: string | null;
-            district?: string | null;
-            subDistrict?: string | null;
-            postcode?: string | null;
-            fullname?: string | null;
-          } | null;
-          businessDetail?: {
-            __typename?: "BusinessCustomer";
-            _id: string;
-            userNumber: string;
-            businessTitle: string;
-            businessName: string;
-            businessBranch?: string | null;
-            businessType: string;
-            businessTypeOther?: string | null;
-            taxNumber: string;
-            address: string;
-            province: string;
-            district: string;
-            subDistrict: string;
-            postcode: string;
-            contactNumber: string;
-            businessEmail: string;
-            paymentMethod: EPaymentMethod;
-            acceptedEDocumentDate?: any | null;
-            acceptedPoliciesVersion?: number | null;
-            acceptedPoliciesDate?: any | null;
-            acceptedTermConditionVersion?: number | null;
-            acceptedTermConditionDate?: any | null;
-            changePaymentMethodRequest?: boolean | null;
-            creditPayment?: {
-              __typename?: "BusinessCustomerCreditPayment";
-              _id: string;
-              isSameAddress?: boolean | null;
-              financialFirstname: string;
-              financialLastname: string;
-              financialContactNumber: string;
-              financialContactEmails: Array<string>;
-              financialAddress: string;
-              financialPostcode: string;
-              financialProvince: string;
-              financialDistrict: string;
-              financialSubDistrict: string;
-              billingCycleType: string;
-              acceptedFirstCreditTermDate?: any | null;
-              creditLimit: number;
-              creditUsage: number;
-              creditOutstandingBalance: number;
-              billingCycle: {
-                __typename?: "YearlyBillingCycle";
-                jan: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                feb: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                mar: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                apr: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                may: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                jun: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                jul: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                aug: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                sep: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                oct: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                nov: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-                dec: {
-                  __typename?: "MonthlyBillingCycle";
-                  issueDate: number;
-                  dueDate: number;
-                  dueMonth: number;
-                };
-              };
-              businessRegistrationCertificateFile: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              };
-              copyIDAuthorizedSignatoryFile: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              };
-              certificateValueAddedTaxRegistrationFile?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-            } | null;
-            cashPayment?: {
-              __typename?: "BusinessCustomerCashPayment";
-              _id: string;
-              acceptedEReceiptDate?: any | null;
-            } | null;
-          } | null;
-          driverDetail?: {
-            __typename?: "DriverDetail";
-            _id: string;
-            driverType: Array<EDriverType>;
-            title: string;
-            otherTitle: string;
-            firstname?: string | null;
-            lastname?: string | null;
-            businessName?: string | null;
-            businessBranch?: string | null;
-            taxNumber: string;
-            phoneNumber: string;
-            lineId: string;
-            address: string;
-            province: string;
-            district: string;
-            subDistrict: string;
-            postcode: string;
-            bank?: string | null;
-            bankBranch?: string | null;
-            bankName?: string | null;
-            bankNumber?: string | null;
-            balance: number;
-            fullname?: string | null;
-            serviceVehicleTypes?: Array<{
-              __typename?: "VehicleType";
-              _id: string;
-              type: string;
-              isPublic?: boolean | null;
-              isLarger?: boolean | null;
-              name: string;
-              width: number;
-              length: number;
-              height: number;
-              maxCapacity: number;
-              maxDroppoint?: number | null;
-              details?: string | null;
-              createdAt: any;
-              updatedAt: any;
-              image: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              };
-            }> | null;
-            documents: {
-              __typename?: "DriverDocument";
-              _id: string;
-              frontOfVehicle?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              backOfVehicle?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              leftOfVehicle?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              rigthOfVehicle?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyVehicleRegistration?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyIDCard?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyDrivingLicense?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyBookBank?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              copyHouseRegistration?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              insurancePolicy?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              criminalRecordCheckCert?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              businessRegistrationCertificate?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-              certificateValueAddedTaxRegistration?: {
-                __typename?: "File";
-                _id: string;
-                fileId: string;
-                filename: string;
-                mimetype: string;
-                createdAt: any;
-                updatedAt: any;
-              } | null;
-            };
-          } | null;
-          profileImage?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-        } | null;
-      }>;
-      updatedBy?: {
-        __typename?: "User";
-        _id: string;
-        username: string;
-        userNumber: string;
-        userRole: EUserRole;
-        userType: EUserType;
-        status: EUserStatus;
-        parents?: Array<string> | null;
-        fullname?: string | null;
-        email?: string | null;
-        contactNumber?: string | null;
-        address?: string | null;
-        adminDetail?: {
-          __typename?: "Admin";
-          _id: string;
-          userNumber: string;
-          permission: EAdminPermission;
-          email: string;
-          title?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        individualDetail?: {
-          __typename?: "IndividualCustomer";
-          _id: string;
-          userNumber: string;
-          email: string;
-          title: string;
-          otherTitle?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        businessDetail?: {
-          __typename?: "BusinessCustomer";
-          _id: string;
-          userNumber: string;
-          businessTitle: string;
-          businessName: string;
-          businessBranch?: string | null;
-          businessType: string;
-          businessTypeOther?: string | null;
-          taxNumber: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          contactNumber: string;
-          businessEmail: string;
-          paymentMethod: EPaymentMethod;
-          acceptedEDocumentDate?: any | null;
-          acceptedPoliciesVersion?: number | null;
-          acceptedPoliciesDate?: any | null;
-          acceptedTermConditionVersion?: number | null;
-          acceptedTermConditionDate?: any | null;
-          changePaymentMethodRequest?: boolean | null;
-          creditPayment?: {
-            __typename?: "BusinessCustomerCreditPayment";
-            _id: string;
-            isSameAddress?: boolean | null;
-            financialFirstname: string;
-            financialLastname: string;
-            financialContactNumber: string;
-            financialContactEmails: Array<string>;
-            financialAddress: string;
-            financialPostcode: string;
-            financialProvince: string;
-            financialDistrict: string;
-            financialSubDistrict: string;
-            billingCycleType: string;
-            acceptedFirstCreditTermDate?: any | null;
-            creditLimit: number;
-            creditUsage: number;
-            creditOutstandingBalance: number;
-            billingCycle: {
-              __typename?: "YearlyBillingCycle";
-              jan: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              feb: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              mar: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              apr: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              may: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jun: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jul: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              aug: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              sep: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              oct: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              nov: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              dec: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-            };
-            businessRegistrationCertificateFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            copyIDAuthorizedSignatoryFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            certificateValueAddedTaxRegistrationFile?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          } | null;
-          cashPayment?: {
-            __typename?: "BusinessCustomerCashPayment";
-            _id: string;
-            acceptedEReceiptDate?: any | null;
-          } | null;
-        } | null;
-        driverDetail?: {
-          __typename?: "DriverDetail";
-          _id: string;
-          driverType: Array<EDriverType>;
-          title: string;
-          otherTitle: string;
-          firstname?: string | null;
-          lastname?: string | null;
-          businessName?: string | null;
-          businessBranch?: string | null;
-          taxNumber: string;
-          phoneNumber: string;
-          lineId: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          bank?: string | null;
-          bankBranch?: string | null;
-          bankName?: string | null;
-          bankNumber?: string | null;
-          balance: number;
-          fullname?: string | null;
-          serviceVehicleTypes?: Array<{
-            __typename?: "VehicleType";
-            _id: string;
-            type: string;
-            isPublic?: boolean | null;
-            isLarger?: boolean | null;
-            name: string;
-            width: number;
-            length: number;
-            height: number;
-            maxCapacity: number;
-            maxDroppoint?: number | null;
-            details?: string | null;
-            createdAt: any;
-            updatedAt: any;
-            image: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-          }> | null;
-          documents: {
-            __typename?: "DriverDocument";
-            _id: string;
-            frontOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            backOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            leftOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            rigthOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyVehicleRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyIDCard?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyDrivingLicense?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyBookBank?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyHouseRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            insurancePolicy?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            criminalRecordCheckCert?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            businessRegistrationCertificate?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            certificateValueAddedTaxRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          };
-        } | null;
-        profileImage?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      } | null;
+      filename: string;
     } | null;
   }>;
   reasons?: Array<{
@@ -14293,866 +13064,30 @@ export type BillingAdjustmentNoteFragmentFragment = {
   __typename?: "BillingAdjustmentNote";
   _id: string;
   adjustmentNumber: string;
-  status: EBillingStatus;
-  billingId: string;
   adjustmentType: EAdjustmentNoteType;
-  adjustmentAmount: number;
-  adjustmentReason?: string | null;
+  originalSubTotal: number;
+  adjustmentSubTotal: number;
+  newSubTotal: number;
+  taxAmount: number;
+  totalAmount: number;
   issueDate: any;
-  createdAt: any;
-  updatedAt: any;
-  payment?: {
-    __typename?: "Payment";
+  remarks?: string | null;
+  items: Array<{
+    __typename?: "AdjustmentItem";
+    description: string;
+    amount: number;
+    serviceDate?: any | null;
+    shipmentNumber?: string | null;
+  }>;
+  previousDocumentRef: {
+    __typename?: "PreviousDocumentReference";
+    documentNumber: string;
+    documentType: string;
+  };
+  document?: {
+    __typename?: "BillingDocument";
     _id: string;
-    paymentNumber: string;
-    status: EPaymentStatus;
-    type: EPaymentType;
-    paymentMethod: EPaymentMethod;
-    createdAt: any;
-    updatedAt: any;
-    total: number;
-    subTotal: number;
-    tax: number;
-    evidence?: Array<{
-      __typename?: "PaymentEvidence";
-      paymentDate: any;
-      paymentTime: any;
-      bank?: string | null;
-      bankName?: string | null;
-      bankNumber?: string | null;
-      image: {
-        __typename?: "File";
-        _id: string;
-        fileId: string;
-        filename: string;
-        mimetype: string;
-        createdAt: any;
-        updatedAt: any;
-      };
-    }> | null;
-    quotations: Array<{
-      __typename?: "Quotation";
-      _id: string;
-      quotationNumber: string;
-      quotationDate: any;
-      createdAt: any;
-      updatedAt: any;
-      total: number;
-      subTotal: number;
-      tax: number;
-      price: {
-        __typename?: "Price";
-        acturePrice: number;
-        droppoint: number;
-        rounded: number;
-        roundedPercent: number;
-        total: number;
-        subTotal: number;
-        tax: number;
-      };
-      cost: {
-        __typename?: "Price";
-        acturePrice: number;
-        droppoint: number;
-        rounded: number;
-        roundedPercent: number;
-        total: number;
-        subTotal: number;
-        tax: number;
-      };
-      detail: {
-        __typename?: "QuotationDetail";
-        total: number;
-        subTotal: number;
-        tax: number;
-        shippingPrices: Array<{
-          __typename?: "PriceItem";
-          label: string;
-          price: number;
-          cost: number;
-        }>;
-        additionalServices: Array<{
-          __typename?: "PriceItem";
-          label: string;
-          price: number;
-          cost: number;
-        }>;
-        discounts: Array<{
-          __typename?: "PriceItem";
-          label: string;
-          price: number;
-          cost: number;
-        }>;
-        taxs: Array<{
-          __typename?: "PriceItem";
-          label: string;
-          price: number;
-          cost: number;
-        }>;
-      };
-      updatedBy?: {
-        __typename?: "User";
-        _id: string;
-        username: string;
-        userNumber: string;
-        userRole: EUserRole;
-        userType: EUserType;
-        status: EUserStatus;
-        parents?: Array<string> | null;
-        fullname?: string | null;
-        email?: string | null;
-        contactNumber?: string | null;
-        address?: string | null;
-        adminDetail?: {
-          __typename?: "Admin";
-          _id: string;
-          userNumber: string;
-          permission: EAdminPermission;
-          email: string;
-          title?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        individualDetail?: {
-          __typename?: "IndividualCustomer";
-          _id: string;
-          userNumber: string;
-          email: string;
-          title: string;
-          otherTitle?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        businessDetail?: {
-          __typename?: "BusinessCustomer";
-          _id: string;
-          userNumber: string;
-          businessTitle: string;
-          businessName: string;
-          businessBranch?: string | null;
-          businessType: string;
-          businessTypeOther?: string | null;
-          taxNumber: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          contactNumber: string;
-          businessEmail: string;
-          paymentMethod: EPaymentMethod;
-          acceptedEDocumentDate?: any | null;
-          acceptedPoliciesVersion?: number | null;
-          acceptedPoliciesDate?: any | null;
-          acceptedTermConditionVersion?: number | null;
-          acceptedTermConditionDate?: any | null;
-          changePaymentMethodRequest?: boolean | null;
-          creditPayment?: {
-            __typename?: "BusinessCustomerCreditPayment";
-            _id: string;
-            isSameAddress?: boolean | null;
-            financialFirstname: string;
-            financialLastname: string;
-            financialContactNumber: string;
-            financialContactEmails: Array<string>;
-            financialAddress: string;
-            financialPostcode: string;
-            financialProvince: string;
-            financialDistrict: string;
-            financialSubDistrict: string;
-            billingCycleType: string;
-            acceptedFirstCreditTermDate?: any | null;
-            creditLimit: number;
-            creditUsage: number;
-            creditOutstandingBalance: number;
-            billingCycle: {
-              __typename?: "YearlyBillingCycle";
-              jan: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              feb: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              mar: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              apr: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              may: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jun: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jul: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              aug: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              sep: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              oct: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              nov: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              dec: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-            };
-            businessRegistrationCertificateFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            copyIDAuthorizedSignatoryFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            certificateValueAddedTaxRegistrationFile?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          } | null;
-          cashPayment?: {
-            __typename?: "BusinessCustomerCashPayment";
-            _id: string;
-            acceptedEReceiptDate?: any | null;
-          } | null;
-        } | null;
-        driverDetail?: {
-          __typename?: "DriverDetail";
-          _id: string;
-          driverType: Array<EDriverType>;
-          title: string;
-          otherTitle: string;
-          firstname?: string | null;
-          lastname?: string | null;
-          businessName?: string | null;
-          businessBranch?: string | null;
-          taxNumber: string;
-          phoneNumber: string;
-          lineId: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          bank?: string | null;
-          bankBranch?: string | null;
-          bankName?: string | null;
-          bankNumber?: string | null;
-          balance: number;
-          fullname?: string | null;
-          serviceVehicleTypes?: Array<{
-            __typename?: "VehicleType";
-            _id: string;
-            type: string;
-            isPublic?: boolean | null;
-            isLarger?: boolean | null;
-            name: string;
-            width: number;
-            length: number;
-            height: number;
-            maxCapacity: number;
-            maxDroppoint?: number | null;
-            details?: string | null;
-            createdAt: any;
-            updatedAt: any;
-            image: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-          }> | null;
-          documents: {
-            __typename?: "DriverDocument";
-            _id: string;
-            frontOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            backOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            leftOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            rigthOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyVehicleRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyIDCard?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyDrivingLicense?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyBookBank?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyHouseRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            insurancePolicy?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            criminalRecordCheckCert?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            businessRegistrationCertificate?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            certificateValueAddedTaxRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          };
-        } | null;
-        profileImage?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      } | null;
-    }>;
-    updatedBy?: {
-      __typename?: "User";
-      _id: string;
-      username: string;
-      userNumber: string;
-      userRole: EUserRole;
-      userType: EUserType;
-      status: EUserStatus;
-      parents?: Array<string> | null;
-      fullname?: string | null;
-      email?: string | null;
-      contactNumber?: string | null;
-      address?: string | null;
-      adminDetail?: {
-        __typename?: "Admin";
-        _id: string;
-        userNumber: string;
-        permission: EAdminPermission;
-        email: string;
-        title?: string | null;
-        firstname: string;
-        lastname: string;
-        phoneNumber: string;
-        taxId?: string | null;
-        address?: string | null;
-        province?: string | null;
-        district?: string | null;
-        subDistrict?: string | null;
-        postcode?: string | null;
-        fullname?: string | null;
-      } | null;
-      individualDetail?: {
-        __typename?: "IndividualCustomer";
-        _id: string;
-        userNumber: string;
-        email: string;
-        title: string;
-        otherTitle?: string | null;
-        firstname: string;
-        lastname: string;
-        phoneNumber: string;
-        taxId?: string | null;
-        address?: string | null;
-        province?: string | null;
-        district?: string | null;
-        subDistrict?: string | null;
-        postcode?: string | null;
-        fullname?: string | null;
-      } | null;
-      businessDetail?: {
-        __typename?: "BusinessCustomer";
-        _id: string;
-        userNumber: string;
-        businessTitle: string;
-        businessName: string;
-        businessBranch?: string | null;
-        businessType: string;
-        businessTypeOther?: string | null;
-        taxNumber: string;
-        address: string;
-        province: string;
-        district: string;
-        subDistrict: string;
-        postcode: string;
-        contactNumber: string;
-        businessEmail: string;
-        paymentMethod: EPaymentMethod;
-        acceptedEDocumentDate?: any | null;
-        acceptedPoliciesVersion?: number | null;
-        acceptedPoliciesDate?: any | null;
-        acceptedTermConditionVersion?: number | null;
-        acceptedTermConditionDate?: any | null;
-        changePaymentMethodRequest?: boolean | null;
-        creditPayment?: {
-          __typename?: "BusinessCustomerCreditPayment";
-          _id: string;
-          isSameAddress?: boolean | null;
-          financialFirstname: string;
-          financialLastname: string;
-          financialContactNumber: string;
-          financialContactEmails: Array<string>;
-          financialAddress: string;
-          financialPostcode: string;
-          financialProvince: string;
-          financialDistrict: string;
-          financialSubDistrict: string;
-          billingCycleType: string;
-          acceptedFirstCreditTermDate?: any | null;
-          creditLimit: number;
-          creditUsage: number;
-          creditOutstandingBalance: number;
-          billingCycle: {
-            __typename?: "YearlyBillingCycle";
-            jan: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            feb: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            mar: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            apr: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            may: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            jun: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            jul: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            aug: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            sep: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            oct: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            nov: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            dec: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-          };
-          businessRegistrationCertificateFile: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-          copyIDAuthorizedSignatoryFile: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-          certificateValueAddedTaxRegistrationFile?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-        } | null;
-        cashPayment?: {
-          __typename?: "BusinessCustomerCashPayment";
-          _id: string;
-          acceptedEReceiptDate?: any | null;
-        } | null;
-      } | null;
-      driverDetail?: {
-        __typename?: "DriverDetail";
-        _id: string;
-        driverType: Array<EDriverType>;
-        title: string;
-        otherTitle: string;
-        firstname?: string | null;
-        lastname?: string | null;
-        businessName?: string | null;
-        businessBranch?: string | null;
-        taxNumber: string;
-        phoneNumber: string;
-        lineId: string;
-        address: string;
-        province: string;
-        district: string;
-        subDistrict: string;
-        postcode: string;
-        bank?: string | null;
-        bankBranch?: string | null;
-        bankName?: string | null;
-        bankNumber?: string | null;
-        balance: number;
-        fullname?: string | null;
-        serviceVehicleTypes?: Array<{
-          __typename?: "VehicleType";
-          _id: string;
-          type: string;
-          isPublic?: boolean | null;
-          isLarger?: boolean | null;
-          name: string;
-          width: number;
-          length: number;
-          height: number;
-          maxCapacity: number;
-          maxDroppoint?: number | null;
-          details?: string | null;
-          createdAt: any;
-          updatedAt: any;
-          image: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-        }> | null;
-        documents: {
-          __typename?: "DriverDocument";
-          _id: string;
-          frontOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          backOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          leftOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          rigthOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyVehicleRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyIDCard?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyDrivingLicense?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyBookBank?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyHouseRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          insurancePolicy?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          criminalRecordCheckCert?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          businessRegistrationCertificate?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          certificateValueAddedTaxRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-        };
-      } | null;
-      profileImage?: {
-        __typename?: "File";
-        _id: string;
-        fileId: string;
-        filename: string;
-        mimetype: string;
-        createdAt: any;
-        updatedAt: any;
-      } | null;
-    } | null;
+    filename: string;
   } | null;
 };
 
@@ -20011,6 +17946,7 @@ export type ShipmentFragmentFragment = {
   updatedAt: any;
   cancellationReason?: string | null;
   cancellationDetail?: string | null;
+  cancellationFee?: number | null;
   deliveredDate?: any | null;
   cancelledDate?: any | null;
   notificationCount: number;
@@ -21159,6 +19095,387 @@ export type ShipmentFragmentFragment = {
     } | null;
   } | null;
   agentDriver?: {
+    __typename?: "User";
+    _id: string;
+    username: string;
+    userNumber: string;
+    userRole: EUserRole;
+    userType: EUserType;
+    status: EUserStatus;
+    parents?: Array<string> | null;
+    fullname?: string | null;
+    email?: string | null;
+    contactNumber?: string | null;
+    address?: string | null;
+    adminDetail?: {
+      __typename?: "Admin";
+      _id: string;
+      userNumber: string;
+      permission: EAdminPermission;
+      email: string;
+      title?: string | null;
+      firstname: string;
+      lastname: string;
+      phoneNumber: string;
+      taxId?: string | null;
+      address?: string | null;
+      province?: string | null;
+      district?: string | null;
+      subDistrict?: string | null;
+      postcode?: string | null;
+      fullname?: string | null;
+    } | null;
+    individualDetail?: {
+      __typename?: "IndividualCustomer";
+      _id: string;
+      userNumber: string;
+      email: string;
+      title: string;
+      otherTitle?: string | null;
+      firstname: string;
+      lastname: string;
+      phoneNumber: string;
+      taxId?: string | null;
+      address?: string | null;
+      province?: string | null;
+      district?: string | null;
+      subDistrict?: string | null;
+      postcode?: string | null;
+      fullname?: string | null;
+    } | null;
+    businessDetail?: {
+      __typename?: "BusinessCustomer";
+      _id: string;
+      userNumber: string;
+      businessTitle: string;
+      businessName: string;
+      businessBranch?: string | null;
+      businessType: string;
+      businessTypeOther?: string | null;
+      taxNumber: string;
+      address: string;
+      province: string;
+      district: string;
+      subDistrict: string;
+      postcode: string;
+      contactNumber: string;
+      businessEmail: string;
+      paymentMethod: EPaymentMethod;
+      acceptedEDocumentDate?: any | null;
+      acceptedPoliciesVersion?: number | null;
+      acceptedPoliciesDate?: any | null;
+      acceptedTermConditionVersion?: number | null;
+      acceptedTermConditionDate?: any | null;
+      changePaymentMethodRequest?: boolean | null;
+      creditPayment?: {
+        __typename?: "BusinessCustomerCreditPayment";
+        _id: string;
+        isSameAddress?: boolean | null;
+        financialFirstname: string;
+        financialLastname: string;
+        financialContactNumber: string;
+        financialContactEmails: Array<string>;
+        financialAddress: string;
+        financialPostcode: string;
+        financialProvince: string;
+        financialDistrict: string;
+        financialSubDistrict: string;
+        billingCycleType: string;
+        acceptedFirstCreditTermDate?: any | null;
+        creditLimit: number;
+        creditUsage: number;
+        creditOutstandingBalance: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+        };
+        businessRegistrationCertificateFile: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        };
+        copyIDAuthorizedSignatoryFile: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        };
+        certificateValueAddedTaxRegistrationFile?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+      } | null;
+      cashPayment?: {
+        __typename?: "BusinessCustomerCashPayment";
+        _id: string;
+        acceptedEReceiptDate?: any | null;
+      } | null;
+    } | null;
+    driverDetail?: {
+      __typename?: "DriverDetail";
+      _id: string;
+      driverType: Array<EDriverType>;
+      title: string;
+      otherTitle: string;
+      firstname?: string | null;
+      lastname?: string | null;
+      businessName?: string | null;
+      businessBranch?: string | null;
+      taxNumber: string;
+      phoneNumber: string;
+      lineId: string;
+      address: string;
+      province: string;
+      district: string;
+      subDistrict: string;
+      postcode: string;
+      bank?: string | null;
+      bankBranch?: string | null;
+      bankName?: string | null;
+      bankNumber?: string | null;
+      balance: number;
+      fullname?: string | null;
+      serviceVehicleTypes?: Array<{
+        __typename?: "VehicleType";
+        _id: string;
+        type: string;
+        isPublic?: boolean | null;
+        isLarger?: boolean | null;
+        name: string;
+        width: number;
+        length: number;
+        height: number;
+        maxCapacity: number;
+        maxDroppoint?: number | null;
+        details?: string | null;
+        createdAt: any;
+        updatedAt: any;
+        image: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        };
+      }> | null;
+      documents: {
+        __typename?: "DriverDocument";
+        _id: string;
+        frontOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        backOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        leftOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        rigthOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyVehicleRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyIDCard?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyDrivingLicense?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyBookBank?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyHouseRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        insurancePolicy?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        criminalRecordCheckCert?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        businessRegistrationCertificate?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        certificateValueAddedTaxRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+      };
+    } | null;
+    profileImage?: {
+      __typename?: "File";
+      _id: string;
+      fileId: string;
+      filename: string;
+      mimetype: string;
+      createdAt: any;
+      updatedAt: any;
+    } | null;
+  } | null;
+  cancellationBy?: {
     __typename?: "User";
     _id: string;
     username: string;
@@ -22956,6 +21273,7 @@ export type ShipmentListFragmentFragment = {
   cancelledDate?: any | null;
   notificationCount: number;
   isNotificationPause: boolean;
+  cancellationFee?: number | null;
   customer: {
     __typename?: "User";
     _id: string;
@@ -24480,6 +22798,387 @@ export type ShipmentListFragmentFragment = {
       updatedAt: any;
     } | null;
   } | null;
+  cancellationBy?: {
+    __typename?: "User";
+    _id: string;
+    username: string;
+    userNumber: string;
+    userRole: EUserRole;
+    userType: EUserType;
+    status: EUserStatus;
+    parents?: Array<string> | null;
+    fullname?: string | null;
+    email?: string | null;
+    contactNumber?: string | null;
+    address?: string | null;
+    adminDetail?: {
+      __typename?: "Admin";
+      _id: string;
+      userNumber: string;
+      permission: EAdminPermission;
+      email: string;
+      title?: string | null;
+      firstname: string;
+      lastname: string;
+      phoneNumber: string;
+      taxId?: string | null;
+      address?: string | null;
+      province?: string | null;
+      district?: string | null;
+      subDistrict?: string | null;
+      postcode?: string | null;
+      fullname?: string | null;
+    } | null;
+    individualDetail?: {
+      __typename?: "IndividualCustomer";
+      _id: string;
+      userNumber: string;
+      email: string;
+      title: string;
+      otherTitle?: string | null;
+      firstname: string;
+      lastname: string;
+      phoneNumber: string;
+      taxId?: string | null;
+      address?: string | null;
+      province?: string | null;
+      district?: string | null;
+      subDistrict?: string | null;
+      postcode?: string | null;
+      fullname?: string | null;
+    } | null;
+    businessDetail?: {
+      __typename?: "BusinessCustomer";
+      _id: string;
+      userNumber: string;
+      businessTitle: string;
+      businessName: string;
+      businessBranch?: string | null;
+      businessType: string;
+      businessTypeOther?: string | null;
+      taxNumber: string;
+      address: string;
+      province: string;
+      district: string;
+      subDistrict: string;
+      postcode: string;
+      contactNumber: string;
+      businessEmail: string;
+      paymentMethod: EPaymentMethod;
+      acceptedEDocumentDate?: any | null;
+      acceptedPoliciesVersion?: number | null;
+      acceptedPoliciesDate?: any | null;
+      acceptedTermConditionVersion?: number | null;
+      acceptedTermConditionDate?: any | null;
+      changePaymentMethodRequest?: boolean | null;
+      creditPayment?: {
+        __typename?: "BusinessCustomerCreditPayment";
+        _id: string;
+        isSameAddress?: boolean | null;
+        financialFirstname: string;
+        financialLastname: string;
+        financialContactNumber: string;
+        financialContactEmails: Array<string>;
+        financialAddress: string;
+        financialPostcode: string;
+        financialProvince: string;
+        financialDistrict: string;
+        financialSubDistrict: string;
+        billingCycleType: string;
+        acceptedFirstCreditTermDate?: any | null;
+        creditLimit: number;
+        creditUsage: number;
+        creditOutstandingBalance: number;
+        billingCycle: {
+          __typename?: "YearlyBillingCycle";
+          jan: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          feb: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          mar: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          apr: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          may: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jun: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          jul: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          aug: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          sep: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          oct: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          nov: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+          dec: {
+            __typename?: "MonthlyBillingCycle";
+            issueDate: number;
+            dueDate: number;
+            dueMonth: number;
+          };
+        };
+        businessRegistrationCertificateFile: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        };
+        copyIDAuthorizedSignatoryFile: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        };
+        certificateValueAddedTaxRegistrationFile?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+      } | null;
+      cashPayment?: {
+        __typename?: "BusinessCustomerCashPayment";
+        _id: string;
+        acceptedEReceiptDate?: any | null;
+      } | null;
+    } | null;
+    driverDetail?: {
+      __typename?: "DriverDetail";
+      _id: string;
+      driverType: Array<EDriverType>;
+      title: string;
+      otherTitle: string;
+      firstname?: string | null;
+      lastname?: string | null;
+      businessName?: string | null;
+      businessBranch?: string | null;
+      taxNumber: string;
+      phoneNumber: string;
+      lineId: string;
+      address: string;
+      province: string;
+      district: string;
+      subDistrict: string;
+      postcode: string;
+      bank?: string | null;
+      bankBranch?: string | null;
+      bankName?: string | null;
+      bankNumber?: string | null;
+      balance: number;
+      fullname?: string | null;
+      serviceVehicleTypes?: Array<{
+        __typename?: "VehicleType";
+        _id: string;
+        type: string;
+        isPublic?: boolean | null;
+        isLarger?: boolean | null;
+        name: string;
+        width: number;
+        length: number;
+        height: number;
+        maxCapacity: number;
+        maxDroppoint?: number | null;
+        details?: string | null;
+        createdAt: any;
+        updatedAt: any;
+        image: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        };
+      }> | null;
+      documents: {
+        __typename?: "DriverDocument";
+        _id: string;
+        frontOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        backOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        leftOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        rigthOfVehicle?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyVehicleRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyIDCard?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyDrivingLicense?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyBookBank?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        copyHouseRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        insurancePolicy?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        criminalRecordCheckCert?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        businessRegistrationCertificate?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+        certificateValueAddedTaxRegistration?: {
+          __typename?: "File";
+          _id: string;
+          fileId: string;
+          filename: string;
+          mimetype: string;
+          createdAt: any;
+          updatedAt: any;
+        } | null;
+      };
+    } | null;
+    profileImage?: {
+      __typename?: "File";
+      _id: string;
+      fileId: string;
+      filename: string;
+      mimetype: string;
+      createdAt: any;
+      updatedAt: any;
+    } | null;
+  } | null;
   destinations: Array<{
     __typename?: "Destination";
     placeId: string;
@@ -25506,6 +24205,7 @@ export type ShipmentPureFragmentFragment = {
   cancelledDate?: any | null;
   notificationCount: number;
   isNotificationPause: boolean;
+  cancellationFee?: number | null;
   destinations: Array<{
     __typename?: "Destination";
     placeId: string;
@@ -32262,6 +30962,7 @@ export type GetAvailableShipmentQuery = {
     updatedAt: any;
     cancellationReason?: string | null;
     cancellationDetail?: string | null;
+    cancellationFee?: number | null;
     deliveredDate?: any | null;
     cancelledDate?: any | null;
     notificationCount: number;
@@ -33410,6 +32111,387 @@ export type GetAvailableShipmentQuery = {
       } | null;
     } | null;
     agentDriver?: {
+      __typename?: "User";
+      _id: string;
+      username: string;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      status: EUserStatus;
+      parents?: Array<string> | null;
+      fullname?: string | null;
+      email?: string | null;
+      contactNumber?: string | null;
+      address?: string | null;
+      adminDetail?: {
+        __typename?: "Admin";
+        _id: string;
+        userNumber: string;
+        permission: EAdminPermission;
+        email: string;
+        title?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      individualDetail?: {
+        __typename?: "IndividualCustomer";
+        _id: string;
+        userNumber: string;
+        email: string;
+        title: string;
+        otherTitle?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      businessDetail?: {
+        __typename?: "BusinessCustomer";
+        _id: string;
+        userNumber: string;
+        businessTitle: string;
+        businessName: string;
+        businessBranch?: string | null;
+        businessType: string;
+        businessTypeOther?: string | null;
+        taxNumber: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        contactNumber: string;
+        businessEmail: string;
+        paymentMethod: EPaymentMethod;
+        acceptedEDocumentDate?: any | null;
+        acceptedPoliciesVersion?: number | null;
+        acceptedPoliciesDate?: any | null;
+        acceptedTermConditionVersion?: number | null;
+        acceptedTermConditionDate?: any | null;
+        changePaymentMethodRequest?: boolean | null;
+        creditPayment?: {
+          __typename?: "BusinessCustomerCreditPayment";
+          _id: string;
+          isSameAddress?: boolean | null;
+          financialFirstname: string;
+          financialLastname: string;
+          financialContactNumber: string;
+          financialContactEmails: Array<string>;
+          financialAddress: string;
+          financialPostcode: string;
+          financialProvince: string;
+          financialDistrict: string;
+          financialSubDistrict: string;
+          billingCycleType: string;
+          acceptedFirstCreditTermDate?: any | null;
+          creditLimit: number;
+          creditUsage: number;
+          creditOutstandingBalance: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+          };
+          businessRegistrationCertificateFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          copyIDAuthorizedSignatoryFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          certificateValueAddedTaxRegistrationFile?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        } | null;
+        cashPayment?: {
+          __typename?: "BusinessCustomerCashPayment";
+          _id: string;
+          acceptedEReceiptDate?: any | null;
+        } | null;
+      } | null;
+      driverDetail?: {
+        __typename?: "DriverDetail";
+        _id: string;
+        driverType: Array<EDriverType>;
+        title: string;
+        otherTitle: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
+        phoneNumber: string;
+        lineId: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
+        balance: number;
+        fullname?: string | null;
+        serviceVehicleTypes?: Array<{
+          __typename?: "VehicleType";
+          _id: string;
+          type: string;
+          isPublic?: boolean | null;
+          isLarger?: boolean | null;
+          name: string;
+          width: number;
+          length: number;
+          height: number;
+          maxCapacity: number;
+          maxDroppoint?: number | null;
+          details?: string | null;
+          createdAt: any;
+          updatedAt: any;
+          image: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+        }> | null;
+        documents: {
+          __typename?: "DriverDocument";
+          _id: string;
+          frontOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          backOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          leftOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          rigthOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyVehicleRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyIDCard?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyDrivingLicense?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyBookBank?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyHouseRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          insurancePolicy?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          criminalRecordCheckCert?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          businessRegistrationCertificate?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          certificateValueAddedTaxRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        };
+      } | null;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      } | null;
+    } | null;
+    cancellationBy?: {
       __typename?: "User";
       _id: string;
       username: string;
@@ -35214,6 +34296,7 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
     updatedAt: any;
     cancellationReason?: string | null;
     cancellationDetail?: string | null;
+    cancellationFee?: number | null;
     deliveredDate?: any | null;
     cancelledDate?: any | null;
     notificationCount: number;
@@ -36362,6 +35445,387 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       } | null;
     } | null;
     agentDriver?: {
+      __typename?: "User";
+      _id: string;
+      username: string;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      status: EUserStatus;
+      parents?: Array<string> | null;
+      fullname?: string | null;
+      email?: string | null;
+      contactNumber?: string | null;
+      address?: string | null;
+      adminDetail?: {
+        __typename?: "Admin";
+        _id: string;
+        userNumber: string;
+        permission: EAdminPermission;
+        email: string;
+        title?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      individualDetail?: {
+        __typename?: "IndividualCustomer";
+        _id: string;
+        userNumber: string;
+        email: string;
+        title: string;
+        otherTitle?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      businessDetail?: {
+        __typename?: "BusinessCustomer";
+        _id: string;
+        userNumber: string;
+        businessTitle: string;
+        businessName: string;
+        businessBranch?: string | null;
+        businessType: string;
+        businessTypeOther?: string | null;
+        taxNumber: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        contactNumber: string;
+        businessEmail: string;
+        paymentMethod: EPaymentMethod;
+        acceptedEDocumentDate?: any | null;
+        acceptedPoliciesVersion?: number | null;
+        acceptedPoliciesDate?: any | null;
+        acceptedTermConditionVersion?: number | null;
+        acceptedTermConditionDate?: any | null;
+        changePaymentMethodRequest?: boolean | null;
+        creditPayment?: {
+          __typename?: "BusinessCustomerCreditPayment";
+          _id: string;
+          isSameAddress?: boolean | null;
+          financialFirstname: string;
+          financialLastname: string;
+          financialContactNumber: string;
+          financialContactEmails: Array<string>;
+          financialAddress: string;
+          financialPostcode: string;
+          financialProvince: string;
+          financialDistrict: string;
+          financialSubDistrict: string;
+          billingCycleType: string;
+          acceptedFirstCreditTermDate?: any | null;
+          creditLimit: number;
+          creditUsage: number;
+          creditOutstandingBalance: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+          };
+          businessRegistrationCertificateFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          copyIDAuthorizedSignatoryFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          certificateValueAddedTaxRegistrationFile?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        } | null;
+        cashPayment?: {
+          __typename?: "BusinessCustomerCashPayment";
+          _id: string;
+          acceptedEReceiptDate?: any | null;
+        } | null;
+      } | null;
+      driverDetail?: {
+        __typename?: "DriverDetail";
+        _id: string;
+        driverType: Array<EDriverType>;
+        title: string;
+        otherTitle: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
+        phoneNumber: string;
+        lineId: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
+        balance: number;
+        fullname?: string | null;
+        serviceVehicleTypes?: Array<{
+          __typename?: "VehicleType";
+          _id: string;
+          type: string;
+          isPublic?: boolean | null;
+          isLarger?: boolean | null;
+          name: string;
+          width: number;
+          length: number;
+          height: number;
+          maxCapacity: number;
+          maxDroppoint?: number | null;
+          details?: string | null;
+          createdAt: any;
+          updatedAt: any;
+          image: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+        }> | null;
+        documents: {
+          __typename?: "DriverDocument";
+          _id: string;
+          frontOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          backOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          leftOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          rigthOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyVehicleRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyIDCard?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyDrivingLicense?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyBookBank?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyHouseRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          insurancePolicy?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          criminalRecordCheckCert?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          businessRegistrationCertificate?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          certificateValueAddedTaxRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        };
+      } | null;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      } | null;
+    } | null;
+    cancellationBy?: {
       __typename?: "User";
       _id: string;
       username: string;
@@ -38164,6 +37628,7 @@ export type GetTodayShipmentQuery = {
     updatedAt: any;
     cancellationReason?: string | null;
     cancellationDetail?: string | null;
+    cancellationFee?: number | null;
     deliveredDate?: any | null;
     cancelledDate?: any | null;
     notificationCount: number;
@@ -39312,6 +38777,387 @@ export type GetTodayShipmentQuery = {
       } | null;
     } | null;
     agentDriver?: {
+      __typename?: "User";
+      _id: string;
+      username: string;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      status: EUserStatus;
+      parents?: Array<string> | null;
+      fullname?: string | null;
+      email?: string | null;
+      contactNumber?: string | null;
+      address?: string | null;
+      adminDetail?: {
+        __typename?: "Admin";
+        _id: string;
+        userNumber: string;
+        permission: EAdminPermission;
+        email: string;
+        title?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      individualDetail?: {
+        __typename?: "IndividualCustomer";
+        _id: string;
+        userNumber: string;
+        email: string;
+        title: string;
+        otherTitle?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      businessDetail?: {
+        __typename?: "BusinessCustomer";
+        _id: string;
+        userNumber: string;
+        businessTitle: string;
+        businessName: string;
+        businessBranch?: string | null;
+        businessType: string;
+        businessTypeOther?: string | null;
+        taxNumber: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        contactNumber: string;
+        businessEmail: string;
+        paymentMethod: EPaymentMethod;
+        acceptedEDocumentDate?: any | null;
+        acceptedPoliciesVersion?: number | null;
+        acceptedPoliciesDate?: any | null;
+        acceptedTermConditionVersion?: number | null;
+        acceptedTermConditionDate?: any | null;
+        changePaymentMethodRequest?: boolean | null;
+        creditPayment?: {
+          __typename?: "BusinessCustomerCreditPayment";
+          _id: string;
+          isSameAddress?: boolean | null;
+          financialFirstname: string;
+          financialLastname: string;
+          financialContactNumber: string;
+          financialContactEmails: Array<string>;
+          financialAddress: string;
+          financialPostcode: string;
+          financialProvince: string;
+          financialDistrict: string;
+          financialSubDistrict: string;
+          billingCycleType: string;
+          acceptedFirstCreditTermDate?: any | null;
+          creditLimit: number;
+          creditUsage: number;
+          creditOutstandingBalance: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+          };
+          businessRegistrationCertificateFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          copyIDAuthorizedSignatoryFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          certificateValueAddedTaxRegistrationFile?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        } | null;
+        cashPayment?: {
+          __typename?: "BusinessCustomerCashPayment";
+          _id: string;
+          acceptedEReceiptDate?: any | null;
+        } | null;
+      } | null;
+      driverDetail?: {
+        __typename?: "DriverDetail";
+        _id: string;
+        driverType: Array<EDriverType>;
+        title: string;
+        otherTitle: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
+        phoneNumber: string;
+        lineId: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
+        balance: number;
+        fullname?: string | null;
+        serviceVehicleTypes?: Array<{
+          __typename?: "VehicleType";
+          _id: string;
+          type: string;
+          isPublic?: boolean | null;
+          isLarger?: boolean | null;
+          name: string;
+          width: number;
+          length: number;
+          height: number;
+          maxCapacity: number;
+          maxDroppoint?: number | null;
+          details?: string | null;
+          createdAt: any;
+          updatedAt: any;
+          image: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+        }> | null;
+        documents: {
+          __typename?: "DriverDocument";
+          _id: string;
+          frontOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          backOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          leftOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          rigthOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyVehicleRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyIDCard?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyDrivingLicense?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyBookBank?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyHouseRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          insurancePolicy?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          criminalRecordCheckCert?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          businessRegistrationCertificate?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          certificateValueAddedTaxRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        };
+      } | null;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      } | null;
+    } | null;
+    cancellationBy?: {
       __typename?: "User";
       _id: string;
       username: string;
@@ -44057,6 +43903,7 @@ export type ListenAvailableShipmentSubscription = {
     updatedAt: any;
     cancellationReason?: string | null;
     cancellationDetail?: string | null;
+    cancellationFee?: number | null;
     deliveredDate?: any | null;
     cancelledDate?: any | null;
     notificationCount: number;
@@ -45205,6 +45052,387 @@ export type ListenAvailableShipmentSubscription = {
       } | null;
     } | null;
     agentDriver?: {
+      __typename?: "User";
+      _id: string;
+      username: string;
+      userNumber: string;
+      userRole: EUserRole;
+      userType: EUserType;
+      status: EUserStatus;
+      parents?: Array<string> | null;
+      fullname?: string | null;
+      email?: string | null;
+      contactNumber?: string | null;
+      address?: string | null;
+      adminDetail?: {
+        __typename?: "Admin";
+        _id: string;
+        userNumber: string;
+        permission: EAdminPermission;
+        email: string;
+        title?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      individualDetail?: {
+        __typename?: "IndividualCustomer";
+        _id: string;
+        userNumber: string;
+        email: string;
+        title: string;
+        otherTitle?: string | null;
+        firstname: string;
+        lastname: string;
+        phoneNumber: string;
+        taxId?: string | null;
+        address?: string | null;
+        province?: string | null;
+        district?: string | null;
+        subDistrict?: string | null;
+        postcode?: string | null;
+        fullname?: string | null;
+      } | null;
+      businessDetail?: {
+        __typename?: "BusinessCustomer";
+        _id: string;
+        userNumber: string;
+        businessTitle: string;
+        businessName: string;
+        businessBranch?: string | null;
+        businessType: string;
+        businessTypeOther?: string | null;
+        taxNumber: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        contactNumber: string;
+        businessEmail: string;
+        paymentMethod: EPaymentMethod;
+        acceptedEDocumentDate?: any | null;
+        acceptedPoliciesVersion?: number | null;
+        acceptedPoliciesDate?: any | null;
+        acceptedTermConditionVersion?: number | null;
+        acceptedTermConditionDate?: any | null;
+        changePaymentMethodRequest?: boolean | null;
+        creditPayment?: {
+          __typename?: "BusinessCustomerCreditPayment";
+          _id: string;
+          isSameAddress?: boolean | null;
+          financialFirstname: string;
+          financialLastname: string;
+          financialContactNumber: string;
+          financialContactEmails: Array<string>;
+          financialAddress: string;
+          financialPostcode: string;
+          financialProvince: string;
+          financialDistrict: string;
+          financialSubDistrict: string;
+          billingCycleType: string;
+          acceptedFirstCreditTermDate?: any | null;
+          creditLimit: number;
+          creditUsage: number;
+          creditOutstandingBalance: number;
+          billingCycle: {
+            __typename?: "YearlyBillingCycle";
+            jan: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            feb: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            mar: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            apr: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            may: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jun: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            jul: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            aug: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            sep: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            oct: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            nov: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+            dec: {
+              __typename?: "MonthlyBillingCycle";
+              issueDate: number;
+              dueDate: number;
+              dueMonth: number;
+            };
+          };
+          businessRegistrationCertificateFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          copyIDAuthorizedSignatoryFile: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+          certificateValueAddedTaxRegistrationFile?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        } | null;
+        cashPayment?: {
+          __typename?: "BusinessCustomerCashPayment";
+          _id: string;
+          acceptedEReceiptDate?: any | null;
+        } | null;
+      } | null;
+      driverDetail?: {
+        __typename?: "DriverDetail";
+        _id: string;
+        driverType: Array<EDriverType>;
+        title: string;
+        otherTitle: string;
+        firstname?: string | null;
+        lastname?: string | null;
+        businessName?: string | null;
+        businessBranch?: string | null;
+        taxNumber: string;
+        phoneNumber: string;
+        lineId: string;
+        address: string;
+        province: string;
+        district: string;
+        subDistrict: string;
+        postcode: string;
+        bank?: string | null;
+        bankBranch?: string | null;
+        bankName?: string | null;
+        bankNumber?: string | null;
+        balance: number;
+        fullname?: string | null;
+        serviceVehicleTypes?: Array<{
+          __typename?: "VehicleType";
+          _id: string;
+          type: string;
+          isPublic?: boolean | null;
+          isLarger?: boolean | null;
+          name: string;
+          width: number;
+          length: number;
+          height: number;
+          maxCapacity: number;
+          maxDroppoint?: number | null;
+          details?: string | null;
+          createdAt: any;
+          updatedAt: any;
+          image: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          };
+        }> | null;
+        documents: {
+          __typename?: "DriverDocument";
+          _id: string;
+          frontOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          backOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          leftOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          rigthOfVehicle?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyVehicleRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyIDCard?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyDrivingLicense?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyBookBank?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          copyHouseRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          insurancePolicy?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          criminalRecordCheckCert?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          businessRegistrationCertificate?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+          certificateValueAddedTaxRegistration?: {
+            __typename?: "File";
+            _id: string;
+            fileId: string;
+            filename: string;
+            mimetype: string;
+            createdAt: any;
+            updatedAt: any;
+          } | null;
+        };
+      } | null;
+      profileImage?: {
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      } | null;
+    } | null;
+    cancellationBy?: {
       __typename?: "User";
       _id: string;
       username: string;
@@ -47548,6 +47776,9 @@ export const ShipmentFragmentFragmentDoc = gql`
     agentDriver {
       ...UserNonInfoDataFragment
     }
+    cancellationBy {
+      ...UserNonInfoDataFragment
+    }
     destinations {
       ...DestinationFragment
     }
@@ -47590,6 +47821,7 @@ export const ShipmentFragmentFragmentDoc = gql`
     }
     cancellationReason
     cancellationDetail
+    cancellationFee
     deliveredDate
     cancelledDate
     notificationCount
@@ -47689,19 +47921,29 @@ export const BillingAdjustmentNoteFragmentFragmentDoc = gql`
   fragment BillingAdjustmentNoteFragment on BillingAdjustmentNote {
     _id
     adjustmentNumber
-    status
-    billingId
     adjustmentType
-    adjustmentAmount
-    adjustmentReason
-    issueDate
-    payment {
-      ...PaymentFragment
+    items {
+      description
+      amount
+      serviceDate
+      shipmentNumber
     }
-    createdAt
-    updatedAt
+    previousDocumentRef {
+      documentNumber
+      documentType
+    }
+    originalSubTotal
+    adjustmentSubTotal
+    newSubTotal
+    taxAmount
+    totalAmount
+    issueDate
+    remarks
+    document {
+      _id
+      filename
+    }
   }
-  ${PaymentFragmentFragmentDoc}
 `;
 export const InvoiceFragmentFragmentDoc = gql`
   fragment InvoiceFragment on Invoice {
@@ -47807,6 +48049,7 @@ export const ShipmentPureFragmentFragmentDoc = gql`
     cancelledDate
     notificationCount
     isNotificationPause
+    cancellationFee
     formula {
       ...DistanceCostPricingWithoutHistoryFragment
     }
@@ -47961,6 +48204,9 @@ export const ShipmentListFragmentFragmentDoc = gql`
     agentDriver {
       ...UserNonInfoDataFragment
     }
+    cancellationBy {
+      ...UserNonInfoDataFragment
+    }
     destinations {
       ...DestinationFragment
     }
@@ -48004,6 +48250,7 @@ export const ShipmentListFragmentFragmentDoc = gql`
     cancelledDate
     notificationCount
     isNotificationPause
+    cancellationFee
     formula {
       ...DistanceCostPricingWithoutHistoryFragment
     }

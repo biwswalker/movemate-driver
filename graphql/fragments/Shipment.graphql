@@ -53,6 +53,9 @@ fragment ShipmentFragment on Shipment {
   agentDriver {
     ...UserNonInfoDataFragment
   }
+  cancellationBy {
+    ...UserNonInfoDataFragment
+  }
   destinations {
     ...DestinationFragment
   }
@@ -95,6 +98,7 @@ fragment ShipmentFragment on Shipment {
   }
   cancellationReason
   cancellationDetail
+  cancellationFee
   deliveredDate
   cancelledDate
   notificationCount
@@ -123,6 +127,9 @@ fragment ShipmentListFragment on Shipment {
     ...UserNonInfoDataFragment
   }
   agentDriver {
+    ...UserNonInfoDataFragment
+  }
+  cancellationBy {
     ...UserNonInfoDataFragment
   }
   destinations {
@@ -168,6 +175,7 @@ fragment ShipmentListFragment on Shipment {
   cancelledDate
   notificationCount
   isNotificationPause
+  cancellationFee
   formula {
     ...DistanceCostPricingWithoutHistoryFragment
   }
@@ -204,6 +212,7 @@ fragment ShipmentPureFragment on Shipment {
   cancelledDate
   notificationCount
   isNotificationPause
+  cancellationFee
   formula {
     ...DistanceCostPricingWithoutHistoryFragment
   }

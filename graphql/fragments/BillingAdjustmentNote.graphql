@@ -1,15 +1,27 @@
 fragment BillingAdjustmentNoteFragment on BillingAdjustmentNote {
   _id
   adjustmentNumber
-  status
-  billingId
   adjustmentType
-  adjustmentAmount
-  adjustmentReason
-  issueDate
-  payment {
-    ...PaymentFragment
+  items {
+    description
+    amount
+    serviceDate
+    shipmentNumber
   }
-  createdAt
-  updatedAt
+  previousDocumentRef {
+    documentNumber
+    documentType
+  }
+  originalSubTotal
+  adjustmentSubTotal
+  newSubTotal
+  taxAmount
+  totalAmount
+  # createdBy {}
+  issueDate
+  remarks
+  document {
+    _id
+    filename
+  }
 }

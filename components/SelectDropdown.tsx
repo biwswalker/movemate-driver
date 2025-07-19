@@ -29,6 +29,9 @@ const styles = StyleSheet.create({
     fontSize:
       (12 / (getFontVarient("body1").fontSize || 12)) *
       (getFontVarient("body1").fontSize || 12),
+    lineHeight:
+      (16 / (getFontVarient("body1").lineHeight || 16)) *
+      (getFontVarient("body1").lineHeight || 16),
     color: colors.text.disabled,
   },
   placeholderStyle: {

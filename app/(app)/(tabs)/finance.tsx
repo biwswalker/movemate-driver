@@ -29,11 +29,13 @@ import useAuth from "@/hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
+import DashDivider from "@/components/Divider";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export default function Financial() {
   const isFocused = useIsFocused();
   const { user } = useAuth();
-  const { data, refetch } = useGetTransactionQuery({
+  const { data, refetch, loading } = useGetTransactionQuery({
     variables: {
       limit: 10,
       sortField: "createdAt",
@@ -42,6 +44,7 @@ export default function Financial() {
     onError: (error) => {
       console.log("error: ", error);
     },
+    fetchPolicy: "network-only",
   });
 
   const transactions = useMemo(
@@ -167,6 +170,10 @@ export default function Financial() {
                 renderItem={FinancialItem}
                 keyExtractor={(item) => item._id}
                 scrollEnabled
+                refreshControl={
+                  <RefreshControl refreshing={loading} onRefresh={refetch} />
+                }
+                ItemSeparatorComponent={DashDivider}
                 ListEmptyComponent={
                   <View style={styles.emptyTransaction}>
                     <Text
@@ -179,9 +186,9 @@ export default function Financial() {
                   </View>
                 }
                 contentContainerStyle={{
-                  paddingBottom: normalize(72),
+                  paddingBottom: 80,
                   paddingTop: normalize(8),
-                  paddingHorizontal: normalize(15),
+                  paddingHorizontal: 8,
                 }}
               />
             </Fragment>

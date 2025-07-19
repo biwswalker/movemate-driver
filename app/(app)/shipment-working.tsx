@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
   scrollContainer: {
-    paddingBottom: Dimensions.get("window").height * 0.15,
+    paddingBottom: Dimensions.get("window").height * 0.05,
   },
   sheetContainer: {
     borderWidth: 1,

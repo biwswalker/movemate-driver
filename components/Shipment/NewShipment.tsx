@@ -319,7 +319,7 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
           renderItem={Item}
           keyExtractor={(item) => item._id}
           scrollEnabled={false}
-          contentContainerStyle={{ paddingBottom: normalize(104) }}
+          contentContainerStyle={{ paddingBottom: 112 }}
           ListFooterComponent={FooterAction}
         />
       </View>

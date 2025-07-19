@@ -1,6 +1,6 @@
 import React, { Dispatch, Fragment, SetStateAction, useState } from "react";
 import { Image, Modal, StyleSheet, TouchableOpacity, View } from "react-native";
-import Text from "@components/Text";
+import Text, { getFontVarient } from "@components/Text";
 import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
@@ -10,9 +10,19 @@ import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EUserStatus, User } from "@/graphql/generated/graphql";
+import {
+  EUserStatus,
+  FileInput,
+  User,
+  useUpdateProfileImageMutation,
+} from "@/graphql/generated/graphql";
 import Button from "@/components/Button";
 import Label from "@/components/Label";
+import { useSnackbarV2 } from "@/hooks/useSnackbar";
+import * as ImagePicker from "expo-image-picker";
+import { fileUploadAPI } from "@/services/upload";
+import { get, includes, isNumber, pick } from "lodash";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 
 const styles = StyleSheet.create({
   container: {
@@ -69,12 +79,118 @@ const styles = StyleSheet.create({
 });
 
 export default function Profile() {
-  const { user } = useAuth();
-
+  const { user, refetchMe } = useAuth();
+  const { showSnackbar, DropdownType } = useSnackbarV2();
   const [openLogout, setOpenLogout] = useState(false);
+  const { showActionSheetWithOptions } = useActionSheet();
+
+  // 1. Add mutation for updating profile
+  const [updateProfileImage, { loading: updateProfileImageLoading }] =
+    useUpdateProfileImageMutation();
 
   function handleLogout() {
     setOpenLogout(true);
+  }
+
+  // 2. Function to handle image picking and uploading
+  const handleUploadProfileImage = async (type: "CAMERA" | "GALLERY") => {
+    let result: ImagePicker.ImagePickerResult;
+
+    if (type === "CAMERA") {
+      await ImagePicker.requestCameraPermissionsAsync();
+      result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+    } else {
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: "images",
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+    }
+
+    if (!result.canceled) {
+      const file = result.assets[0];
+      try {
+        const response = await fileUploadAPI({
+          uri: file.uri,
+          name: file.fileName || `profile-${user?._id}.jpg`,
+          type: file.mimeType || "image/jpeg",
+        });
+
+        const responseFile = get(response, "data", undefined);
+        if (responseFile) {
+          const profileImage = pick(responseFile, [
+            "fileId",
+            "filename",
+            "mimetype",
+          ]) as FileInput;
+
+          // Call mutation to update profile
+          updateProfileImage({
+            variables: { fileDetail: profileImage, uid: user?._id },
+            onCompleted: () => {
+              showSnackbar({
+                title: "สำเร็จ",
+                message: "อัปเดตรูปโปรไฟล์เรียบร้อยแล้ว",
+                type: DropdownType.Success,
+              });
+              refetchMe(); // Refetch user data to show new image
+            },
+            onError: (error) => {
+              showSnackbar({
+                title: "เกิดข้อผิดพลาด",
+                message: error.message || "ไม่สามารถอัปเดตรูปโปรไฟล์ได้",
+                type: DropdownType.Error,
+              });
+            },
+          });
+        }
+      } catch (error: any) {
+        console.error("Upload failed:", error);
+        showSnackbar({
+          title: "อัปโหลดล้มเหลว",
+          message: "กรุณาลองใหม่อีกครั้ง",
+          type: DropdownType.Error,
+        });
+      }
+    }
+  };
+
+  function handleOpenActionSheet() {
+    // Note: Record called "utility type"
+    const defaultMenu = [
+      { label: "ถ่ายรูป", value: "CAMERA" },
+      { label: "เลือกรูปจากแกลอรี่", value: "GALLERY" },
+      { label: "ยกเลิก", value: "CANCEL" },
+    ];
+
+    showActionSheetWithOptions(
+      {
+        title: "เลือกไฟล์รูปภาพหรือเอกสาร",
+        message: "กรุณาเลือกช่องทางนำเข้าไฟล์ เฉพาะไฟล์ รูปภาพ และ PDF",
+        options: defaultMenu.map((option) => option.label),
+        cancelButtonIndex: defaultMenu.length - 1,
+        titleTextStyle: getFontVarient("h4"),
+        messageTextStyle: {
+          ...getFontVarient("body2"),
+          color: colors.text.disabled,
+        },
+        textStyle: getFontVarient("buttonL"),
+      },
+      (selectedIndex: number | undefined) => {
+        if (isNumber(selectedIndex)) {
+          const pressMenu = defaultMenu[selectedIndex!];
+          if (includes(["CAMERA", "GALLERY"], pressMenu.value)) {
+            handleUploadProfileImage(pressMenu.value as any);
+          }
+        }
+      }
+    );
   }
 
   function getUserStatus(_user: User): { text: string; color: TColorSchema } {
@@ -102,22 +218,24 @@ export default function Profile() {
             <View style={styles.contentWrapper}>
               {user?.status === EUserStatus.PENDING && <PendingApproval />}
               <View style={styles.userInfoWrapper}>
-                {user?.profileImage ? (
-                  <Image
-                    style={{
-                      width: normalize(88),
-                      height: normalize(88),
-                      borderRadius: normalize(44),
-                    }}
-                    source={{ uri: imagePath(user.profileImage.filename) }}
-                  />
-                ) : (
-                  <Iconify
-                    icon="solar:user-circle-bold-duotone"
-                    size={normalize(88)}
-                    color={colors.text.disabled}
-                  />
-                )}
+                <TouchableOpacity onPress={handleOpenActionSheet}>
+                  {user?.profileImage ? (
+                    <Image
+                      style={{
+                        width: normalize(88),
+                        height: normalize(88),
+                        borderRadius: normalize(44),
+                      }}
+                      source={{ uri: imagePath(user.profileImage.filename) }}
+                    />
+                  ) : (
+                    <Iconify
+                      icon="solar:user-circle-bold-duotone"
+                      size={normalize(88)}
+                      color={colors.text.disabled}
+                    />
+                  )}
+                </TouchableOpacity>
                 {user && (
                   <View style={styles.userInfoTextWrapper}>
                     <Text varient="h5">{user?.fullname}</Text>

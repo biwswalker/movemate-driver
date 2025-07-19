@@ -6,13 +6,25 @@ import { normalize } from "@/utils/normalizeSize";
 import hexToRgba from "hex-to-rgba";
 import { get, includes, map, tail } from "lodash";
 import { Fragment } from "react";
-import { Image, Platform, StyleSheet, View } from "react-native";
+import {
+  Image,
+  Platform,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+} from "react-native";
 import {
   EShipmentStatus,
   EUserType,
   Shipment,
 } from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
+import Reanimated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 interface OverviewDetailProps {
   shipment: Shipment;
@@ -20,6 +32,43 @@ interface OverviewDetailProps {
 
 export default function Detail({ shipment }: OverviewDetailProps) {
   const { user } = useAuth();
+
+  const progress = useSharedValue(0); // Start expanded
+
+  const animationConfig = {
+    duration: 80,
+    easing: Easing.inOut(Easing.cubic),
+  };
+  const cardAnimatedStyle = useAnimatedStyle(() => {
+    const platformStyles =
+      Platform.OS === "android"
+        ? {
+            elevation: progress.value * 8,
+          }
+        : {
+            shadowOpacity: progress.value * 0.1,
+          };
+
+    return {
+      ...platformStyles,
+      transform: [{ translateY: progress.value * -2 }],
+    };
+  });
+
+  const arrowAnimatedStyle = useAnimatedStyle(() => {
+    return { transform: [{ rotate: `${progress.value * 180}deg` }] };
+  });
+  const bodyAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      maxHeight: withTiming(progress.value * 1000), // Increased max height for safety
+      opacity: withTiming(progress.value),
+    };
+  });
+
+  const toggleAccordion = () => {
+    progress.value = withTiming(progress.value === 1 ? 0 : 1, animationConfig);
+  };
+
   const isBusiness = user?.userType === EUserType.BUSINESS;
   const driver = get(shipment, "driver", undefined);
   const agentDriver = get(shipment, "agentDriver", undefined);
@@ -39,205 +88,219 @@ export default function Detail({ shipment }: OverviewDetailProps) {
   );
 
   return (
-    <Fragment>
-      <View
-        style={[detailStyles.dividerContainer, { marginTop: normalize(16) }]}
-      >
-        <View style={[detailStyles.divider, { flex: 1 }]} />
-        <Text varient="caption" color="disabled">
-          รายละเอียดงาน
-        </Text>
-        <View style={[detailStyles.divider, { flex: 1 }]} />
-      </View>
-
-      {/*  */}
-      {isBusiness && driver && (
-        <View
-          style={[
-            detailStyles.accountContainer,
-            { ...(!isHiddenInfo ? { marginBottom: 0 } : {}) },
-          ]}
-        >
-          <View style={detailStyles.accountAvatarWrapper}>
-            {driver?.profileImage ? (
-              <Image
-                style={detailStyles.avatarImage}
-                source={{ uri: imagePath(driver.profileImage.filename) }}
-              />
-            ) : (
-              <Iconify
-                icon="solar:user-circle-bold-duotone"
-                size={normalize(32)}
-                color={colors.text.disabled}
-              />
-            )}
-          </View>
-          <View style={detailStyles.accountNameWrapper}>
-            <Text varient="body2" color="secondary" numberOfLines={1}>
-              คนขับที่รับผิดชอบ
-            </Text>
-            <Text varient="subtitle1" color="primary">
-              {driver?.fullname}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {!isBusiness && agentDriver && (
-        <View
-          style={[
-            detailStyles.accountContainer,
-            { ...(!isHiddenInfo ? { marginBottom: 0 } : {}) },
-          ]}
-        >
-          <View style={detailStyles.accountAvatarWrapper}>
-            {agentDriver?.profileImage ? (
-              <Image
-                style={detailStyles.avatarImage}
-                source={{ uri: imagePath(agentDriver.profileImage.filename) }}
-              />
-            ) : (
-              <Iconify
-                icon="solar:user-circle-bold-duotone"
-                size={normalize(32)}
-                color={colors.text.disabled}
-              />
-            )}
-          </View>
-          <View style={detailStyles.accountNameWrapper}>
-            <Text varient="body2" color="secondary" numberOfLines={1}>
-              นายหน้า
-            </Text>
-            <Text varient="subtitle1" color="primary">
-              {agentDriver?.fullname}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* {!isHiddenInfo && (
-        <View style={[detailStyles.accountContainer]}>
-          <View style={detailStyles.accountAvatarWrapper}>
-            {customer?.profileImage ? (
-              <Image
-                style={detailStyles.avatarImage}
-                source={{ uri: imagePath(customer.profileImage.filename) }}
-              />
-            ) : (
-              <Iconify
-                icon="solar:user-circle-bold-duotone"
-                size={normalize(32)}
-                color={colors.text.disabled}
-              />
-            )}
-          </View>
-          <View style={detailStyles.accountNameWrapper}>
-            <Text varient="body2" color="secondary" numberOfLines={1}>
-              ลูกค้า
-            </Text>
-            <Text varient="subtitle1" color="primary">
-              {customer?.fullname}
-            </Text>
-          </View>
-        </View>
-      )} */}
-
-      {/*  */}
-      <View style={detailStyles.cardWrapper}>
-        {/* Locations */}
-        <View style={detailStyles.locationWrapper}>
-          <View style={detailStyles.boxIconWrapper}>
+    <Reanimated.View style={[detailStyles.accordionCard, cardAnimatedStyle]}>
+      <TouchableOpacity onPress={toggleAccordion} activeOpacity={0.8}>
+        <View style={detailStyles.headerContainer}>
+          <Text varient="h5">รายละเอียดงาน</Text>
+          <View style={[{ flex: 1 }]} />
+          <Reanimated.View style={arrowAnimatedStyle}>
             <Iconify
-              icon="solar:box-bold-duotone"
-              size={normalize(18)}
-              color={colors.primary.main}
+              icon="eva:arrow-ios-downward-outline"
+              size={normalize(24)}
+              color={colors.text.disabled}
             />
-          </View>
-          <View style={detailStyles.locationDetailWrapper}>
-            <View style={detailStyles.locationTitleWrapper}>
-              <Text varient="body2" color="secondary">
-                จุดรับสินค้า
-              </Text>
-              {/* <Label text="ดำเนินการ" color="warning" /> */}
-            </View>
-            <Text varient="subtitle2" color="primary">
-              {isHiddenInfo
-                ? origin?.placeProvince || origin?.detail
-                : `${origin?.name} ${origin?.detail}`}
-            </Text>
-          </View>
+          </Reanimated.View>
         </View>
-        {map(dropoffs, (destination, index) => {
-          const isMultipleDestination = dropoffs.length > 1;
-          return (
-            <View
-              style={detailStyles.locationWrapper}
-              key={`destination-${destination.placeId}-${index}`}
-            >
-              <View style={detailStyles.boxNumberWrapper}>
-                <Text varient="h6" style={{ color: colors.secondary.main }}>
-                  {index + 1}
-                </Text>
-              </View>
-              <View style={detailStyles.locationDetailWrapper}>
-                <View style={detailStyles.locationTitleWrapper}>
-                  <Text varient="body2" color="secondary">
-                    {isMultipleDestination
-                      ? `จุดส่งสินค้าที่ ${index + 1}`
-                      : "จุดส่งสินค้า"}
-                  </Text>
-                  {/* <Label text="ดำเนินการ" color="warning" /> */}
-                </View>
-                <Text varient="subtitle2" color="primary">
-                  {isHiddenInfo
-                    ? destination?.placeProvince || destination?.detail
-                    : `${destination?.name} ${destination?.detail}`}
-                </Text>
-              </View>
-            </View>
-          );
-        })}
+      </TouchableOpacity>
 
-        {/* Additional Services */}
-        <View style={detailStyles.additionalServiceWrapper}>
-          <Text varient="body2" color="secondary">
-            บริการเสริม
-          </Text>
-          {shipment?.isRoundedReturn && (
-            <Text varient="subtitle1" color="primary">
-              • ไป - กลับ
-            </Text>
-          )}
-          {map(additionalService, (service) => {
-            const serviceName = get(
-              service,
-              "reference.additionalService.name",
-              ""
-            );
-            if (!serviceName) return <Fragment key={service._id} />;
-            return (
-              <Text varient="subtitle1" color="primary" key={service._id}>
-                • {serviceName === "POD" ? "บริการคืนใบส่งสินค้า" : serviceName}
+      <Reanimated.View style={[detailStyles.body, bodyAnimatedStyle]}>
+        {/*  */}
+        {isBusiness && driver && (
+          <View
+            style={[
+              detailStyles.accountContainer,
+              { ...(!isHiddenInfo ? { marginBottom: 0 } : {}) },
+            ]}
+          >
+            <View style={detailStyles.accountAvatarWrapper}>
+              {driver?.profileImage ? (
+                <Image
+                  style={detailStyles.avatarImage}
+                  source={{ uri: imagePath(driver.profileImage.filename) }}
+                />
+              ) : (
+                <Iconify
+                  icon="solar:user-circle-bold-duotone"
+                  size={normalize(32)}
+                  color={colors.text.disabled}
+                />
+              )}
+            </View>
+            <View style={detailStyles.accountNameWrapper}>
+              <Text varient="body2" color="secondary" numberOfLines={1}>
+                คนขับที่รับผิดชอบ
               </Text>
+              <Text varient="subtitle1" color="primary">
+                {driver?.fullname}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {!isBusiness && agentDriver && (
+          <View
+            style={[
+              detailStyles.accountContainer,
+              { ...(!isHiddenInfo ? { marginBottom: 0 } : {}) },
+            ]}
+          >
+            <View style={detailStyles.accountAvatarWrapper}>
+              {agentDriver?.profileImage ? (
+                <Image
+                  style={detailStyles.avatarImage}
+                  source={{
+                    uri: imagePath(agentDriver.profileImage.filename),
+                  }}
+                />
+              ) : (
+                <Iconify
+                  icon="solar:user-circle-bold-duotone"
+                  size={normalize(32)}
+                  color={colors.text.disabled}
+                />
+              )}
+            </View>
+            <View style={detailStyles.accountNameWrapper}>
+              <Text varient="body2" color="secondary" numberOfLines={1}>
+                นายหน้า
+              </Text>
+              <Text varient="subtitle1" color="primary">
+                {agentDriver?.fullname}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/*  */}
+        <View style={detailStyles.cardWrapper}>
+          {/* Locations */}
+          <View style={detailStyles.locationWrapper}>
+            <View style={detailStyles.boxIconWrapper}>
+              <Iconify
+                icon="solar:box-bold-duotone"
+                size={normalize(18)}
+                color={colors.primary.main}
+              />
+            </View>
+            <View style={detailStyles.locationDetailWrapper}>
+              <View style={detailStyles.locationTitleWrapper}>
+                <Text varient="body2" color="secondary">
+                  จุดรับสินค้า
+                </Text>
+                {/* <Label text="ดำเนินการ" color="warning" /> */}
+              </View>
+              <Text varient="subtitle2" color="primary">
+                {isHiddenInfo
+                  ? origin?.placeProvince || origin?.detail
+                  : `${origin?.name} ${origin?.detail}`}
+              </Text>
+            </View>
+          </View>
+          {map(dropoffs, (destination, index) => {
+            const isMultipleDestination = dropoffs.length > 1;
+            return (
+              <View
+                style={detailStyles.locationWrapper}
+                key={`destination-${destination.placeId}-${index}`}
+              >
+                <View style={detailStyles.boxNumberWrapper}>
+                  <Text varient="h6" style={{ color: colors.secondary.main }}>
+                    {index + 1}
+                  </Text>
+                </View>
+                <View style={detailStyles.locationDetailWrapper}>
+                  <View style={detailStyles.locationTitleWrapper}>
+                    <Text varient="body2" color="secondary">
+                      {isMultipleDestination
+                        ? `จุดส่งสินค้าที่ ${index + 1}`
+                        : "จุดส่งสินค้า"}
+                    </Text>
+                    {/* <Label text="ดำเนินการ" color="warning" /> */}
+                  </View>
+                  <Text varient="subtitle2" color="primary">
+                    {isHiddenInfo
+                      ? destination?.placeProvince || destination?.detail
+                      : `${destination?.name} ${destination?.detail}`}
+                  </Text>
+                </View>
+              </View>
             );
           })}
-        </View>
 
-        {/* Vehicle Type */}
-        <View style={detailStyles.additionalServiceWrapper}>
-          <Text varient="body2" color="secondary">
-            ประเภทรถขนส่ง
-          </Text>
-          <Text varient="subtitle1" color="primary">
-            {shipment?.vehicleId?.name || "-"}
-          </Text>
+          {/* Additional Services */}
+          <View style={detailStyles.additionalServiceWrapper}>
+            <Text varient="body2" color="secondary">
+              บริการเสริม
+            </Text>
+            {shipment?.isRoundedReturn && (
+              <Text varient="subtitle1" color="primary">
+                • ไป - กลับ
+              </Text>
+            )}
+            {map(additionalService, (service) => {
+              const serviceName = get(
+                service,
+                "reference.additionalService.name",
+                ""
+              );
+              if (!serviceName) return <Fragment key={service._id} />;
+              return (
+                <Text varient="subtitle1" color="primary" key={service._id}>
+                  •{" "}
+                  {serviceName === "POD" ? "บริการคืนใบส่งสินค้า" : serviceName}
+                </Text>
+              );
+            })}
+          </View>
+
+          {/* Vehicle Type */}
+          <View style={detailStyles.additionalServiceWrapper}>
+            <Text varient="body2" color="secondary">
+              ประเภทรถขนส่ง
+            </Text>
+            <Text varient="subtitle1" color="primary">
+              {shipment?.vehicleId?.name || "-"}
+            </Text>
+          </View>
         </View>
-      </View>
-    </Fragment>
+      </Reanimated.View>
+    </Reanimated.View>
   );
 }
 
 const detailStyles = StyleSheet.create({
+  accordionCard: {
+    gap: normalize(8),
+    backgroundColor: colors.background.default,
+    borderColor: colors.background.neutral,
+    borderWidth: normalize(6),
+    borderRadius: normalize(12),
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(12),
+
+    marginHorizontal: normalize(16),
+    marginTop: normalize(16),
+    // 2. Adjust base styles for shadows
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.background.neutral,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+      },
+      android: {
+        // We set shadowColor here, and animate elevation in useAnimatedStyle
+        shadowColor: colors.background.neutral,
+      },
+    }),
+  },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: normalize(6),
+  },
+  body: {
+    overflow: "hidden",
+  },
   divider: {
     marginHorizontal: normalize(16),
     borderBottomWidth: 1,
@@ -246,6 +309,7 @@ const detailStyles = StyleSheet.create({
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
+    paddingRight: normalize(16),
   },
   dividerWithText: {},
   accountContainer: {
@@ -320,8 +384,9 @@ const detailStyles = StyleSheet.create({
     borderColor: colors.divider,
   },
   cardWrapper: {
-    flex: 1,
+    // flex: 1,
     marginHorizontal: normalize(16),
+    paddingVertical: normalize(16),
     backgroundColor: colors.common.white,
   },
   additionalServiceWrapper: {

@@ -1,10 +1,23 @@
 import colors from "@constants/colors";
 import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
-import { Fragment, ReactNode } from "react";
-import { Animated, StyleSheet, TouchableOpacity } from "react-native";
+import { ReactNode } from "react";
+import {
+  GestureResponderEvent,
+  LayoutAnimation,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  UIManager,
+  View,
+} from "react-native";
 import Iconify from "../Iconify";
-import Text from "../Text";
-import { normalize } from "@/utils/normalizeSize";
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 type TMenu = "home" | "shipment" | "finance" | "profile";
 
@@ -12,30 +25,18 @@ const Icon: Record<TMenu, ReactNode> = {
   home: (
     <Iconify
       icon="fluent:home-20-filled"
-      size={normalize(26)}
+      size={26}
       color={colors.common.white}
     />
   ),
   shipment: (
-    <Iconify
-      icon="mdi:truck-fast"
-      size={normalize(26)}
-      color={colors.common.white}
-    />
+    <Iconify icon="mdi:truck-fast" size={26} color={colors.common.white} />
   ),
   finance: (
-    <Iconify
-      icon="solar:document-bold"
-      size={normalize(26)}
-      color={colors.common.white}
-    />
+    <Iconify icon="solar:document-bold" size={26} color={colors.common.white} />
   ),
   profile: (
-    <Iconify
-      icon="mage:user-fill"
-      size={normalize(26)}
-      color={colors.common.white}
-    />
+    <Iconify icon="mage:user-fill" size={26} color={colors.common.white} />
   ),
 };
 const Label: Record<TMenu, string> = {
@@ -46,65 +47,98 @@ const Label: Record<TMenu, string> = {
 };
 
 export function IconItem(menu: TMenu, hidden: boolean = false) {
-  return ({ accessibilityState, onPress }: BottomTabBarButtonProps) => {
+  return ({
+    accessibilityState,
+    onPress = () => {},
+  }: BottomTabBarButtonProps) => {
     const isActive = accessibilityState?.selected;
+
+    const handlePress = (event: GestureResponderEvent) => {
+      // Animate the change between active and inactive states
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      onPress(event);
+    };
+
     if (hidden) {
-      return <Fragment />;
+      return <View style={{ flex: 0 }} />; // Return an empty spacer
     }
+
     return (
       <TouchableOpacity
-        onPress={onPress}
-        style={[tabStyles.menuContainer, isActive && tabStyles.menuActive]}
+        onPress={handlePress}
+        activeOpacity={0.8}
+        style={
+          isActive ? tabStyles.containerActive : tabStyles.containerInactive
+        }
       >
-        <Animated.View style={[tabStyles.menuWrapper]}>
+        <View
+          style={isActive ? tabStyles.wrapperActive : tabStyles.wrapperInactive}
+        >
           {Icon[menu]}
-          {/* {isActive && <Text style={tabStyles.menuText}>{Label[menu]}</Text>} */}
-        </Animated.View>
+        </View>
       </TouchableOpacity>
     );
   };
 }
 
 export const tabStyles = StyleSheet.create({
+  // --- Layout ของ Tab Bar หลัก ---
   tabBar: {
     position: "absolute",
-    bottom: normalize(16),
-    left: normalize(24),
-    right: normalize(24),
-    elevation: 0,
+    bottom: 16,
+    height: 52,
+    marginHorizontal: 16,
+    borderRadius: 50,
     backgroundColor: colors.text.primary,
-    borderRadius: normalize(27),
-    height: normalize(54),
-    paddingHorizontal: normalize(8),
+
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: normalize(16),
   },
   shadow: {
     shadowColor: colors.grey[500],
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.32,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  menuContainer: {
-    backgroundColor: "transparent",
-    height: normalize(40),
-    borderRadius: normalize(20),
-    paddingHorizontal: normalize(8),
-    marginVertical: normalize(8),
-    flexGrow: 1,
+
+  // --- Style สำหรับควบคุม Layout (Flexbox) ---
+  containerActive: {
+    flex: 1, // ยืดให้เต็มพื้นที่ว่างทั้งหมด
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  containerInactive: {
+    flex: 0, // หดให้มีขนาดพอดีกับเนื้อหา
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  // --- Style สำหรับควบคุมหน้าตา (Visual) ---
+  wrapperActive: {
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.master.main,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    gap: 6,
+    flex: 1,
+    marginVertical: 4,
+  },
+  wrapperInactive: {
+    width: 44, // กำหนดขนาดเป็นวงกลม
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
   },
-  menuActive: {
-    backgroundColor: colors.master.main,
-  },
-  menuWrapper: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 4,
-  },
   menuText: {
     color: colors.common.white,
+    fontWeight: "600",
   },
 });

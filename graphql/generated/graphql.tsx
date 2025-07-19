@@ -284,6 +284,16 @@ export type BillingDocument = {
   updatedBy?: Maybe<User>;
 };
 
+export type BillingInfoPayload = {
+  __typename?: "BillingInfoPayload";
+  billingNumber?: Maybe<Scalars["String"]["output"]>;
+  billingState?: Maybe<EBillingState>;
+  billingStatus?: Maybe<EBillingState>;
+  message?: Maybe<Scalars["String"]["output"]>;
+  paymentMethod: EPaymentMethod;
+  status: EBillingInfoStatus;
+};
+
 export type BillingListPayload = {
   __typename?: "BillingListPayload";
   docs: Array<Billing>;
@@ -419,6 +429,22 @@ export type CalculationResultPayload = {
   to: Scalars["Float"]["output"];
   unit: Scalars["String"]["output"];
   updatedAt: Scalars["DateTimeISO"]["output"];
+};
+
+export type CancellationPolicyDetail = {
+  __typename?: "CancellationPolicyDetail";
+  condition: Scalars["String"]["output"];
+  feeDescription: Scalars["String"]["output"];
+};
+
+export type CancellationPreview = {
+  __typename?: "CancellationPreview";
+  cancellationFee: Scalars["Float"]["output"];
+  finalChargeDescription: Scalars["String"]["output"];
+  isAllowed: Scalars["Boolean"]["output"];
+  policyDetails: Array<CancellationPolicyDetail>;
+  reasonIfNotAllowed?: Maybe<Scalars["String"]["output"]>;
+  refundAmount: Scalars["Float"]["output"];
 };
 
 export type CashPaymentDetailInput = {
@@ -1011,6 +1037,13 @@ export enum EBillingCriteriaStatus {
   VERIFY = "VERIFY",
 }
 
+/** Status of billing information retrieval */
+export enum EBillingInfoStatus {
+  AVAILABLE = "AVAILABLE",
+  NOT_YET_BILLED = "NOT_YET_BILLED",
+  NO_RECORD = "NO_RECORD",
+}
+
 /** Billing reason */
 export enum EBillingReason {
   CANCELLED_SHIPMENT = "CANCELLED_SHIPMENT",
@@ -1118,6 +1151,12 @@ export enum EqrPaymentType {
   EWALLET_ID = "EWALLET_ID",
   MOBILE_NUMBER = "MOBILE_NUMBER",
   NATIONAL_ID = "NATIONAL_ID",
+}
+
+/** Quotation status */
+export enum EQuotationStatus {
+  ACTIVE = "ACTIVE",
+  VOID = "VOID",
 }
 
 /** Ref type */
@@ -1528,6 +1567,13 @@ export type Marker = {
   placeId: Scalars["String"]["output"];
 };
 
+export type Modified = {
+  __typename?: "Modified";
+  createdAt: Scalars["DateTimeISO"]["output"];
+  modifiedBy: User;
+  reason: Scalars["String"]["output"];
+};
+
 export type MonthlyBillingCycle = {
   __typename?: "MonthlyBillingCycle";
   dueDate: Scalars["Int"]["output"];
@@ -1634,6 +1680,8 @@ export type Mutation = {
   updatePrivilege: Scalars["Boolean"]["output"];
   updateProfileImage: Scalars["Boolean"]["output"];
   updateShipment: Scalars["Boolean"]["output"];
+  /** API สำหรับแก้ไขเวลาเริ่มงานขนส่ง */
+  updateShipmentBookingTime: Scalars["Boolean"]["output"];
   updateVehicleType: VehicleType;
   upgradeAccount: Scalars["Boolean"]["output"];
   verifyDriverData: DriverVerifiedPayload;
@@ -1879,7 +1927,7 @@ export type MutationProcessPendingUserArgs = {
 
 export type MutationRegenerateReceiptArgs = {
   billingId: Scalars["String"]["input"];
-  documentId: Scalars["String"]["input"];
+  receiptId: Scalars["String"]["input"];
 };
 
 export type MutationRegisterArgs = {
@@ -2030,6 +2078,11 @@ export type MutationUpdateProfileImageArgs = {
 
 export type MutationUpdateShipmentArgs = {
   data: UpdateShipmentInput;
+};
+
+export type MutationUpdateShipmentBookingTimeArgs = {
+  newBookingDateTime: Scalars["DateTimeISO"]["input"];
+  shipmentId: Scalars["String"]["input"];
 };
 
 export type MutationUpdateVehicleTypeArgs = {
@@ -2309,29 +2362,6 @@ export type PrivilegePaginationPayload = {
   totalPages: Scalars["Int"]["output"];
 };
 
-export type PrivilegeUsedPayload = {
-  __typename?: "PrivilegeUsedPayload";
-  _id: Scalars["ID"]["output"];
-  code: Scalars["String"]["output"];
-  createdAt: Scalars["DateTimeISO"]["output"];
-  defaultShow?: Maybe<Scalars["Boolean"]["output"]>;
-  description?: Maybe<Scalars["String"]["output"]>;
-  discount: Scalars["Float"]["output"];
-  endDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
-  isInfinity: Scalars["Boolean"]["output"];
-  limitAmout?: Maybe<Scalars["Float"]["output"]>;
-  maxDiscountPrice?: Maybe<Scalars["Float"]["output"]>;
-  minPrice?: Maybe<Scalars["Float"]["output"]>;
-  name: Scalars["String"]["output"];
-  startDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
-  status: EPrivilegeStatus;
-  unit: EPrivilegeDiscountUnit;
-  updatedAt: Scalars["DateTimeISO"]["output"];
-  used: Scalars["Boolean"]["output"];
-  usedAmout?: Maybe<Scalars["Float"]["output"]>;
-  usedUser: Array<User>;
-};
-
 export type ProcessBillingRefundInput = {
   amount?: InputMaybe<Scalars["Float"]["input"]>;
   billingId: Scalars["String"]["input"];
@@ -2376,6 +2406,7 @@ export type Query = {
   getAvailableShipment: Array<Shipment>;
   getAvailableShipmentByTrackingNumber: Shipment;
   getBilling: Billing;
+  getBillingInfoByShipmentId: BillingInfoPayload;
   getBillingList: BillingListPayload;
   getBillingStatusCount: Array<TotalBillingRecordPayload>;
   getBookingConfig: BookingConfigPayload;
@@ -2414,6 +2445,7 @@ export type Query = {
   getPrivileges: PrivilegePaginationPayload;
   getProvince: Array<Province>;
   getShipmentByTracking: Shipment;
+  getShipmentCancellationPreview: CancellationPreview;
   getShipmentList: Array<ShipmentListPayload>;
   getSubDistrict: Array<SubDistrict>;
   getTodayShipment?: Maybe<Shipment>;
@@ -2444,7 +2476,7 @@ export type Query = {
   requireBeforeSignin: RequireDataBeforePayload;
   searchHistorys: SearchHistoryPaginationPayload;
   searchLocations: Array<LocationAutocomplete>;
-  searchPrivilegeByCode: Array<PrivilegeUsedPayload>;
+  searchPrivilegeByCode: Array<SearchPrivilegeResultPayload>;
   totalAvailableShipment: Scalars["Int"]["output"];
   totalContact: Scalars["Int"]["output"];
   totalNotification: Scalars["Int"]["output"];
@@ -2583,6 +2615,10 @@ export type QueryGetAvailableShipmentByTrackingNumberArgs = {
 
 export type QueryGetBillingArgs = {
   billingNumber: Scalars["String"]["input"];
+};
+
+export type QueryGetBillingInfoByShipmentIdArgs = {
+  shipmentId: Scalars["String"]["input"];
 };
 
 export type QueryGetBillingListArgs = {
@@ -2746,6 +2782,10 @@ export type QueryGetPrivilegesArgs = {
 
 export type QueryGetShipmentByTrackingArgs = {
   trackingNumber: Scalars["String"]["input"];
+};
+
+export type QueryGetShipmentCancellationPreviewArgs = {
+  shipmentId: Scalars["String"]["input"];
 };
 
 export type QueryGetShipmentListArgs = {
@@ -2946,6 +2986,7 @@ export type Quotation = {
   price: Price;
   quotationDate: Scalars["DateTimeISO"]["output"];
   quotationNumber: Scalars["String"]["output"];
+  status: EQuotationStatus;
   subTotal: Scalars["Float"]["output"];
   tax: Scalars["Float"]["output"];
   total: Scalars["Float"]["output"];
@@ -3127,6 +3168,19 @@ export type SearchHistoryWithDataPayload = {
   type: Scalars["String"]["output"];
   updatedAt: Scalars["DateTimeISO"]["output"];
   user?: Maybe<User>;
+};
+
+export type SearchPrivilegeResultPayload = {
+  __typename?: "SearchPrivilegeResultPayload";
+  _id: Scalars["ID"]["output"];
+  code: Scalars["String"]["output"];
+  description?: Maybe<Scalars["String"]["output"]>;
+  discount: Scalars["Float"]["output"];
+  expired: Scalars["Boolean"]["output"];
+  limitReached: Scalars["Boolean"]["output"];
+  name: Scalars["String"]["output"];
+  unit: EPrivilegeDiscountUnit;
+  used: Scalars["Boolean"]["output"];
 };
 
 export type SentPodDocumentShipmentStepInput = {
@@ -3323,6 +3377,7 @@ export type Shipment = {
   isBookingWithDate: Scalars["Boolean"]["output"];
   isNotificationPause: Scalars["Boolean"]["output"];
   isRoundedReturn: Scalars["Boolean"]["output"];
+  modifieds?: Maybe<Array<Modified>>;
   notificationCount: Scalars["Float"]["output"];
   paymentMethod: EPaymentMethod;
   podDetail?: Maybe<ShipmentPodAddress>;
@@ -16156,409 +16211,6 @@ export type PrivilegeFragmentFragment = {
   defaultShow?: boolean | null;
   createdAt: any;
   updatedAt: any;
-  usedUser: Array<{
-    __typename?: "User";
-    _id: string;
-    username: string;
-    userNumber: string;
-    userRole: EUserRole;
-    userType: EUserType;
-    status: EUserStatus;
-    parents?: Array<string> | null;
-    fullname?: string | null;
-    email?: string | null;
-    contactNumber?: string | null;
-    address?: string | null;
-    adminDetail?: {
-      __typename?: "Admin";
-      _id: string;
-      userNumber: string;
-      permission: EAdminPermission;
-      email: string;
-      title?: string | null;
-      firstname: string;
-      lastname: string;
-      phoneNumber: string;
-      taxId?: string | null;
-      address?: string | null;
-      province?: string | null;
-      district?: string | null;
-      subDistrict?: string | null;
-      postcode?: string | null;
-      fullname?: string | null;
-    } | null;
-    individualDetail?: {
-      __typename?: "IndividualCustomer";
-      _id: string;
-      userNumber: string;
-      email: string;
-      title: string;
-      otherTitle?: string | null;
-      firstname: string;
-      lastname: string;
-      phoneNumber: string;
-      taxId?: string | null;
-      address?: string | null;
-      province?: string | null;
-      district?: string | null;
-      subDistrict?: string | null;
-      postcode?: string | null;
-      fullname?: string | null;
-    } | null;
-    businessDetail?: {
-      __typename?: "BusinessCustomer";
-      _id: string;
-      userNumber: string;
-      businessTitle: string;
-      businessName: string;
-      businessBranch?: string | null;
-      businessType: string;
-      businessTypeOther?: string | null;
-      taxNumber: string;
-      address: string;
-      province: string;
-      district: string;
-      subDistrict: string;
-      postcode: string;
-      contactNumber: string;
-      businessEmail: string;
-      paymentMethod: EPaymentMethod;
-      acceptedEDocumentDate?: any | null;
-      acceptedPoliciesVersion?: number | null;
-      acceptedPoliciesDate?: any | null;
-      acceptedTermConditionVersion?: number | null;
-      acceptedTermConditionDate?: any | null;
-      changePaymentMethodRequest?: boolean | null;
-      creditPayment?: {
-        __typename?: "BusinessCustomerCreditPayment";
-        _id: string;
-        isSameAddress?: boolean | null;
-        financialFirstname: string;
-        financialLastname: string;
-        financialContactNumber: string;
-        financialContactEmails: Array<string>;
-        financialAddress: string;
-        financialPostcode: string;
-        financialProvince: string;
-        financialDistrict: string;
-        financialSubDistrict: string;
-        billingCycleType: string;
-        acceptedFirstCreditTermDate?: any | null;
-        creditLimit: number;
-        creditUsage: number;
-        creditOutstandingBalance: number;
-        billingCycle: {
-          __typename?: "YearlyBillingCycle";
-          jan: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          feb: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          mar: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          apr: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          may: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          jun: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          jul: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          aug: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          sep: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          oct: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          nov: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          dec: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-        };
-        businessRegistrationCertificateFile: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        };
-        copyIDAuthorizedSignatoryFile: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        };
-        certificateValueAddedTaxRegistrationFile?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      } | null;
-      cashPayment?: {
-        __typename?: "BusinessCustomerCashPayment";
-        _id: string;
-        acceptedEReceiptDate?: any | null;
-      } | null;
-    } | null;
-    driverDetail?: {
-      __typename?: "DriverDetail";
-      _id: string;
-      driverType: Array<EDriverType>;
-      title: string;
-      otherTitle: string;
-      firstname?: string | null;
-      lastname?: string | null;
-      businessName?: string | null;
-      businessBranch?: string | null;
-      taxNumber: string;
-      phoneNumber: string;
-      lineId: string;
-      address: string;
-      province: string;
-      district: string;
-      subDistrict: string;
-      postcode: string;
-      bank?: string | null;
-      bankBranch?: string | null;
-      bankName?: string | null;
-      bankNumber?: string | null;
-      balance: number;
-      fullname?: string | null;
-      serviceVehicleTypes?: Array<{
-        __typename?: "VehicleType";
-        _id: string;
-        type: string;
-        isPublic?: boolean | null;
-        isLarger?: boolean | null;
-        name: string;
-        width: number;
-        length: number;
-        height: number;
-        maxCapacity: number;
-        maxDroppoint?: number | null;
-        details?: string | null;
-        createdAt: any;
-        updatedAt: any;
-        image: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        };
-      }> | null;
-      documents: {
-        __typename?: "DriverDocument";
-        _id: string;
-        frontOfVehicle?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        backOfVehicle?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        leftOfVehicle?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        rigthOfVehicle?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyVehicleRegistration?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyIDCard?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyDrivingLicense?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyBookBank?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyHouseRegistration?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        insurancePolicy?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        criminalRecordCheckCert?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        businessRegistrationCertificate?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        certificateValueAddedTaxRegistration?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      };
-    } | null;
-    profileImage?: {
-      __typename?: "File";
-      _id: string;
-      fileId: string;
-      filename: string;
-      mimetype: string;
-      createdAt: any;
-      updatedAt: any;
-    } | null;
-  }>;
-};
-
-export type PrivilegeWithUsedFragmentFragment = {
-  __typename?: "PrivilegeUsedPayload";
-  _id: string;
-  status: EPrivilegeStatus;
-  name: string;
-  code: string;
-  startDate?: any | null;
-  endDate?: any | null;
-  discount: number;
-  unit: EPrivilegeDiscountUnit;
-  minPrice?: number | null;
-  maxDiscountPrice?: number | null;
-  isInfinity: boolean;
-  usedAmout?: number | null;
-  limitAmout?: number | null;
-  description?: string | null;
-  defaultShow?: boolean | null;
-  createdAt: any;
-  updatedAt: any;
-  used: boolean;
   usedUser: Array<{
     __typename?: "User";
     _id: string;
@@ -30770,6 +30422,16 @@ export type RemoveEmployeeMutationVariables = Exact<{
 export type RemoveEmployeeMutation = {
   __typename?: "Mutation";
   removeEmployee: boolean;
+};
+
+export type UpdateProfileImageMutationVariables = Exact<{
+  fileDetail: FileInput;
+  uid?: InputMaybe<Scalars["String"]["input"]>;
+}>;
+
+export type UpdateProfileImageMutation = {
+  __typename?: "Mutation";
+  updateProfileImage: boolean;
 };
 
 export type AcceptShipmentMutationVariables = Exact<{
@@ -48159,32 +47821,6 @@ export const PodAddressFragmentFragmentDoc = gql`
   }
   ${UserNonInfoDataFragmentFragmentDoc}
 `;
-export const PrivilegeWithUsedFragmentFragmentDoc = gql`
-  fragment PrivilegeWithUsedFragment on PrivilegeUsedPayload {
-    _id
-    status
-    name
-    code
-    startDate
-    endDate
-    discount
-    unit
-    minPrice
-    maxDiscountPrice
-    isInfinity
-    usedAmout
-    limitAmout
-    description
-    usedUser {
-      ...UserNonInfoDataFragment
-    }
-    defaultShow
-    createdAt
-    updatedAt
-    used
-  }
-  ${UserNonInfoDataFragmentFragmentDoc}
-`;
 export const ShipmentListFragmentFragmentDoc = gql`
   fragment ShipmentListFragment on Shipment {
     _id
@@ -49423,6 +49059,55 @@ export type RemoveEmployeeMutationResult =
 export type RemoveEmployeeMutationOptions = Apollo.BaseMutationOptions<
   RemoveEmployeeMutation,
   RemoveEmployeeMutationVariables
+>;
+export const UpdateProfileImageDocument = gql`
+  mutation UpdateProfileImage($fileDetail: FileInput!, $uid: String) {
+    updateProfileImage(fileDetail: $fileDetail, uid: $uid)
+  }
+`;
+export type UpdateProfileImageMutationFn = Apollo.MutationFunction<
+  UpdateProfileImageMutation,
+  UpdateProfileImageMutationVariables
+>;
+
+/**
+ * __useUpdateProfileImageMutation__
+ *
+ * To run a mutation, you first call `useUpdateProfileImageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateProfileImageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateProfileImageMutation, { data, loading, error }] = useUpdateProfileImageMutation({
+ *   variables: {
+ *      fileDetail: // value for 'fileDetail'
+ *      uid: // value for 'uid'
+ *   },
+ * });
+ */
+export function useUpdateProfileImageMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    UpdateProfileImageMutation,
+    UpdateProfileImageMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    UpdateProfileImageMutation,
+    UpdateProfileImageMutationVariables
+  >(UpdateProfileImageDocument, options);
+}
+export type UpdateProfileImageMutationHookResult = ReturnType<
+  typeof useUpdateProfileImageMutation
+>;
+export type UpdateProfileImageMutationResult =
+  Apollo.MutationResult<UpdateProfileImageMutation>;
+export type UpdateProfileImageMutationOptions = Apollo.BaseMutationOptions<
+  UpdateProfileImageMutation,
+  UpdateProfileImageMutationVariables
 >;
 export const AcceptShipmentDocument = gql`
   mutation AcceptShipment($shipmentId: String!) {

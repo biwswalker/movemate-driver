@@ -208,7 +208,7 @@ export default function UploadButton({
 
   async function handleChoosePhoto() {
     const image = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       // allowsEditing: true,
       // aspect: [4, 3],
       quality: 0.6,
@@ -218,7 +218,7 @@ export default function UploadButton({
 
   async function handleTakePhoto() {
     const image = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       // allowsEditing: true,
       // aspect: [4, 3],
       quality: 0.6,

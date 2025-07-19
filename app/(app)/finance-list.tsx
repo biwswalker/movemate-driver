@@ -19,10 +19,12 @@ import { isEmpty } from "lodash";
 import { Fragment, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DashDivider from "@/components/Divider";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export default function FinanceList() {
   const [hasMore, setHasMore] = useState(false);
-  const { data, loading, fetchMore } = useGetTransactionQuery({
+  const { data, loading, fetchMore, refetch } = useGetTransactionQuery({
     variables: {
       limit: 10,
       skip: 0,
@@ -117,6 +119,10 @@ export default function FinanceList() {
           renderItem={FinancialItem}
           keyExtractor={(item, indx) => `${indx}-${item._id}`}
           scrollEnabled
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={refetch} />
+          }
+          ItemSeparatorComponent={DashDivider}
           contentContainerStyle={styles.listContainer}
           estimatedItemSize={normalize(112)}
           ListFooterComponent={FooterAction}
@@ -142,6 +148,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingHorizontal: normalize(16),
+    paddingBottom: normalize(24),
   },
 });
 
@@ -161,10 +168,10 @@ function FinancialItem({ item }: ListRenderItemInfo<Transaction>) {
   return (
     <Pressable style={finStyle.container} onPress={handleViewTransaction}>
       <View style={finStyle.trackingNumberWrapper}>
-        <Text varient="body2">{item.description}</Text>
+        <Text varient="body1">{item.description}</Text>
       </View>
       <View style={[finStyle.trackingNumberWrapper, { alignItems: "center" }]}>
-        <Text varient="caption" color="secondary">
+        <Text varient="body2" color="secondary">
           {format(item.createdAt, "EEEE dd MMM yyyy HH:mm", { locale: th })}
         </Text>
         <Text

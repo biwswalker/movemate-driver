@@ -34,7 +34,7 @@ import { fCurrency } from "@utils/number";
 import useAuth from "@/hooks/useAuth";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
+import { ListRenderItemInfo } from "@shopify/flash-list";
 import { useIsFocused } from "@react-navigation/native";
 import { ICarouselInstance } from "react-native-reanimated-carousel";
 import { FlatList, RefreshControl } from "react-native-gesture-handler";

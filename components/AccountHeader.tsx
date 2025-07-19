@@ -84,11 +84,11 @@ export default function AccountHeader({
         <ButtonIcon varient="text" circle onPress={handleViewNotifications}>
           <Iconify
             icon="solar:bell-bold-duotone"
-            size={normalize(24)}
+            size={normalize(28)}
             color={colors.text.secondary}
           />
           {notificationCount > 0 && (
-            <Badge style={[styles.notificationBadge]}>
+            <Badge style={[styles.notificationBadge]} size={normalize(20)}>
               {notificationCount > 99 ? "99+" : notificationCount}
             </Badge>
           )}

@@ -76,3 +76,7 @@ mutation AcceptationEmployee($result: String!, $agentId: String!) {
 mutation RemoveEmployee($driverId: String!) {
   removeEmployee(driverId: $driverId)
 }
+
+mutation UpdateProfileImage($fileDetail: FileInput!, $uid: String) {
+  updateProfileImage(fileDetail: $fileDetail, uid: $uid)
+}

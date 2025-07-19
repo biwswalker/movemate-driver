@@ -233,58 +233,58 @@ export default function ShipmentDetail() {
   //   });
   // }
 
-  function ShipmentWorkingModal() {
-    const activeIndex = includes(
-      [EShipmentStatus.IDLE, EShipmentStatus.PROGRESSING],
-      shipment?.status
-    )
-      ? 1
-      : 0;
-    return (
-      <BottomSheetModal
-        ref={shipmentStepModalRef}
-        index={activeIndex}
-        detached
-        enablePanDownToClose={false}
-        enableDynamicSizing={false}
-        style={styles.sheetContainer}
-        topInset={StatusBar.currentHeight || 0}
-        snapPoints={snapPoints}
-        onChange={handleSheetChange}
-        handleComponent={SheetHandle}
-        backdropComponent={SheetBackdrop.Default}
-      >
-        <BottomSheetView
-          style={{
-            flex: 1,
-            gap: 8,
-          }}
-        >
-          <View style={{ paddingHorizontal: normalize(16) }}>
-            <Text varient="body2" color="secondary">
-              รายละเอียด
-            </Text>
-            <Text varient="h4">ขั้นตอนงานขนส่ง</Text>
-          </View>
-          {shipment && (
-            <ScrollView style={{ paddingBottom: normalize(32) }}>
-              <MainStep
-                steps={stepItems}
-                shipment={shipment}
-                refetch={handleRefetch}
-              />
-              {isConfirmFinishShipment && (
-                <FinishShipment
-                  shipmentId={shipment._id}
-                  onFinishComplete={handleOnShipmentComplete}
-                />
-              )}
-            </ScrollView>
-          )}
-        </BottomSheetView>
-      </BottomSheetModal>
-    );
-  }
+  // function ShipmentWorkingModal() {
+  //   const activeIndex = includes(
+  //     [EShipmentStatus.IDLE, EShipmentStatus.PROGRESSING],
+  //     shipment?.status
+  //   )
+  //     ? 1
+  //     : 0;
+  //   return (
+  //     <BottomSheetModal
+  //       ref={shipmentStepModalRef}
+  //       index={activeIndex}
+  //       detached
+  //       enablePanDownToClose={false}
+  //       enableDynamicSizing={false}
+  //       style={styles.sheetContainer}
+  //       topInset={StatusBar.currentHeight || 0}
+  //       snapPoints={snapPoints}
+  //       onChange={handleSheetChange}
+  //       handleComponent={SheetHandle}
+  //       backdropComponent={SheetBackdrop.Default}
+  //     >
+  //       <BottomSheetView
+  //         style={{
+  //           flex: 1,
+  //           gap: 8,
+  //         }}
+  //       >
+  //         <View style={{ paddingHorizontal: normalize(16) }}>
+  //           <Text varient="body2" color="secondary">
+  //             รายละเอียด
+  //           </Text>
+  //           <Text varient="h4">ขั้นตอนงานขนส่ง</Text>
+  //         </View>
+  //         {shipment && (
+  //           <ScrollView style={{ paddingBottom: normalize(32) }}>
+  //             <MainStep
+  //               steps={stepItems}
+  //               shipment={shipment}
+  //               refetch={handleRefetch}
+  //             />
+  //             {isConfirmFinishShipment && (
+  //               <FinishShipment
+  //                 shipmentId={shipment._id}
+  //                 onFinishComplete={handleOnShipmentComplete}
+  //               />
+  //             )}
+  //           </ScrollView>
+  //         )}
+  //       </BottomSheetView>
+  //     </BottomSheetModal>
+  //   );
+  // }
 
   const stepItems = filter(
     steps,
@@ -313,13 +313,57 @@ export default function ShipmentDetail() {
             </View>
           }
         />
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
           {shipment && (
             <Fragment>
               <Overview shipment={shipment} />
               <Detail shipment={shipment} />
+
+              <View
+                style={[styles.dividerContainer, { marginTop: normalize(16) }]}
+              >
+                <View style={[styles.divider, { flex: 1 }]} />
+                <Text varient="caption" color="disabled">
+                  ขั้นตอนงานขนส่ง
+                </Text>
+                <View style={[styles.divider, { flex: 1 }]} />
+              </View>
+
+              <View
+                style={{
+                  paddingHorizontal: normalize(16),
+                  paddingBottom: normalize(16),
+                  paddingTop: normalize(24),
+                }}
+              >
+                {/* <Text varient="body2" color="secondary">
+                  รายละเอียด
+                </Text> */}
+                <Text varient="h4">ขั้นตอนงานขนส่ง</Text>
+              </View>
+
+              <View style={{ paddingBottom: normalize(24) }}>
+                <MainStep
+                  steps={stepItems}
+                  shipment={shipment}
+                  refetch={handleRefetch}
+                />
+              </View>
+
+              {isConfirmFinishShipment && (
+                <View style={styles.detailActionWrapper}>
+                  <FinishShipment
+                    shipmentId={shipment._id}
+                    onFinishComplete={handleOnShipmentComplete}
+                  />
+                </View>
+              )}
+
               {isAbleToCancel && (
-                <View style={{ ...styles.detailActionWrapper, paddingTop: 40 }}>
+                <View style={styles.detailActionWrapper}>
                   <Button
                     title="ยกเลิกงานขนส่ง"
                     color="error"
@@ -335,7 +379,7 @@ export default function ShipmentDetail() {
         </ScrollView>
       </SafeAreaView>
       {/*  */}
-      <ShipmentWorkingModal />
+      {/* <ShipmentWorkingModal /> */}
       <ConfirmCancelShipmentModal
         ref={cancelShipmentModalRef}
         onCallback={handleOnCancelShipmenSuccess}
@@ -686,5 +730,14 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingHorizontal: normalize(16),
     paddingBottom: normalize(32),
+  },
+  divider: {
+    marginHorizontal: normalize(16),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

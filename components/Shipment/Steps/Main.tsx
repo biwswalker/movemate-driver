@@ -131,7 +131,7 @@ export function MainStep({ steps, shipment, refetch }: IShipmentStep) {
       containerStyle={{ backgroundColor: colors.background.paper }}
       touchableProps={{ activeOpacity: colors.action.hoverOpacity }}
       underlayColor={colors.action.hover}
-      renderAsFlatList
+      // renderAsFlatList
     />
   );
 }

@@ -46,8 +46,9 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
     const { user } = useAuth();
     const { data, restart, loading } = useListenAvailableShipmentSubscription({
       onError: (errr) => {
-        console.log("Listen error: ", JSON.stringify(errr));
+        console.log("Listen error: ", JSON.stringify(errr, undefined, 2));
       },
+      fetchPolicy: "network-only",
     });
 
     useImperativeHandle(ref, () => ({

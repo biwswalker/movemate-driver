@@ -2,15 +2,14 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import Text from "./Text";
 import hexToRgba from "hex-to-rgba";
-import { normalize } from "@/utils/normalizeSize";
 import colors from "@constants/colors";
 
 const styles = StyleSheet.create({
   container: {
     alignSelf: "flex-start",
-    paddingVertical: normalize(4),
-    paddingHorizontal: normalize(8),
-    borderRadius: normalize(4),
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
   },
   text: {},
 });

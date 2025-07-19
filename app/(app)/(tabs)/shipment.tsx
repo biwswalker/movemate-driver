@@ -285,15 +285,15 @@ const shipmentStyle = StyleSheet.create({
   },
   cardWrapper: {
     flex: 1,
-    padding: normalize(16),
-    marginVertical: normalize(8),
-    marginHorizontal: normalize(8),
+    padding: 16,
+    marginVertical: 8,
+    marginHorizontal: 8,
     ...Platform.select({
       ios: {
         shadowColor: colors.grey[500],
         shadowOpacity: 0.12,
-        shadowRadius: normalize(4),
-        shadowOffset: { width: 0, height: normalize(12) },
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 12 },
       },
       android: {
         elevation: 8,
@@ -301,7 +301,7 @@ const shipmentStyle = StyleSheet.create({
       },
     }),
     backgroundColor: colors.common.white,
-    borderRadius: normalize(16),
+    borderRadius: 16,
   },
   titleContainer: {
     flexDirection: "row",
@@ -333,9 +333,9 @@ const shipmentStyle = StyleSheet.create({
     paddingTop: normalize(12),
   },
   statusWrapper: {
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(4),
-    borderRadius: normalize(8),
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
     backgroundColor: hexToRgba(colors.info.main, 0.32),
   },
   footerWrapper: {
@@ -713,10 +713,9 @@ function Shipments({ status }: ShipmentsProps) {
         data={shipments}
         renderItem={Item as any}
         keyExtractor={(item, index) => `${index}-${item._id}`}
-        // estimatedItemSize={normalize(224)}
         contentContainerStyle={{
-          paddingBottom: normalize(156),
-          paddingHorizontal: normalize(16),
+          paddingBottom: 156,
+          paddingHorizontal: 16,
         }}
         ListFooterComponent={FooterAction}
       />

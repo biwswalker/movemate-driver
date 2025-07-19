@@ -38,102 +38,96 @@ export function pxToRem(value: number) {
 }
 
 export function getFontVarient(varient: TFontVarient = "body1"): TextStyle {
+  // สร้างตัวแปรสำหรับสัดส่วนการปรับขนาด
+  const scale = 0.8; // สามารถปรับค่านี้เพื่อเพิ่มหรือลดขนาดฟอนต์ทั้งหมดได้
+
   switch (varient) {
     case "h1":
       return {
         fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(50),
-        fontSize: normalize(40),
+        fontSize: 32 * scale,
+        lineHeight: 40 * scale,
       };
     case "h2":
       return {
         fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(42),
-        fontSize: normalize(32),
+        fontSize: 28 * scale,
+        lineHeight: 36 * scale,
       };
     case "h3":
       return {
         fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(36),
-        fontSize: normalize(24),
+        fontSize: 24 * scale,
+        lineHeight: 32 * scale,
       };
     case "h4":
       return {
         fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(30),
-        fontSize: normalize(20),
+        fontSize: 20 * scale,
+        lineHeight: 28 * scale,
       };
     case "h5":
       return {
         fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(27),
-        fontSize: normalize(18),
+        fontSize: 18 * scale,
+        lineHeight: 26 * scale,
       };
     case "h6":
       return {
-        fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(26),
-        fontSize: normalize(17),
+        fontFamily: FONT_NAME.PROMPT_SEMI_BOLD, // ปรับเป็น Semi-Bold เพื่อความสวยงาม
+        fontSize: 16 * scale,
+        lineHeight: 24 * scale,
       };
     case "subtitle1":
       return {
         fontFamily: FONT_NAME.PROMPT_SEMI_BOLD,
-        lineHeight: normalize(24),
-        fontSize: normalize(16),
+        fontSize: 16 * scale,
+        lineHeight: 24 * scale,
       };
     case "subtitle2":
       return {
         fontFamily: FONT_NAME.PROMPT_SEMI_BOLD,
-        lineHeight: normalize(22),
-        fontSize: normalize(14),
+        fontSize: 14 * scale,
+        lineHeight: 22 * scale,
       };
     case "body1":
       return {
         fontFamily: FONT_NAME.PROMPT_REGULAR,
-        lineHeight: normalize(24),
-        fontSize: normalize(16),
+        fontSize: 16 * scale,
+        lineHeight: 24 * scale,
       };
     case "body2":
       return {
         fontFamily: FONT_NAME.PROMPT_REGULAR,
-        lineHeight: normalize(22),
-        fontSize: normalize(14),
+        fontSize: 14 * scale,
+        lineHeight: 22 * scale,
       };
     case "caption":
       return {
         fontFamily: FONT_NAME.PROMPT_REGULAR,
-        lineHeight: normalize(18),
-        fontSize: normalize(12),
+        fontSize: 12 * scale,
+        lineHeight: 20 * scale, // เพิ่ม lineHeight เพื่อให้อ่านง่ายขึ้น
       };
     case "overline":
       return {
         fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(18),
-        fontSize: normalize(12),
+        fontSize: 12 * scale,
+        lineHeight: 20 * scale,
+        textTransform: "uppercase", // เพิ่มให้เป็นตัวพิมพ์ใหญ่ตามหลักการ
       };
     case "buttonS":
-      return {
-        fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(22),
-        fontSize: normalize(13),
-      };
     case "buttonM":
-      return {
-        fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(24),
-        fontSize: normalize(14),
-      };
     case "buttonL":
       return {
         fontFamily: FONT_NAME.PROMPT_BOLD,
-        lineHeight: normalize(26),
-        fontSize: normalize(15),
+        fontSize: 14 * scale, // รวมขนาดปุ่มให้เป็นมาตรฐาน
+        lineHeight: 22 * scale,
       };
     default:
       return {
         fontFamily: FONT_NAME.PROMPT_REGULAR,
-        lineHeight: normalize(24),
-        fontSize: normalize(16),
+        fontSize: 16 * scale,
+        lineHeight: 24 * scale,
       };
   }
 }

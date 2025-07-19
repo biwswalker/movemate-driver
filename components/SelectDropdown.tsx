@@ -25,7 +25,10 @@ const styles = StyleSheet.create({
     top: 10,
     zIndex: 999,
     paddingHorizontal: 8,
-    ...getFontVarient("caption"),
+    ...getFontVarient("body1"),
+    fontSize:
+      (12 / (getFontVarient("body1").fontSize || 12)) *
+      (getFontVarient("body1").fontSize || 12),
     color: colors.text.disabled,
   },
   placeholderStyle: {

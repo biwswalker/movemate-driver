@@ -1,6 +1,6 @@
 import hexToRgba from "hex-to-rgba";
-import React, { forwardRef, Fragment, ReactNode, Ref, useEffect } from "react";
-import { Animated, Pressable, StyleSheet, View } from "react-native";
+import React, { forwardRef, Fragment, ReactNode, Ref } from "react";
+import { Pressable, StyleSheet } from "react-native";
 import {
   TextInput as RNPTextInput,
   TextInputProps as RNPTextInputProps,
@@ -42,18 +42,6 @@ export default forwardRef(function TextInput(
   { helperText, ...props }: TextInputProps,
   ref: Ref<any>
 ) {
-  // This temporary solve Label text disapear on first enter
-  // https://github.com/callstack/react-native-paper/issues/4127#issuecomment-1918036374
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     Animated.timing(new Animated.Value(0), {
-  //       toValue: 1,
-  //       duration: 1,
-  //       delay: 10,
-  //       useNativeDriver: true,
-  //     }).start();
-  //   }, 1);
-  // }, []);
 
   return (
     <Pressable

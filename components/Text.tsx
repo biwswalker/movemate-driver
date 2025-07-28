@@ -119,7 +119,7 @@ export function getFontVarient(varient: TFontVarient = "body1"): TextStyle {
     case "buttonM":
     case "buttonL":
       return {
-        fontFamily: FONT_NAME.PROMPT_BOLD,
+        fontFamily: FONT_NAME.PROMPT_MEDIUM,
         fontSize: 14 * scale, // รวมขนาดปุ่มให้เป็นมาตรฐาน
         lineHeight: 22 * scale,
       };

@@ -17,6 +17,7 @@ import {
   BottomSheetFlashList,
   BottomSheetModal,
   BottomSheetView,
+  useBottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { filter, find, get, includes, isEmpty, sortBy } from "lodash";
@@ -60,15 +61,25 @@ import ConfirmCancelShipmentModal, {
 } from "@/components/Modals/confirm-cancel-shipment";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { differenceInMinutes } from "date-fns";
+import UserDetail, {
+  UserDetailModalRef,
+} from "@/components/Modals/user-detail";
+import ButtonIcon from "@/components/ButtonIcon";
 
 export default function ShipmentDetail() {
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
-  const shipmentStepModalRef = useRef<BottomSheetModal>(null);
+  // const shipmentStepModalRef = useRef<BottomSheetModal>(null);
   const assignDriverModalRef = useRef<AssingDriverModalRef>(null);
   const cancelShipmentModalRef = useRef<ConfirmCancelShipmentModalRef>(null);
+  const userDetailRef = useRef<UserDetailModalRef>(null);
   // const { showSnackbar, DropdownType } = useSnackbarV2();
+  const { dismissAll } = useBottomSheetModal();
 
-  const { data, refetch } = useGetAvailableShipmentByTrackingNumberQuery({
+  const {
+    data,
+    refetch,
+    loading: getShipmentLoading,
+  } = useGetAvailableShipmentByTrackingNumberQuery({
     variables: { tracking: searchParam.trackingNumber },
     fetchPolicy: "network-only",
   });
@@ -87,13 +98,17 @@ export default function ShipmentDetail() {
   const currentStepSeq = get(shipment, "currentStepSeq", 0);
   const currentStepDefinition = find(steps || [], ["seq", currentStepSeq]);
 
-  const isPendingAssignDriver =
-    currentStepDefinition?.step === EStepDefinition.ASSIGN_SHIPMENT &&
-    currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
-    shipment?.status === EShipmentStatus.PROGRESSING;
+  const isPendingAssignDriver = useMemo(() => {
+    const _isPendingAssignDriver =
+      currentStepDefinition?.step === EStepDefinition.ASSIGN_SHIPMENT &&
+      currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
+      shipment?.status === EShipmentStatus.PROGRESSING;
+    return _isPendingAssignDriver;
+  }, [shipment, currentStepDefinition]);
+
   const isConfirmFinishShipment =
     currentStepDefinition?.step === EStepDefinition.FINISH &&
-    currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
+    // currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
     shipment?.status === EShipmentStatus.PROGRESSING;
 
   const isAbleToCancel = useMemo(() => {
@@ -134,21 +149,15 @@ export default function ShipmentDetail() {
     if (shipment) {
       if (isPendingAssignDriver) {
         if (assignDriverModalRef.current) {
-          assignDriverModalRef.current.present(shipment._id);
-          if (shipmentStepModalRef.current) {
-            shipmentStepModalRef.current.close();
-          }
+          assignDriverModalRef.current.present({ shipmentId: shipment._id });
         }
       } else {
-        if (shipmentStepModalRef.current) {
-          shipmentStepModalRef.current.present();
-          if (assignDriverModalRef.current) {
-            assignDriverModalRef.current.close();
-          }
+        if (assignDriverModalRef.current) {
+          assignDriverModalRef.current.close();
         }
       }
     }
-  }, [shipment]);
+  }, [isPendingAssignDriver]);
 
   // Bottom Sheet
   const handleSheetChange = useCallback((index: number) => {
@@ -167,6 +176,7 @@ export default function ShipmentDetail() {
   }
 
   function handleAssignSuccess() {
+    dismissAll()
     handleRefetch();
   }
 
@@ -217,74 +227,26 @@ export default function ShipmentDetail() {
   }
 
   function handleOnShipmentComplete() {
-    if (shipmentStepModalRef.current) {
-      shipmentStepModalRef.current.close();
-    }
     router.push({
       pathname: "/shipment-success",
       params: { trackingNumber: shipment?.trackingNumber || "" },
     });
   }
 
-  // function handleViewDetail() {
-  //   router.push({
-  //     pathname: "/shipment-detail",
-  //     params: { trackingNumber: shipment?.trackingNumber || "" },
-  //   });
-  // }
+  function handleOpenDriverDetail(driverId: string) {
+    if (userDetailRef.current && driverId) {
+      userDetailRef.current.present(driverId);
+    }
+  }
 
-  // function ShipmentWorkingModal() {
-  //   const activeIndex = includes(
-  //     [EShipmentStatus.IDLE, EShipmentStatus.PROGRESSING],
-  //     shipment?.status
-  //   )
-  //     ? 1
-  //     : 0;
-  //   return (
-  //     <BottomSheetModal
-  //       ref={shipmentStepModalRef}
-  //       index={activeIndex}
-  //       detached
-  //       enablePanDownToClose={false}
-  //       enableDynamicSizing={false}
-  //       style={styles.sheetContainer}
-  //       topInset={StatusBar.currentHeight || 0}
-  //       snapPoints={snapPoints}
-  //       onChange={handleSheetChange}
-  //       handleComponent={SheetHandle}
-  //       backdropComponent={SheetBackdrop.Default}
-  //     >
-  //       <BottomSheetView
-  //         style={{
-  //           flex: 1,
-  //           gap: 8,
-  //         }}
-  //       >
-  //         <View style={{ paddingHorizontal: normalize(16) }}>
-  //           <Text varient="body2" color="secondary">
-  //             รายละเอียด
-  //           </Text>
-  //           <Text varient="h4">ขั้นตอนงานขนส่ง</Text>
-  //         </View>
-  //         {shipment && (
-  //           <ScrollView style={{ paddingBottom: normalize(32) }}>
-  //             <MainStep
-  //               steps={stepItems}
-  //               shipment={shipment}
-  //               refetch={handleRefetch}
-  //             />
-  //             {isConfirmFinishShipment && (
-  //               <FinishShipment
-  //                 shipmentId={shipment._id}
-  //                 onFinishComplete={handleOnShipmentComplete}
-  //               />
-  //             )}
-  //           </ScrollView>
-  //         )}
-  //       </BottomSheetView>
-  //     </BottomSheetModal>
-  //   );
-  // }
+  function handleOpenChangeDriver() {
+    if (assignDriverModalRef.current && shipment) {
+      assignDriverModalRef.current.present({
+        shipmentId: shipment._id,
+        isChangeDriver: true,
+      });
+    }
+  }
 
   const stepItems = filter(
     steps,
@@ -295,6 +257,41 @@ export default function ShipmentDetail() {
         step.step
       )
   );
+
+  if (getShipmentLoading) {
+    return (
+      <View style={styles.container}>
+        <SafeAreaView style={styles.wrapper}>
+          <NavigationBar
+            onBack={handleOnClose}
+            containerStyle={styles.navigator}
+            TitleComponent={
+              <View>
+                <Text
+                  varient="body2"
+                  color="secondary"
+                  style={styles.textCenter}
+                >
+                  หมายเลขงานขนส่ง
+                </Text>
+                <Text varient="h4" style={styles.textCenter}>
+                  {searchParam?.trackingNumber || ""}
+                </Text>
+              </View>
+            }
+          />
+          <View
+            style={[
+              styles.wrapper,
+              { alignItems: "center", justifyContent: "center" },
+            ]}
+          >
+            <ActivityIndicator size="small" color={colors.text.secondary} />
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -320,7 +317,11 @@ export default function ShipmentDetail() {
           {shipment && (
             <Fragment>
               <Overview shipment={shipment} />
-              <Detail shipment={shipment} />
+              <Detail
+                shipment={shipment}
+                onViewUserDetail={handleOpenDriverDetail}
+                onChangeDriver={handleOpenChangeDriver}
+              />
 
               <View
                 style={[styles.dividerContainer, { marginTop: normalize(16) }]}
@@ -384,23 +385,24 @@ export default function ShipmentDetail() {
         ref={cancelShipmentModalRef}
         onCallback={handleOnCancelShipmenSuccess}
       />
-      {isPendingAssignDriver && (
-        <AssingDriverModal
-          ref={assignDriverModalRef}
-          onCallback={handleAssignSuccess}
-        />
-      )}
+      <AssingDriverModal
+        ref={assignDriverModalRef}
+        onCallback={handleAssignSuccess}
+      />
+      <UserDetail ref={userDetailRef} />
     </View>
   );
 }
 
 interface AssingDriverProps {
   shipmentId: string;
+  isChangeDriver?: boolean;
   callback: VoidFunction;
+  onClose?: VoidFunction;
 }
 
 interface AssingDriverModalRef {
-  present: (shipmentId: string) => void;
+  present: (data: { shipmentId: string; isChangeDriver?: boolean }) => void;
   close: Function;
 }
 
@@ -415,9 +417,12 @@ const AssingDriverModal = forwardRef<
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["15%", "90%"], []); // "85%"
 
-  function handlePresent(userId: string) {
+  function handlePresent(data: {
+    shipmentId: string;
+    isChangeDriver?: boolean;
+  }) {
     if (bottomSheetModalRef.current) {
-      bottomSheetModalRef.current?.present(userId as any);
+      bottomSheetModalRef.current?.present(data as any);
     }
   }
 
@@ -444,8 +449,8 @@ const AssingDriverModal = forwardRef<
 
   const handleCallback = useCallback(() => {
     console.log("handleCallback inner: => ");
-    onCallback();
     handleCloseModal();
+    onCallback();
   }, []);
 
   return (
@@ -464,7 +469,12 @@ const AssingDriverModal = forwardRef<
     >
       {({ data }) =>
         data ? (
-          <AssingDriver shipmentId={data as any} callback={handleCallback} />
+          <AssingDriver
+            shipmentId={data.shipmentId as any}
+            isChangeDriver={data.isChangeDriver}
+            callback={handleCallback}
+            onClose={handleCloseModal}
+          />
         ) : (
           <Fragment />
         )
@@ -473,10 +483,17 @@ const AssingDriverModal = forwardRef<
   );
 });
 
-function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
+function AssingDriver({
+  shipmentId,
+  callback,
+  isChangeDriver = false,
+  onClose = () => {},
+}: AssingDriverProps) {
   const confirmModalRef = useRef<ConfirmAssignShipmentModalRef>(null);
   const { data, loading } = useAvailableEmployeesQuery({
     variables: { shipmentId },
+    skip: !shipmentId,
+    fetchPolicy: "network-only",
   });
 
   const employees = useMemo(() => data?.getAvailableDrivers as User[], [data]);
@@ -508,7 +525,7 @@ function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
   function _UserItem({ item: user }: ListRenderItemInfo<User>) {
     function handleAssignDriver() {
       if (confirmModalRef.current) {
-        confirmModalRef.current.present(user);
+        confirmModalRef.current.present({ user, isChanged: isChangeDriver });
       }
     }
 
@@ -588,8 +605,8 @@ function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
             </View>
           </View>
           <Button
-            title="มอบหมายงานนี้"
-            color="success"
+            title={isChangeDriver ? "เปลี่ยนคนขับ" : "มอบหมายงานนี้"}
+            color={isChangeDriver ? "warning" : "success"}
             varient="soft"
             fullWidth
             onPress={handleAssignDriver}
@@ -597,7 +614,9 @@ function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
               <Iconify
                 icon="material-symbols-light:assignment-turned-in"
                 size={normalize(16)}
-                color={colors.success.dark}
+                color={
+                  isChangeDriver ? colors.warning.dark : colors.success.dark
+                }
               />
             }
           />
@@ -614,16 +633,31 @@ function AssingDriver({ shipmentId, callback }: AssingDriverProps) {
           gap: 8,
         }}
       >
-        <View style={{ paddingHorizontal: normalize(16) }}>
-          <Text varient="body2" color="secondary">
-            มอบหมายงานคนขับ
-          </Text>
-          <Text varient="h4">รายชื่อคนขับที่สามารถรับงานได้</Text>
+        <View
+          style={{
+            paddingHorizontal: 16,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text varient="body2" color="secondary">
+              มอบหมายงานคนขับ
+            </Text>
+            <Text varient="h4">รายชื่อคนขับที่สามารถรับงานได้</Text>
+          </View>
+          {isChangeDriver && (
+            <ButtonIcon onPress={onClose} varient="text" color="inherit">
+              {({ color }) => (
+                <Iconify icon="mi:close" size={24} color={color} />
+              )}
+            </ButtonIcon>
+          )}
         </View>
         <BottomSheetFlashList
           scrollEnabled
           data={employees}
-          estimatedItemSize={normalize(175)}
+          estimatedItemSize={175}
           ListFooterComponent={_FooterAction}
           renderItem={_UserItem}
           contentContainerStyle={styles.listContainer}

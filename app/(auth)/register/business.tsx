@@ -38,7 +38,11 @@ import VehicleSelectorModal, {
 import Iconify from "@/components/Iconify";
 import { TouchableOpacity } from "@gorhom/bottom-sheet";
 import { MaterialIcons } from "@expo/vector-icons";
-import { DriverFormValue, DriverFormValueType, IndividualRegisterParam } from "@/types/register";
+import {
+  DriverFormValue,
+  DriverFormValueType,
+  IndividualRegisterParam,
+} from "@/types/register";
 
 export default function RegisterBusinessScreen() {
   const bottomSheetModalRef = useRef<VehicleSelectorRef>(null);
@@ -128,6 +132,8 @@ export default function RegisterBusinessScreen() {
       .min(10, "ตัวเลขขั้นต่ำ 10 หลัก")
       .max(15, "ตัวเลขสูงสุด 15 หลัก"),
     serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
+    licensePlateProvince: Yup.string(),
+    licensePlateNumber: Yup.string(),
   });
 
   const defaultValues: DriverFormValue = useMemo(() => {
@@ -160,6 +166,8 @@ export default function RegisterBusinessScreen() {
       bankNumber: detail?.bankNumber || "",
       // Vehicle type
       serviceVehicleTypes: detail?.serviceVehicleTypes || [],
+      licensePlateProvince: detail?.licensePlateProvince || "",
+      licensePlateNumber: detail?.licensePlateNumber || "",
     };
   }, []);
 
@@ -287,9 +295,7 @@ export default function RegisterBusinessScreen() {
 
   function handleVerifySuccess(data: VerifyDriverDataMutation) {
     const validatedData = data.verifyDriverData;
-    const formValue = new DriverFormValue(
-      validatedData as DriverFormValueType
-    );
+    const formValue = new DriverFormValue(validatedData as DriverFormValueType);
     console.log(
       "handleVerifySuccess: ",
       JSON.stringify(formValue, undefined, 2)

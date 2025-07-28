@@ -232,6 +232,7 @@ export type Billing = {
   __typename?: "Billing";
   _id: Scalars["ID"]["output"];
   adjustmentNotes: Array<BillingAdjustmentNote>;
+  advanceReceipt?: Maybe<Receipt>;
   amount?: Maybe<PaymentAmounts>;
   billingEndDate: Scalars["DateTimeISO"]["output"];
   billingNumber: Scalars["String"]["output"];
@@ -245,6 +246,7 @@ export type Billing = {
   quotation?: Maybe<Quotation>;
   reasons?: Maybe<Array<BillingReason>>;
   receipts: Array<Receipt>;
+  refundNote?: Maybe<RefundNote>;
   shipments: Array<Shipment>;
   state: EBillingState;
   status: EBillingStatus;
@@ -275,6 +277,7 @@ export type BillingAdjustmentNote = {
 export type BillingDocument = {
   __typename?: "BillingDocument";
   _id: Scalars["ID"]["output"];
+  documentNumber?: Maybe<Scalars["String"]["output"]>;
   emailTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
   filename: Scalars["String"]["output"];
   postalTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
@@ -288,15 +291,15 @@ export type BillingInfoPayload = {
   __typename?: "BillingInfoPayload";
   billingNumber?: Maybe<Scalars["String"]["output"]>;
   billingState?: Maybe<EBillingState>;
-  billingStatus?: Maybe<EBillingState>;
+  billingStatus?: Maybe<EBillingStatus>;
   message?: Maybe<Scalars["String"]["output"]>;
   paymentMethod: EPaymentMethod;
   status: EBillingInfoStatus;
 };
 
-export type BillingListPayload = {
-  __typename?: "BillingListPayload";
-  docs: Array<Billing>;
+export type BillingListPaginationPayload = {
+  __typename?: "BillingListPaginationPayload";
+  docs: Array<BillingListPayload>;
   hasNextPage: Scalars["Boolean"]["output"];
   hasPrevPage: Scalars["Boolean"]["output"];
   limit: Scalars["Int"]["output"];
@@ -307,6 +310,38 @@ export type BillingListPayload = {
   prevPage?: Maybe<Scalars["Int"]["output"]>;
   totalDocs: Scalars["Int"]["output"];
   totalPages: Scalars["Int"]["output"];
+};
+
+export type BillingListPayload = {
+  __typename?: "BillingListPayload";
+  _id: Scalars["ID"]["output"];
+  adjustmentDecreaseNumbers?: Maybe<Scalars["String"]["output"]>;
+  adjustmentIncreaseNumbers?: Maybe<Scalars["String"]["output"]>;
+  billingEndDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  billingNumber: Scalars["String"]["output"];
+  billingStartDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  createdAt: Scalars["DateTimeISO"]["output"];
+  invoiceDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  invoiceFilename?: Maybe<Scalars["String"]["output"]>;
+  invoicePostalStatus?: Maybe<Scalars["String"]["output"]>;
+  invoiceTrackingNumber?: Maybe<Scalars["String"]["output"]>;
+  latestAmount?: Maybe<Scalars["Float"]["output"]>;
+  latestPaymentDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  latestPaymentStatus?: Maybe<EPaymentStatus>;
+  latestPaymentType?: Maybe<EPaymentType>;
+  latestQuotationPrice?: Maybe<Scalars["Float"]["output"]>;
+  latestQuotationTax?: Maybe<Scalars["Float"]["output"]>;
+  latestReceiptDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  paymentDueDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  paymentMethod: EPaymentMethod;
+  receiptFilenames?: Maybe<Array<Scalars["String"]["output"]>>;
+  receiptNumbers?: Maybe<Scalars["String"]["output"]>;
+  receiptTrackingNumbers?: Maybe<Scalars["String"]["output"]>;
+  state: EBillingState;
+  status: EBillingStatus;
+  userFullname: Scalars["String"]["output"];
+  userId: Scalars["String"]["output"];
+  userTitle: Scalars["String"]["output"];
 };
 
 export type BillingReason = {
@@ -539,6 +574,40 @@ export type CreditPaymentInput = {
   isSameAddress: Scalars["Boolean"]["input"];
 };
 
+export type CreditorReportPayload = {
+  __typename?: "CreditorReportPayload";
+  contactNumber?: Maybe<Scalars["String"]["output"]>;
+  duedate?: Maybe<Scalars["String"]["output"]>;
+  fullname?: Maybe<Scalars["String"]["output"]>;
+  overdueCount?: Maybe<Scalars["Int"]["output"]>;
+  paymentDate?: Maybe<Scalars["String"]["output"]>;
+  receiptNo?: Maybe<Scalars["String"]["output"]>;
+  shipments?: Maybe<Array<ShipmentCreditorReport>>;
+  subtotal?: Maybe<Scalars["Float"]["output"]>;
+  taxId?: Maybe<Scalars["String"]["output"]>;
+  total?: Maybe<Scalars["Float"]["output"]>;
+  userId?: Maybe<Scalars["String"]["output"]>;
+  userType?: Maybe<Scalars["String"]["output"]>;
+  whtNo?: Maybe<Scalars["String"]["output"]>;
+  whtValue?: Maybe<Scalars["Float"]["output"]>;
+  workingPeriod?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type CreditorReportResponse = {
+  __typename?: "CreditorReportResponse";
+  docs: Array<CreditorReportPayload>;
+  hasNextPage: Scalars["Boolean"]["output"];
+  hasPrevPage: Scalars["Boolean"]["output"];
+  limit: Scalars["Int"]["output"];
+  nextPage?: Maybe<Scalars["Int"]["output"]>;
+  offset?: Maybe<Scalars["Int"]["output"]>;
+  page?: Maybe<Scalars["Int"]["output"]>;
+  pagingCounter: Scalars["Int"]["output"];
+  prevPage?: Maybe<Scalars["Int"]["output"]>;
+  totalDocs: Scalars["Int"]["output"];
+  totalPages: Scalars["Int"]["output"];
+};
+
 export type CutomerBusinessInput = {
   acceptedEDocumentDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   acceptedPoliciesDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
@@ -736,6 +805,8 @@ export type DriverDetail = {
   firstname?: Maybe<Scalars["String"]["output"]>;
   fullname?: Maybe<Scalars["String"]["output"]>;
   lastname?: Maybe<Scalars["String"]["output"]>;
+  licensePlateNumber?: Maybe<Scalars["String"]["output"]>;
+  licensePlateProvince?: Maybe<Scalars["String"]["output"]>;
   lineId: Scalars["String"]["output"];
   otherTitle: Scalars["String"]["output"];
   phoneNumber: Scalars["String"]["output"];
@@ -765,6 +836,8 @@ export type DriverDetailInput = {
   driverType: EDriverType;
   firstname?: InputMaybe<Scalars["String"]["input"]>;
   lastname?: InputMaybe<Scalars["String"]["input"]>;
+  licensePlateNumber: Scalars["String"]["input"];
+  licensePlateProvince: Scalars["String"]["input"];
   lineId?: InputMaybe<Scalars["String"]["input"]>;
   otherTitle?: InputMaybe<Scalars["String"]["input"]>;
   password: Scalars["String"]["input"];
@@ -914,6 +987,8 @@ export type DriverVerifiedPayload = {
   driverType: EDriverType;
   firstname?: Maybe<Scalars["String"]["output"]>;
   lastname?: Maybe<Scalars["String"]["output"]>;
+  licensePlateNumber?: Maybe<Scalars["String"]["output"]>;
+  licensePlateProvince?: Maybe<Scalars["String"]["output"]>;
   lineId: Scalars["String"]["output"];
   otherTitle?: Maybe<Scalars["String"]["output"]>;
   password: Scalars["String"]["output"];
@@ -1159,11 +1234,23 @@ export enum EQuotationStatus {
   VOID = "VOID",
 }
 
+/** Receipt Type */
+export enum EReceiptType {
+  ADVANCE = "ADVANCE",
+  FINAL = "FINAL",
+}
+
 /** Ref type */
 export enum ERefType {
   BILLING = "BILLING",
   EARNING = "EARNING",
   SHIPMENT = "SHIPMENT",
+}
+
+/** Refund Amount Type */
+export enum ERefundAmountType {
+  FULL_AMOUNT = "FULL_AMOUNT",
+  HALF_AMOUNT = "HALF_AMOUNT",
 }
 
 /** Registration type */
@@ -1325,6 +1412,8 @@ export type EmployeeDetailInput = {
   district: Scalars["String"]["input"];
   firstname?: InputMaybe<Scalars["String"]["input"]>;
   lastname?: InputMaybe<Scalars["String"]["input"]>;
+  licensePlateNumber: Scalars["String"]["input"];
+  licensePlateProvince: Scalars["String"]["input"];
   lineId?: InputMaybe<Scalars["String"]["input"]>;
   otherTitle?: InputMaybe<Scalars["String"]["input"]>;
   phoneNumber: Scalars["String"]["input"];
@@ -1342,6 +1431,8 @@ export type EmployeeDetailPayload = {
   district: Scalars["String"]["output"];
   firstname?: Maybe<Scalars["String"]["output"]>;
   lastname?: Maybe<Scalars["String"]["output"]>;
+  licensePlateNumber?: Maybe<Scalars["String"]["output"]>;
+  licensePlateProvince?: Maybe<Scalars["String"]["output"]>;
   lineId?: Maybe<Scalars["String"]["output"]>;
   otherTitle?: Maybe<Scalars["String"]["output"]>;
   phoneNumber: Scalars["String"]["output"];
@@ -1406,6 +1497,7 @@ export type FavoriteDriverPayload = {
   parents?: Maybe<Array<Scalars["String"]["output"]>>;
   profileImage?: Maybe<File>;
   registration: ERegistration;
+  rejectedRequestParents?: Maybe<Array<Scalars["String"]["output"]>>;
   remark?: Maybe<Scalars["String"]["output"]>;
   requestedParents?: Maybe<Array<Scalars["String"]["output"]>>;
   status: EUserStatus;
@@ -1457,6 +1549,21 @@ export type GetBillingInput = {
   shipmentNumber?: InputMaybe<Scalars["String"]["input"]>;
   state?: InputMaybe<EBillingCriteriaState>;
   status?: InputMaybe<EBillingCriteriaStatus>;
+};
+
+export type GetDriverPaymentArgs = {
+  driverId?: InputMaybe<Scalars["String"]["input"]>;
+  driverName?: InputMaybe<Scalars["String"]["input"]>;
+  driverNumber?: InputMaybe<Scalars["String"]["input"]>;
+  endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  shipmentTracking?: InputMaybe<Scalars["String"]["input"]>;
+  startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+};
+
+export type GetDriverTransactionArgs = {
+  driverName?: InputMaybe<Scalars["String"]["input"]>;
+  driverType?: InputMaybe<EUserType>;
+  isPending?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
 export type GetShipmentInput = {
@@ -1652,6 +1759,7 @@ export type Mutation = {
   removePODAddress: Scalars["Boolean"]["output"];
   resentBillingDocumentToEmail: Scalars["Boolean"]["output"];
   resentEmail: VerifyPayload;
+  resentEmployee: Scalars["Boolean"]["output"];
   resentOTP: VerifyOtpPayload;
   revertRejectedPayment: Scalars["Boolean"]["output"];
   saveEvent: Scalars["Boolean"]["output"];
@@ -1753,6 +1861,7 @@ export type MutationApprovalUserArgs = {
 
 export type MutationAssignShipmentArgs = {
   driverId: Scalars["String"]["input"];
+  isChanged?: InputMaybe<Scalars["Boolean"]["input"]>;
   shipmentId: Scalars["String"]["input"];
 };
 
@@ -1777,6 +1886,9 @@ export type MutationConfirmBillingDocumentPostalSentArgs = {
 export type MutationConfirmReceiveWhtDocumentArgs = {
   billingId: Scalars["String"]["input"];
   documentId: Scalars["String"]["input"];
+  documentNumber: Scalars["String"]["input"];
+  receiptId: Scalars["String"]["input"];
+  receiveDate: Scalars["DateTimeISO"]["input"];
 };
 
 export type MutationConfirmShipmentDatetimeArgs = {
@@ -1959,6 +2071,10 @@ export type MutationResentBillingDocumentToEmailArgs = {
 
 export type MutationResentEmailArgs = {
   userId?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type MutationResentEmployeeArgs = {
+  driverId: Scalars["String"]["input"];
 };
 
 export type MutationResentOtpArgs = {
@@ -2318,8 +2434,9 @@ export type Privilege = {
   description?: Maybe<Scalars["String"]["output"]>;
   discount: Scalars["Float"]["output"];
   endDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
-  isInfinity: Scalars["Boolean"]["output"];
-  limitAmout?: Maybe<Scalars["Float"]["output"]>;
+  limitAmout?: Maybe<Scalars["Int"]["output"]>;
+  /** จำนวนครั้งที่จำกัดให้ User 1 คนสามารถใช้ได้ (0 คือไม่จำกัด) */
+  limitPerUser?: Maybe<Scalars["Int"]["output"]>;
   maxDiscountPrice?: Maybe<Scalars["Float"]["output"]>;
   minPrice?: Maybe<Scalars["Float"]["output"]>;
   name: Scalars["String"]["output"];
@@ -2327,7 +2444,7 @@ export type Privilege = {
   status: EPrivilegeStatus;
   unit: EPrivilegeDiscountUnit;
   updatedAt: Scalars["DateTimeISO"]["output"];
-  usedAmout?: Maybe<Scalars["Float"]["output"]>;
+  usedAmout: Scalars["Int"]["output"];
   usedUser: Array<User>;
 };
 
@@ -2337,8 +2454,8 @@ export type PrivilegeInput = {
   description: Scalars["String"]["input"];
   discount: Scalars["Float"]["input"];
   endDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  isInfinity?: InputMaybe<Scalars["Boolean"]["input"]>;
-  limitAmout?: InputMaybe<Scalars["Float"]["input"]>;
+  limitAmout?: InputMaybe<Scalars["Int"]["input"]>;
+  limitPerUser?: InputMaybe<Scalars["Int"]["input"]>;
   maxDiscountPrice?: InputMaybe<Scalars["Float"]["input"]>;
   minPrice?: InputMaybe<Scalars["Float"]["input"]>;
   name: Scalars["String"]["input"];
@@ -2407,13 +2524,14 @@ export type Query = {
   getAvailableShipmentByTrackingNumber: Shipment;
   getBilling: Billing;
   getBillingInfoByShipmentId: BillingInfoPayload;
-  getBillingList: BillingListPayload;
+  getBillingList: BillingListPaginationPayload;
   getBillingStatusCount: Array<TotalBillingRecordPayload>;
   getBookingConfig: BookingConfigPayload;
   getBusinessTypeInfo?: Maybe<Array<SettingBusinessType>>;
   getContactById: Contact;
   getContacts: Array<Contact>;
   getContactusInfo?: Maybe<SettingContactUs>;
+  getCreditorReportList: CreditorReportResponse;
   getCustomerPoliciesInfo?: Maybe<SettingCustomerPolicies>;
   getCustomerTermsInfo?: Maybe<SettingCustomerTerms>;
   getDashboard: DashboardPayload;
@@ -2435,6 +2553,7 @@ export type Query = {
   getMonthBilling: Array<Billing>;
   getOtps: OtpPaginationPayload;
   getPODAddress: Array<PodAddress>;
+  getParentNames?: Maybe<Array<Scalars["String"]["output"]>>;
   getParents: Array<User>;
   getPendingUser: UserPending;
   getPricingCalculationMethod: PricingCalculationMethodPayload;
@@ -2615,6 +2734,7 @@ export type QueryGetAvailableShipmentByTrackingNumberArgs = {
 
 export type QueryGetBillingArgs = {
   billingNumber: Scalars["String"]["input"];
+  project?: InputMaybe<Scalars["JSONObject"]["input"]>;
 };
 
 export type QueryGetBillingInfoByShipmentIdArgs = {
@@ -2645,6 +2765,14 @@ export type QueryGetContactByIdArgs = {
 export type QueryGetContactsArgs = {
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   skip?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+};
+
+export type QueryGetCreditorReportListArgs = {
+  data?: InputMaybe<GetDriverPaymentArgs>;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  page?: InputMaybe<Scalars["Int"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
@@ -2812,9 +2940,7 @@ export type QueryGetTransactionArgs = {
 };
 
 export type QueryGetTransactionDriversArgs = {
-  driverName?: InputMaybe<Scalars["String"]["input"]>;
-  driverType?: InputMaybe<EUserType>;
-  isPending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  filters: GetDriverTransactionArgs;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   page?: InputMaybe<Scalars["Int"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
@@ -3045,6 +3171,8 @@ export type ReDriverDetailInput = {
   district: Scalars["String"]["input"];
   firstname?: InputMaybe<Scalars["String"]["input"]>;
   lastname?: InputMaybe<Scalars["String"]["input"]>;
+  licensePlateNumber: Scalars["String"]["input"];
+  licensePlateProvince: Scalars["String"]["input"];
   lineId?: InputMaybe<Scalars["String"]["input"]>;
   otherTitle?: InputMaybe<Scalars["String"]["input"]>;
   phoneNumber: Scalars["String"]["input"];
@@ -3064,11 +3192,27 @@ export type Receipt = {
   document?: Maybe<BillingDocument>;
   receiptDate: Scalars["DateTimeISO"]["output"];
   receiptNumber: Scalars["String"]["output"];
+  receiptType: EReceiptType;
+  refReceiptNumber?: Maybe<Scalars["String"]["output"]>;
+  remarks?: Maybe<Scalars["String"]["output"]>;
   subTotal: Scalars["Float"]["output"];
   tax: Scalars["Float"]["output"];
   total: Scalars["Float"]["output"];
   updatedAt: Scalars["DateTimeISO"]["output"];
   updatedBy?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type RefundNote = {
+  __typename?: "RefundNote";
+  _id: Scalars["ID"]["output"];
+  amount: Scalars["Float"]["output"];
+  amountType: ERefundAmountType;
+  billing: Billing;
+  document?: Maybe<BillingDocument>;
+  refAdvanceReceiptNo: Scalars["String"]["output"];
+  refundDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  refundNoteNumber: Scalars["String"]["output"];
+  remark?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type RegisterBusinessInput = {
@@ -3177,10 +3321,11 @@ export type SearchPrivilegeResultPayload = {
   description?: Maybe<Scalars["String"]["output"]>;
   discount: Scalars["Float"]["output"];
   expired: Scalars["Boolean"]["output"];
+  limitPerUserReached: Scalars["Boolean"]["output"];
   limitReached: Scalars["Boolean"]["output"];
   name: Scalars["String"]["output"];
+  notStart: Scalars["Boolean"]["output"];
   unit: EPrivilegeDiscountUnit;
-  used: Scalars["Boolean"]["output"];
 };
 
 export type SentPodDocumentShipmentStepInput = {
@@ -3403,6 +3548,13 @@ export type ShipmentAdditionalServicePrice = {
   price: Scalars["Float"]["output"];
   reference: AdditionalServiceCostPricing;
   updatedAt: Scalars["DateTimeISO"]["output"];
+};
+
+export type ShipmentCreditorReport = {
+  __typename?: "ShipmentCreditorReport";
+  finishedDate?: Maybe<Scalars["String"]["output"]>;
+  shipmentNo?: Maybe<Scalars["String"]["output"]>;
+  value?: Maybe<Scalars["Float"]["output"]>;
 };
 
 export type ShipmentInput = {
@@ -3677,6 +3829,7 @@ export type User = {
   parents?: Maybe<Array<Scalars["String"]["output"]>>;
   profileImage?: Maybe<File>;
   registration: ERegistration;
+  rejectedRequestParents?: Maybe<Array<Scalars["String"]["output"]>>;
   remark?: Maybe<Scalars["String"]["output"]>;
   requestedParents?: Maybe<Array<Scalars["String"]["output"]>>;
   status: EUserStatus;
@@ -4030,7 +4183,10 @@ export type BillingFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -4246,6 +4402,8 @@ export type BillingFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -4438,7 +4596,10 @@ export type BillingFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -4654,6 +4815,8 @@ export type BillingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -4819,7 +4982,10 @@ export type BillingFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -5035,6 +5201,8 @@ export type BillingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -5200,7 +5368,10 @@ export type BillingFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -5416,6 +5587,8 @@ export type BillingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -5581,7 +5754,10 @@ export type BillingFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -5797,6 +5973,8 @@ export type BillingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -5962,7 +6140,10 @@ export type BillingFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -6178,6 +6359,8 @@ export type BillingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -6462,394 +6645,12 @@ export type BillingFragmentFragment = {
       unit: EPrivilegeDiscountUnit;
       minPrice?: number | null;
       maxDiscountPrice?: number | null;
-      isInfinity: boolean;
-      usedAmout?: number | null;
+      usedAmout: number;
       limitAmout?: number | null;
       description?: string | null;
       defaultShow?: boolean | null;
       createdAt: any;
       updatedAt: any;
-      usedUser: Array<{
-        __typename?: "User";
-        _id: string;
-        username: string;
-        userNumber: string;
-        userRole: EUserRole;
-        userType: EUserType;
-        status: EUserStatus;
-        parents?: Array<string> | null;
-        fullname?: string | null;
-        email?: string | null;
-        contactNumber?: string | null;
-        address?: string | null;
-        adminDetail?: {
-          __typename?: "Admin";
-          _id: string;
-          userNumber: string;
-          permission: EAdminPermission;
-          email: string;
-          title?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        individualDetail?: {
-          __typename?: "IndividualCustomer";
-          _id: string;
-          userNumber: string;
-          email: string;
-          title: string;
-          otherTitle?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        businessDetail?: {
-          __typename?: "BusinessCustomer";
-          _id: string;
-          userNumber: string;
-          businessTitle: string;
-          businessName: string;
-          businessBranch?: string | null;
-          businessType: string;
-          businessTypeOther?: string | null;
-          taxNumber: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          contactNumber: string;
-          businessEmail: string;
-          paymentMethod: EPaymentMethod;
-          acceptedEDocumentDate?: any | null;
-          acceptedPoliciesVersion?: number | null;
-          acceptedPoliciesDate?: any | null;
-          acceptedTermConditionVersion?: number | null;
-          acceptedTermConditionDate?: any | null;
-          changePaymentMethodRequest?: boolean | null;
-          creditPayment?: {
-            __typename?: "BusinessCustomerCreditPayment";
-            _id: string;
-            isSameAddress?: boolean | null;
-            financialFirstname: string;
-            financialLastname: string;
-            financialContactNumber: string;
-            financialContactEmails: Array<string>;
-            financialAddress: string;
-            financialPostcode: string;
-            financialProvince: string;
-            financialDistrict: string;
-            financialSubDistrict: string;
-            billingCycleType: string;
-            acceptedFirstCreditTermDate?: any | null;
-            creditLimit: number;
-            creditUsage: number;
-            creditOutstandingBalance: number;
-            billingCycle: {
-              __typename?: "YearlyBillingCycle";
-              jan: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              feb: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              mar: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              apr: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              may: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jun: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jul: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              aug: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              sep: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              oct: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              nov: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              dec: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-            };
-            businessRegistrationCertificateFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            copyIDAuthorizedSignatoryFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            certificateValueAddedTaxRegistrationFile?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          } | null;
-          cashPayment?: {
-            __typename?: "BusinessCustomerCashPayment";
-            _id: string;
-            acceptedEReceiptDate?: any | null;
-          } | null;
-        } | null;
-        driverDetail?: {
-          __typename?: "DriverDetail";
-          _id: string;
-          driverType: Array<EDriverType>;
-          title: string;
-          otherTitle: string;
-          firstname?: string | null;
-          lastname?: string | null;
-          businessName?: string | null;
-          businessBranch?: string | null;
-          taxNumber: string;
-          phoneNumber: string;
-          lineId: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          bank?: string | null;
-          bankBranch?: string | null;
-          bankName?: string | null;
-          bankNumber?: string | null;
-          balance: number;
-          fullname?: string | null;
-          serviceVehicleTypes?: Array<{
-            __typename?: "VehicleType";
-            _id: string;
-            type: string;
-            isPublic?: boolean | null;
-            isLarger?: boolean | null;
-            name: string;
-            width: number;
-            length: number;
-            height: number;
-            maxCapacity: number;
-            maxDroppoint?: number | null;
-            details?: string | null;
-            createdAt: any;
-            updatedAt: any;
-            image: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-          }> | null;
-          documents: {
-            __typename?: "DriverDocument";
-            _id: string;
-            frontOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            backOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            leftOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            rigthOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyVehicleRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyIDCard?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyDrivingLicense?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyBookBank?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyHouseRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            insurancePolicy?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            criminalRecordCheckCert?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            businessRegistrationCertificate?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            certificateValueAddedTaxRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          };
-        } | null;
-        profileImage?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      }>;
     } | null;
     additionalImages?: Array<{
       __typename?: "File";
@@ -6900,7 +6701,10 @@ export type BillingFragmentFragment = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -7116,6 +6920,8 @@ export type BillingFragmentFragment = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -7354,7 +7160,10 @@ export type BillingFragmentFragment = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -7570,6 +7379,8 @@ export type BillingFragmentFragment = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -7826,7 +7637,10 @@ export type BillingFragmentFragment = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -8042,6 +7856,8 @@ export type BillingFragmentFragment = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -8208,7 +8024,10 @@ export type BillingFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -8424,6 +8243,8 @@ export type BillingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -8610,7 +8431,10 @@ export type BillingFragmentFragment = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -8826,6 +8650,8 @@ export type BillingFragmentFragment = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -9051,7 +8877,10 @@ export type BillingFragmentFragment = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -9267,6 +9096,8 @@ export type BillingFragmentFragment = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -9433,7 +9264,10 @@ export type BillingFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -9649,6 +9483,8 @@ export type BillingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -9815,7 +9651,10 @@ export type BillingFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -10031,6 +9870,8 @@ export type BillingFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -10217,7 +10058,10 @@ export type BillingListFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -10433,6 +10277,8 @@ export type BillingListFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -10745,7 +10591,10 @@ export type BillingListFragmentFragment = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -10961,6 +10810,8 @@ export type BillingListFragmentFragment = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -11127,7 +10978,10 @@ export type BillingListFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -11343,6 +11197,8 @@ export type BillingListFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -11529,7 +11385,10 @@ export type BillingListFragmentFragment = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -11745,6 +11604,8 @@ export type BillingListFragmentFragment = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -11970,7 +11831,10 @@ export type BillingListFragmentFragment = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -12186,6 +12050,8 @@ export type BillingListFragmentFragment = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -12352,7 +12218,10 @@ export type BillingListFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -12568,6 +12437,8 @@ export type BillingListFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -12734,7 +12605,10 @@ export type BillingListFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -12950,6 +12824,8 @@ export type BillingListFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -13174,7 +13050,10 @@ export type DistanceCostPricingFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -13390,6 +13269,8 @@ export type DistanceCostPricingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -13717,7 +13598,10 @@ export type BillingDocumentFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -13933,6 +13817,8 @@ export type BillingDocumentFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -14133,7 +14019,10 @@ export type InvoiceFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -14349,6 +14238,8 @@ export type InvoiceFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -14515,7 +14406,10 @@ export type InvoiceFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -14731,6 +14625,8 @@ export type InvoiceFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -14945,7 +14841,10 @@ export type PodAddressFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -15161,6 +15060,8 @@ export type PodAddressFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -15435,7 +15336,10 @@ export type PaymentFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -15651,6 +15555,8 @@ export type PaymentFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -15817,7 +15723,10 @@ export type PaymentFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -16033,6 +15942,8 @@ export type PaymentFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -16204,394 +16115,12 @@ export type PrivilegeFragmentFragment = {
   unit: EPrivilegeDiscountUnit;
   minPrice?: number | null;
   maxDiscountPrice?: number | null;
-  isInfinity: boolean;
-  usedAmout?: number | null;
+  usedAmout: number;
   limitAmout?: number | null;
   description?: string | null;
   defaultShow?: boolean | null;
   createdAt: any;
   updatedAt: any;
-  usedUser: Array<{
-    __typename?: "User";
-    _id: string;
-    username: string;
-    userNumber: string;
-    userRole: EUserRole;
-    userType: EUserType;
-    status: EUserStatus;
-    parents?: Array<string> | null;
-    fullname?: string | null;
-    email?: string | null;
-    contactNumber?: string | null;
-    address?: string | null;
-    adminDetail?: {
-      __typename?: "Admin";
-      _id: string;
-      userNumber: string;
-      permission: EAdminPermission;
-      email: string;
-      title?: string | null;
-      firstname: string;
-      lastname: string;
-      phoneNumber: string;
-      taxId?: string | null;
-      address?: string | null;
-      province?: string | null;
-      district?: string | null;
-      subDistrict?: string | null;
-      postcode?: string | null;
-      fullname?: string | null;
-    } | null;
-    individualDetail?: {
-      __typename?: "IndividualCustomer";
-      _id: string;
-      userNumber: string;
-      email: string;
-      title: string;
-      otherTitle?: string | null;
-      firstname: string;
-      lastname: string;
-      phoneNumber: string;
-      taxId?: string | null;
-      address?: string | null;
-      province?: string | null;
-      district?: string | null;
-      subDistrict?: string | null;
-      postcode?: string | null;
-      fullname?: string | null;
-    } | null;
-    businessDetail?: {
-      __typename?: "BusinessCustomer";
-      _id: string;
-      userNumber: string;
-      businessTitle: string;
-      businessName: string;
-      businessBranch?: string | null;
-      businessType: string;
-      businessTypeOther?: string | null;
-      taxNumber: string;
-      address: string;
-      province: string;
-      district: string;
-      subDistrict: string;
-      postcode: string;
-      contactNumber: string;
-      businessEmail: string;
-      paymentMethod: EPaymentMethod;
-      acceptedEDocumentDate?: any | null;
-      acceptedPoliciesVersion?: number | null;
-      acceptedPoliciesDate?: any | null;
-      acceptedTermConditionVersion?: number | null;
-      acceptedTermConditionDate?: any | null;
-      changePaymentMethodRequest?: boolean | null;
-      creditPayment?: {
-        __typename?: "BusinessCustomerCreditPayment";
-        _id: string;
-        isSameAddress?: boolean | null;
-        financialFirstname: string;
-        financialLastname: string;
-        financialContactNumber: string;
-        financialContactEmails: Array<string>;
-        financialAddress: string;
-        financialPostcode: string;
-        financialProvince: string;
-        financialDistrict: string;
-        financialSubDistrict: string;
-        billingCycleType: string;
-        acceptedFirstCreditTermDate?: any | null;
-        creditLimit: number;
-        creditUsage: number;
-        creditOutstandingBalance: number;
-        billingCycle: {
-          __typename?: "YearlyBillingCycle";
-          jan: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          feb: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          mar: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          apr: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          may: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          jun: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          jul: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          aug: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          sep: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          oct: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          nov: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-          dec: {
-            __typename?: "MonthlyBillingCycle";
-            issueDate: number;
-            dueDate: number;
-            dueMonth: number;
-          };
-        };
-        businessRegistrationCertificateFile: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        };
-        copyIDAuthorizedSignatoryFile: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        };
-        certificateValueAddedTaxRegistrationFile?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      } | null;
-      cashPayment?: {
-        __typename?: "BusinessCustomerCashPayment";
-        _id: string;
-        acceptedEReceiptDate?: any | null;
-      } | null;
-    } | null;
-    driverDetail?: {
-      __typename?: "DriverDetail";
-      _id: string;
-      driverType: Array<EDriverType>;
-      title: string;
-      otherTitle: string;
-      firstname?: string | null;
-      lastname?: string | null;
-      businessName?: string | null;
-      businessBranch?: string | null;
-      taxNumber: string;
-      phoneNumber: string;
-      lineId: string;
-      address: string;
-      province: string;
-      district: string;
-      subDistrict: string;
-      postcode: string;
-      bank?: string | null;
-      bankBranch?: string | null;
-      bankName?: string | null;
-      bankNumber?: string | null;
-      balance: number;
-      fullname?: string | null;
-      serviceVehicleTypes?: Array<{
-        __typename?: "VehicleType";
-        _id: string;
-        type: string;
-        isPublic?: boolean | null;
-        isLarger?: boolean | null;
-        name: string;
-        width: number;
-        length: number;
-        height: number;
-        maxCapacity: number;
-        maxDroppoint?: number | null;
-        details?: string | null;
-        createdAt: any;
-        updatedAt: any;
-        image: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        };
-      }> | null;
-      documents: {
-        __typename?: "DriverDocument";
-        _id: string;
-        frontOfVehicle?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        backOfVehicle?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        leftOfVehicle?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        rigthOfVehicle?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyVehicleRegistration?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyIDCard?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyDrivingLicense?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyBookBank?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        copyHouseRegistration?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        insurancePolicy?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        criminalRecordCheckCert?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        businessRegistrationCertificate?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-        certificateValueAddedTaxRegistration?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      };
-    } | null;
-    profileImage?: {
-      __typename?: "File";
-      _id: string;
-      fileId: string;
-      filename: string;
-      mimetype: string;
-      createdAt: any;
-      updatedAt: any;
-    } | null;
-  }>;
 };
 
 export type PriceFragmentFragment = {
@@ -16711,7 +16240,10 @@ export type QuotationFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -16927,6 +16459,8 @@ export type QuotationFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -17114,7 +16648,10 @@ export type ReceiptFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -17330,6 +16867,8 @@ export type ReceiptFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -17611,7 +17150,10 @@ export type ShipmentFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -17827,6 +17369,8 @@ export type ShipmentFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -17992,7 +17536,10 @@ export type ShipmentFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -18208,6 +17755,8 @@ export type ShipmentFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -18373,7 +17922,10 @@ export type ShipmentFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -18589,6 +18141,8 @@ export type ShipmentFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -18754,7 +18308,10 @@ export type ShipmentFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -18970,6 +18527,8 @@ export type ShipmentFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -19135,7 +18694,10 @@ export type ShipmentFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -19351,6 +18913,8 @@ export type ShipmentFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -19631,394 +19195,12 @@ export type ShipmentFragmentFragment = {
     unit: EPrivilegeDiscountUnit;
     minPrice?: number | null;
     maxDiscountPrice?: number | null;
-    isInfinity: boolean;
-    usedAmout?: number | null;
+    usedAmout: number;
     limitAmout?: number | null;
     description?: string | null;
     defaultShow?: boolean | null;
     createdAt: any;
     updatedAt: any;
-    usedUser: Array<{
-      __typename?: "User";
-      _id: string;
-      username: string;
-      userNumber: string;
-      userRole: EUserRole;
-      userType: EUserType;
-      status: EUserStatus;
-      parents?: Array<string> | null;
-      fullname?: string | null;
-      email?: string | null;
-      contactNumber?: string | null;
-      address?: string | null;
-      adminDetail?: {
-        __typename?: "Admin";
-        _id: string;
-        userNumber: string;
-        permission: EAdminPermission;
-        email: string;
-        title?: string | null;
-        firstname: string;
-        lastname: string;
-        phoneNumber: string;
-        taxId?: string | null;
-        address?: string | null;
-        province?: string | null;
-        district?: string | null;
-        subDistrict?: string | null;
-        postcode?: string | null;
-        fullname?: string | null;
-      } | null;
-      individualDetail?: {
-        __typename?: "IndividualCustomer";
-        _id: string;
-        userNumber: string;
-        email: string;
-        title: string;
-        otherTitle?: string | null;
-        firstname: string;
-        lastname: string;
-        phoneNumber: string;
-        taxId?: string | null;
-        address?: string | null;
-        province?: string | null;
-        district?: string | null;
-        subDistrict?: string | null;
-        postcode?: string | null;
-        fullname?: string | null;
-      } | null;
-      businessDetail?: {
-        __typename?: "BusinessCustomer";
-        _id: string;
-        userNumber: string;
-        businessTitle: string;
-        businessName: string;
-        businessBranch?: string | null;
-        businessType: string;
-        businessTypeOther?: string | null;
-        taxNumber: string;
-        address: string;
-        province: string;
-        district: string;
-        subDistrict: string;
-        postcode: string;
-        contactNumber: string;
-        businessEmail: string;
-        paymentMethod: EPaymentMethod;
-        acceptedEDocumentDate?: any | null;
-        acceptedPoliciesVersion?: number | null;
-        acceptedPoliciesDate?: any | null;
-        acceptedTermConditionVersion?: number | null;
-        acceptedTermConditionDate?: any | null;
-        changePaymentMethodRequest?: boolean | null;
-        creditPayment?: {
-          __typename?: "BusinessCustomerCreditPayment";
-          _id: string;
-          isSameAddress?: boolean | null;
-          financialFirstname: string;
-          financialLastname: string;
-          financialContactNumber: string;
-          financialContactEmails: Array<string>;
-          financialAddress: string;
-          financialPostcode: string;
-          financialProvince: string;
-          financialDistrict: string;
-          financialSubDistrict: string;
-          billingCycleType: string;
-          acceptedFirstCreditTermDate?: any | null;
-          creditLimit: number;
-          creditUsage: number;
-          creditOutstandingBalance: number;
-          billingCycle: {
-            __typename?: "YearlyBillingCycle";
-            jan: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            feb: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            mar: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            apr: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            may: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            jun: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            jul: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            aug: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            sep: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            oct: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            nov: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            dec: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-          };
-          businessRegistrationCertificateFile: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-          copyIDAuthorizedSignatoryFile: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-          certificateValueAddedTaxRegistrationFile?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-        } | null;
-        cashPayment?: {
-          __typename?: "BusinessCustomerCashPayment";
-          _id: string;
-          acceptedEReceiptDate?: any | null;
-        } | null;
-      } | null;
-      driverDetail?: {
-        __typename?: "DriverDetail";
-        _id: string;
-        driverType: Array<EDriverType>;
-        title: string;
-        otherTitle: string;
-        firstname?: string | null;
-        lastname?: string | null;
-        businessName?: string | null;
-        businessBranch?: string | null;
-        taxNumber: string;
-        phoneNumber: string;
-        lineId: string;
-        address: string;
-        province: string;
-        district: string;
-        subDistrict: string;
-        postcode: string;
-        bank?: string | null;
-        bankBranch?: string | null;
-        bankName?: string | null;
-        bankNumber?: string | null;
-        balance: number;
-        fullname?: string | null;
-        serviceVehicleTypes?: Array<{
-          __typename?: "VehicleType";
-          _id: string;
-          type: string;
-          isPublic?: boolean | null;
-          isLarger?: boolean | null;
-          name: string;
-          width: number;
-          length: number;
-          height: number;
-          maxCapacity: number;
-          maxDroppoint?: number | null;
-          details?: string | null;
-          createdAt: any;
-          updatedAt: any;
-          image: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-        }> | null;
-        documents: {
-          __typename?: "DriverDocument";
-          _id: string;
-          frontOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          backOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          leftOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          rigthOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyVehicleRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyIDCard?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyDrivingLicense?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyBookBank?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyHouseRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          insurancePolicy?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          criminalRecordCheckCert?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          businessRegistrationCertificate?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          certificateValueAddedTaxRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-        };
-      } | null;
-      profileImage?: {
-        __typename?: "File";
-        _id: string;
-        fileId: string;
-        filename: string;
-        mimetype: string;
-        createdAt: any;
-        updatedAt: any;
-      } | null;
-    }>;
   } | null;
   additionalImages?: Array<{
     __typename?: "File";
@@ -20069,7 +19251,10 @@ export type ShipmentFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -20285,6 +19470,8 @@ export type ShipmentFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -20523,7 +19710,10 @@ export type ShipmentFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -20739,6 +19929,8 @@ export type ShipmentFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -20934,7 +20126,10 @@ export type ShipmentListFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -21150,6 +20345,8 @@ export type ShipmentListFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -21315,7 +20512,10 @@ export type ShipmentListFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -21531,6 +20731,8 @@ export type ShipmentListFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -21696,7 +20898,10 @@ export type ShipmentListFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -21912,6 +21117,8 @@ export type ShipmentListFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -22077,7 +21284,10 @@ export type ShipmentListFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -22293,6 +21503,8 @@ export type ShipmentListFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -22458,7 +21670,10 @@ export type ShipmentListFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -22674,6 +21889,8 @@ export type ShipmentListFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -22954,394 +22171,12 @@ export type ShipmentListFragmentFragment = {
     unit: EPrivilegeDiscountUnit;
     minPrice?: number | null;
     maxDiscountPrice?: number | null;
-    isInfinity: boolean;
-    usedAmout?: number | null;
+    usedAmout: number;
     limitAmout?: number | null;
     description?: string | null;
     defaultShow?: boolean | null;
     createdAt: any;
     updatedAt: any;
-    usedUser: Array<{
-      __typename?: "User";
-      _id: string;
-      username: string;
-      userNumber: string;
-      userRole: EUserRole;
-      userType: EUserType;
-      status: EUserStatus;
-      parents?: Array<string> | null;
-      fullname?: string | null;
-      email?: string | null;
-      contactNumber?: string | null;
-      address?: string | null;
-      adminDetail?: {
-        __typename?: "Admin";
-        _id: string;
-        userNumber: string;
-        permission: EAdminPermission;
-        email: string;
-        title?: string | null;
-        firstname: string;
-        lastname: string;
-        phoneNumber: string;
-        taxId?: string | null;
-        address?: string | null;
-        province?: string | null;
-        district?: string | null;
-        subDistrict?: string | null;
-        postcode?: string | null;
-        fullname?: string | null;
-      } | null;
-      individualDetail?: {
-        __typename?: "IndividualCustomer";
-        _id: string;
-        userNumber: string;
-        email: string;
-        title: string;
-        otherTitle?: string | null;
-        firstname: string;
-        lastname: string;
-        phoneNumber: string;
-        taxId?: string | null;
-        address?: string | null;
-        province?: string | null;
-        district?: string | null;
-        subDistrict?: string | null;
-        postcode?: string | null;
-        fullname?: string | null;
-      } | null;
-      businessDetail?: {
-        __typename?: "BusinessCustomer";
-        _id: string;
-        userNumber: string;
-        businessTitle: string;
-        businessName: string;
-        businessBranch?: string | null;
-        businessType: string;
-        businessTypeOther?: string | null;
-        taxNumber: string;
-        address: string;
-        province: string;
-        district: string;
-        subDistrict: string;
-        postcode: string;
-        contactNumber: string;
-        businessEmail: string;
-        paymentMethod: EPaymentMethod;
-        acceptedEDocumentDate?: any | null;
-        acceptedPoliciesVersion?: number | null;
-        acceptedPoliciesDate?: any | null;
-        acceptedTermConditionVersion?: number | null;
-        acceptedTermConditionDate?: any | null;
-        changePaymentMethodRequest?: boolean | null;
-        creditPayment?: {
-          __typename?: "BusinessCustomerCreditPayment";
-          _id: string;
-          isSameAddress?: boolean | null;
-          financialFirstname: string;
-          financialLastname: string;
-          financialContactNumber: string;
-          financialContactEmails: Array<string>;
-          financialAddress: string;
-          financialPostcode: string;
-          financialProvince: string;
-          financialDistrict: string;
-          financialSubDistrict: string;
-          billingCycleType: string;
-          acceptedFirstCreditTermDate?: any | null;
-          creditLimit: number;
-          creditUsage: number;
-          creditOutstandingBalance: number;
-          billingCycle: {
-            __typename?: "YearlyBillingCycle";
-            jan: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            feb: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            mar: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            apr: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            may: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            jun: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            jul: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            aug: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            sep: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            oct: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            nov: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-            dec: {
-              __typename?: "MonthlyBillingCycle";
-              issueDate: number;
-              dueDate: number;
-              dueMonth: number;
-            };
-          };
-          businessRegistrationCertificateFile: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-          copyIDAuthorizedSignatoryFile: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-          certificateValueAddedTaxRegistrationFile?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-        } | null;
-        cashPayment?: {
-          __typename?: "BusinessCustomerCashPayment";
-          _id: string;
-          acceptedEReceiptDate?: any | null;
-        } | null;
-      } | null;
-      driverDetail?: {
-        __typename?: "DriverDetail";
-        _id: string;
-        driverType: Array<EDriverType>;
-        title: string;
-        otherTitle: string;
-        firstname?: string | null;
-        lastname?: string | null;
-        businessName?: string | null;
-        businessBranch?: string | null;
-        taxNumber: string;
-        phoneNumber: string;
-        lineId: string;
-        address: string;
-        province: string;
-        district: string;
-        subDistrict: string;
-        postcode: string;
-        bank?: string | null;
-        bankBranch?: string | null;
-        bankName?: string | null;
-        bankNumber?: string | null;
-        balance: number;
-        fullname?: string | null;
-        serviceVehicleTypes?: Array<{
-          __typename?: "VehicleType";
-          _id: string;
-          type: string;
-          isPublic?: boolean | null;
-          isLarger?: boolean | null;
-          name: string;
-          width: number;
-          length: number;
-          height: number;
-          maxCapacity: number;
-          maxDroppoint?: number | null;
-          details?: string | null;
-          createdAt: any;
-          updatedAt: any;
-          image: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          };
-        }> | null;
-        documents: {
-          __typename?: "DriverDocument";
-          _id: string;
-          frontOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          backOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          leftOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          rigthOfVehicle?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyVehicleRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyIDCard?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyDrivingLicense?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyBookBank?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          copyHouseRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          insurancePolicy?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          criminalRecordCheckCert?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          businessRegistrationCertificate?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-          certificateValueAddedTaxRegistration?: {
-            __typename?: "File";
-            _id: string;
-            fileId: string;
-            filename: string;
-            mimetype: string;
-            createdAt: any;
-            updatedAt: any;
-          } | null;
-        };
-      } | null;
-      profileImage?: {
-        __typename?: "File";
-        _id: string;
-        fileId: string;
-        filename: string;
-        mimetype: string;
-        createdAt: any;
-        updatedAt: any;
-      } | null;
-    }>;
   } | null;
   additionalImages?: Array<{
     __typename?: "File";
@@ -23455,7 +22290,10 @@ export type ShipmentListFragmentFragment = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -23671,6 +22509,8 @@ export type ShipmentListFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -23943,7 +22783,10 @@ export type UpdateHistoryFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -24159,6 +23002,8 @@ export type UpdateHistoryFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -24743,6 +23588,8 @@ export type DriverDetailFragmentFragment = {
   bankNumber?: string | null;
   balance: number;
   fullname?: string | null;
+  licensePlateNumber?: string | null;
+  licensePlateProvince?: string | null;
   serviceVehicleTypes?: Array<{
     __typename?: "VehicleType";
     _id: string;
@@ -24905,6 +23752,7 @@ export type UserSummaryFragmentFragment = {
   favoriteDrivers?: Array<string> | null;
   parents?: Array<string> | null;
   requestedParents?: Array<string> | null;
+  rejectedRequestParents?: Array<string> | null;
   validationRejectedMessage?: string | null;
   fullname?: string | null;
   email?: string | null;
@@ -25121,6 +23969,8 @@ export type UserSummaryFragmentFragment = {
     bankNumber?: string | null;
     balance: number;
     fullname?: string | null;
+    licensePlateNumber?: string | null;
+    licensePlateProvince?: string | null;
     serviceVehicleTypes?: Array<{
       __typename?: "VehicleType";
       _id: string;
@@ -25473,6 +24323,7 @@ export type UserFragmentFragment = {
   favoriteDrivers?: Array<string> | null;
   parents?: Array<string> | null;
   requestedParents?: Array<string> | null;
+  rejectedRequestParents?: Array<string> | null;
   validationRejectedMessage?: string | null;
   fullname?: string | null;
   email?: string | null;
@@ -25689,6 +24540,8 @@ export type UserFragmentFragment = {
     bankNumber?: string | null;
     balance: number;
     fullname?: string | null;
+    licensePlateNumber?: string | null;
+    licensePlateProvince?: string | null;
     serviceVehicleTypes?: Array<{
       __typename?: "VehicleType";
       _id: string;
@@ -26028,6 +24881,7 @@ export type UserFragmentFragment = {
     favoriteDrivers?: Array<string> | null;
     parents?: Array<string> | null;
     requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     validationRejectedMessage?: string | null;
     fullname?: string | null;
     email?: string | null;
@@ -26244,6 +25098,8 @@ export type UserFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -26613,6 +25469,8 @@ export type UserDriverFragmentFragment = {
     bankNumber?: string | null;
     balance: number;
     fullname?: string | null;
+    licensePlateNumber?: string | null;
+    licensePlateProvince?: string | null;
     serviceVehicleTypes?: Array<{
       __typename?: "VehicleType";
       _id: string;
@@ -26797,7 +25655,10 @@ export type UserNonInfoDataFragmentFragment = {
   userRole: EUserRole;
   userType: EUserType;
   status: EUserStatus;
+  drivingStatus?: EDriverStatus | null;
   parents?: Array<string> | null;
+  requestedParents?: Array<string> | null;
+  rejectedRequestParents?: Array<string> | null;
   fullname?: string | null;
   email?: string | null;
   contactNumber?: string | null;
@@ -27013,6 +25874,8 @@ export type UserNonInfoDataFragmentFragment = {
     bankNumber?: string | null;
     balance: number;
     fullname?: string | null;
+    licensePlateNumber?: string | null;
+    licensePlateProvince?: string | null;
     serviceVehicleTypes?: Array<{
       __typename?: "VehicleType";
       _id: string;
@@ -27204,6 +26067,7 @@ export type UserPendingFragmentFragment = {
     favoriteDrivers?: Array<string> | null;
     parents?: Array<string> | null;
     requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     validationRejectedMessage?: string | null;
     fullname?: string | null;
     email?: string | null;
@@ -27420,6 +26284,8 @@ export type UserPendingFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -27759,6 +26625,7 @@ export type UserPendingFragmentFragment = {
       favoriteDrivers?: Array<string> | null;
       parents?: Array<string> | null;
       requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       validationRejectedMessage?: string | null;
       fullname?: string | null;
       email?: string | null;
@@ -27975,6 +26842,8 @@ export type UserPendingFragmentFragment = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -28504,6 +27373,8 @@ export type UserPendingFragmentFragment = {
     bankNumber?: string | null;
     balance: number;
     fullname?: string | null;
+    licensePlateNumber?: string | null;
+    licensePlateProvince?: string | null;
     serviceVehicleTypes?: Array<{
       __typename?: "VehicleType";
       _id: string;
@@ -28659,7 +27530,10 @@ export type UserPendingFragmentFragment = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -28875,6 +27749,8 @@ export type UserPendingFragmentFragment = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -29125,6 +28001,7 @@ export type LoginMutation = {
       favoriteDrivers?: Array<string> | null;
       parents?: Array<string> | null;
       requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       validationRejectedMessage?: string | null;
       fullname?: string | null;
       email?: string | null;
@@ -29341,6 +28218,8 @@ export type LoginMutation = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -29680,6 +28559,7 @@ export type LoginMutation = {
         favoriteDrivers?: Array<string> | null;
         parents?: Array<string> | null;
         requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         validationRejectedMessage?: string | null;
         fullname?: string | null;
         email?: string | null;
@@ -29896,6 +28776,8 @@ export type LoginMutation = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -30346,6 +29228,8 @@ export type VerifyDriverDataMutation = {
     bankName: string;
     bankNumber: string;
     serviceVehicleTypes: Array<string>;
+    licensePlateProvince?: string | null;
+    licensePlateNumber?: string | null;
   };
 };
 
@@ -30402,6 +29286,8 @@ export type VerifyEmployeeDataMutation = {
     subDistrict: string;
     postcode: string;
     serviceVehicleTypes: Array<string>;
+    licensePlateProvince?: string | null;
+    licensePlateNumber?: string | null;
   };
 };
 
@@ -30422,6 +29308,15 @@ export type RemoveEmployeeMutationVariables = Exact<{
 export type RemoveEmployeeMutation = {
   __typename?: "Mutation";
   removeEmployee: boolean;
+};
+
+export type ResentEmployeeMutationVariables = Exact<{
+  driverId: Scalars["String"]["input"];
+}>;
+
+export type ResentEmployeeMutation = {
+  __typename?: "Mutation";
+  resentEmployee: boolean;
 };
 
 export type UpdateProfileImageMutationVariables = Exact<{
@@ -30482,6 +29377,7 @@ export type MarkAsFinishMutation = {
 export type AssignShipmentMutationVariables = Exact<{
   shipmentId: Scalars["String"]["input"];
   driverId: Scalars["String"]["input"];
+  isChanged?: InputMaybe<Scalars["Boolean"]["input"]>;
 }>;
 
 export type AssignShipmentMutation = {
@@ -30637,7 +29533,10 @@ export type GetAvailableShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -30853,6 +29752,8 @@ export type GetAvailableShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -31018,7 +29919,10 @@ export type GetAvailableShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -31234,6 +30138,8 @@ export type GetAvailableShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -31399,7 +30305,10 @@ export type GetAvailableShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -31615,6 +30524,8 @@ export type GetAvailableShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -31780,7 +30691,10 @@ export type GetAvailableShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -31996,6 +30910,8 @@ export type GetAvailableShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -32161,7 +31077,10 @@ export type GetAvailableShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -32377,6 +31296,8 @@ export type GetAvailableShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -32661,394 +31582,12 @@ export type GetAvailableShipmentQuery = {
       unit: EPrivilegeDiscountUnit;
       minPrice?: number | null;
       maxDiscountPrice?: number | null;
-      isInfinity: boolean;
-      usedAmout?: number | null;
+      usedAmout: number;
       limitAmout?: number | null;
       description?: string | null;
       defaultShow?: boolean | null;
       createdAt: any;
       updatedAt: any;
-      usedUser: Array<{
-        __typename?: "User";
-        _id: string;
-        username: string;
-        userNumber: string;
-        userRole: EUserRole;
-        userType: EUserType;
-        status: EUserStatus;
-        parents?: Array<string> | null;
-        fullname?: string | null;
-        email?: string | null;
-        contactNumber?: string | null;
-        address?: string | null;
-        adminDetail?: {
-          __typename?: "Admin";
-          _id: string;
-          userNumber: string;
-          permission: EAdminPermission;
-          email: string;
-          title?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        individualDetail?: {
-          __typename?: "IndividualCustomer";
-          _id: string;
-          userNumber: string;
-          email: string;
-          title: string;
-          otherTitle?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        businessDetail?: {
-          __typename?: "BusinessCustomer";
-          _id: string;
-          userNumber: string;
-          businessTitle: string;
-          businessName: string;
-          businessBranch?: string | null;
-          businessType: string;
-          businessTypeOther?: string | null;
-          taxNumber: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          contactNumber: string;
-          businessEmail: string;
-          paymentMethod: EPaymentMethod;
-          acceptedEDocumentDate?: any | null;
-          acceptedPoliciesVersion?: number | null;
-          acceptedPoliciesDate?: any | null;
-          acceptedTermConditionVersion?: number | null;
-          acceptedTermConditionDate?: any | null;
-          changePaymentMethodRequest?: boolean | null;
-          creditPayment?: {
-            __typename?: "BusinessCustomerCreditPayment";
-            _id: string;
-            isSameAddress?: boolean | null;
-            financialFirstname: string;
-            financialLastname: string;
-            financialContactNumber: string;
-            financialContactEmails: Array<string>;
-            financialAddress: string;
-            financialPostcode: string;
-            financialProvince: string;
-            financialDistrict: string;
-            financialSubDistrict: string;
-            billingCycleType: string;
-            acceptedFirstCreditTermDate?: any | null;
-            creditLimit: number;
-            creditUsage: number;
-            creditOutstandingBalance: number;
-            billingCycle: {
-              __typename?: "YearlyBillingCycle";
-              jan: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              feb: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              mar: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              apr: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              may: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jun: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jul: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              aug: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              sep: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              oct: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              nov: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              dec: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-            };
-            businessRegistrationCertificateFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            copyIDAuthorizedSignatoryFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            certificateValueAddedTaxRegistrationFile?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          } | null;
-          cashPayment?: {
-            __typename?: "BusinessCustomerCashPayment";
-            _id: string;
-            acceptedEReceiptDate?: any | null;
-          } | null;
-        } | null;
-        driverDetail?: {
-          __typename?: "DriverDetail";
-          _id: string;
-          driverType: Array<EDriverType>;
-          title: string;
-          otherTitle: string;
-          firstname?: string | null;
-          lastname?: string | null;
-          businessName?: string | null;
-          businessBranch?: string | null;
-          taxNumber: string;
-          phoneNumber: string;
-          lineId: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          bank?: string | null;
-          bankBranch?: string | null;
-          bankName?: string | null;
-          bankNumber?: string | null;
-          balance: number;
-          fullname?: string | null;
-          serviceVehicleTypes?: Array<{
-            __typename?: "VehicleType";
-            _id: string;
-            type: string;
-            isPublic?: boolean | null;
-            isLarger?: boolean | null;
-            name: string;
-            width: number;
-            length: number;
-            height: number;
-            maxCapacity: number;
-            maxDroppoint?: number | null;
-            details?: string | null;
-            createdAt: any;
-            updatedAt: any;
-            image: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-          }> | null;
-          documents: {
-            __typename?: "DriverDocument";
-            _id: string;
-            frontOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            backOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            leftOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            rigthOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyVehicleRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyIDCard?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyDrivingLicense?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyBookBank?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyHouseRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            insurancePolicy?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            criminalRecordCheckCert?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            businessRegistrationCertificate?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            certificateValueAddedTaxRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          };
-        } | null;
-        profileImage?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      }>;
     } | null;
     additionalImages?: Array<{
       __typename?: "File";
@@ -33099,7 +31638,10 @@ export type GetAvailableShipmentQuery = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -33315,6 +31857,8 @@ export type GetAvailableShipmentQuery = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -33553,7 +32097,10 @@ export type GetAvailableShipmentQuery = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -33769,6 +32316,8 @@ export type GetAvailableShipmentQuery = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -33971,7 +32520,10 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -34187,6 +32739,8 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -34352,7 +32906,10 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -34568,6 +33125,8 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -34733,7 +33292,10 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -34949,6 +33511,8 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -35114,7 +33678,10 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -35330,6 +33897,8 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -35495,7 +34064,10 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -35711,6 +34283,8 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -35995,394 +34569,12 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
       unit: EPrivilegeDiscountUnit;
       minPrice?: number | null;
       maxDiscountPrice?: number | null;
-      isInfinity: boolean;
-      usedAmout?: number | null;
+      usedAmout: number;
       limitAmout?: number | null;
       description?: string | null;
       defaultShow?: boolean | null;
       createdAt: any;
       updatedAt: any;
-      usedUser: Array<{
-        __typename?: "User";
-        _id: string;
-        username: string;
-        userNumber: string;
-        userRole: EUserRole;
-        userType: EUserType;
-        status: EUserStatus;
-        parents?: Array<string> | null;
-        fullname?: string | null;
-        email?: string | null;
-        contactNumber?: string | null;
-        address?: string | null;
-        adminDetail?: {
-          __typename?: "Admin";
-          _id: string;
-          userNumber: string;
-          permission: EAdminPermission;
-          email: string;
-          title?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        individualDetail?: {
-          __typename?: "IndividualCustomer";
-          _id: string;
-          userNumber: string;
-          email: string;
-          title: string;
-          otherTitle?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        businessDetail?: {
-          __typename?: "BusinessCustomer";
-          _id: string;
-          userNumber: string;
-          businessTitle: string;
-          businessName: string;
-          businessBranch?: string | null;
-          businessType: string;
-          businessTypeOther?: string | null;
-          taxNumber: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          contactNumber: string;
-          businessEmail: string;
-          paymentMethod: EPaymentMethod;
-          acceptedEDocumentDate?: any | null;
-          acceptedPoliciesVersion?: number | null;
-          acceptedPoliciesDate?: any | null;
-          acceptedTermConditionVersion?: number | null;
-          acceptedTermConditionDate?: any | null;
-          changePaymentMethodRequest?: boolean | null;
-          creditPayment?: {
-            __typename?: "BusinessCustomerCreditPayment";
-            _id: string;
-            isSameAddress?: boolean | null;
-            financialFirstname: string;
-            financialLastname: string;
-            financialContactNumber: string;
-            financialContactEmails: Array<string>;
-            financialAddress: string;
-            financialPostcode: string;
-            financialProvince: string;
-            financialDistrict: string;
-            financialSubDistrict: string;
-            billingCycleType: string;
-            acceptedFirstCreditTermDate?: any | null;
-            creditLimit: number;
-            creditUsage: number;
-            creditOutstandingBalance: number;
-            billingCycle: {
-              __typename?: "YearlyBillingCycle";
-              jan: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              feb: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              mar: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              apr: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              may: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jun: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jul: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              aug: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              sep: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              oct: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              nov: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              dec: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-            };
-            businessRegistrationCertificateFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            copyIDAuthorizedSignatoryFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            certificateValueAddedTaxRegistrationFile?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          } | null;
-          cashPayment?: {
-            __typename?: "BusinessCustomerCashPayment";
-            _id: string;
-            acceptedEReceiptDate?: any | null;
-          } | null;
-        } | null;
-        driverDetail?: {
-          __typename?: "DriverDetail";
-          _id: string;
-          driverType: Array<EDriverType>;
-          title: string;
-          otherTitle: string;
-          firstname?: string | null;
-          lastname?: string | null;
-          businessName?: string | null;
-          businessBranch?: string | null;
-          taxNumber: string;
-          phoneNumber: string;
-          lineId: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          bank?: string | null;
-          bankBranch?: string | null;
-          bankName?: string | null;
-          bankNumber?: string | null;
-          balance: number;
-          fullname?: string | null;
-          serviceVehicleTypes?: Array<{
-            __typename?: "VehicleType";
-            _id: string;
-            type: string;
-            isPublic?: boolean | null;
-            isLarger?: boolean | null;
-            name: string;
-            width: number;
-            length: number;
-            height: number;
-            maxCapacity: number;
-            maxDroppoint?: number | null;
-            details?: string | null;
-            createdAt: any;
-            updatedAt: any;
-            image: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-          }> | null;
-          documents: {
-            __typename?: "DriverDocument";
-            _id: string;
-            frontOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            backOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            leftOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            rigthOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyVehicleRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyIDCard?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyDrivingLicense?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyBookBank?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyHouseRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            insurancePolicy?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            criminalRecordCheckCert?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            businessRegistrationCertificate?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            certificateValueAddedTaxRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          };
-        } | null;
-        profileImage?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      }>;
     } | null;
     additionalImages?: Array<{
       __typename?: "File";
@@ -36433,7 +34625,10 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -36649,6 +34844,8 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -36887,7 +35084,10 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -37103,6 +35303,8 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -37303,7 +35505,10 @@ export type GetTodayShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -37519,6 +35724,8 @@ export type GetTodayShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -37684,7 +35891,10 @@ export type GetTodayShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -37900,6 +36110,8 @@ export type GetTodayShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -38065,7 +36277,10 @@ export type GetTodayShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -38281,6 +36496,8 @@ export type GetTodayShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -38446,7 +36663,10 @@ export type GetTodayShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -38662,6 +36882,8 @@ export type GetTodayShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -38827,7 +37049,10 @@ export type GetTodayShipmentQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -39043,6 +37268,8 @@ export type GetTodayShipmentQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -39327,394 +37554,12 @@ export type GetTodayShipmentQuery = {
       unit: EPrivilegeDiscountUnit;
       minPrice?: number | null;
       maxDiscountPrice?: number | null;
-      isInfinity: boolean;
-      usedAmout?: number | null;
+      usedAmout: number;
       limitAmout?: number | null;
       description?: string | null;
       defaultShow?: boolean | null;
       createdAt: any;
       updatedAt: any;
-      usedUser: Array<{
-        __typename?: "User";
-        _id: string;
-        username: string;
-        userNumber: string;
-        userRole: EUserRole;
-        userType: EUserType;
-        status: EUserStatus;
-        parents?: Array<string> | null;
-        fullname?: string | null;
-        email?: string | null;
-        contactNumber?: string | null;
-        address?: string | null;
-        adminDetail?: {
-          __typename?: "Admin";
-          _id: string;
-          userNumber: string;
-          permission: EAdminPermission;
-          email: string;
-          title?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        individualDetail?: {
-          __typename?: "IndividualCustomer";
-          _id: string;
-          userNumber: string;
-          email: string;
-          title: string;
-          otherTitle?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        businessDetail?: {
-          __typename?: "BusinessCustomer";
-          _id: string;
-          userNumber: string;
-          businessTitle: string;
-          businessName: string;
-          businessBranch?: string | null;
-          businessType: string;
-          businessTypeOther?: string | null;
-          taxNumber: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          contactNumber: string;
-          businessEmail: string;
-          paymentMethod: EPaymentMethod;
-          acceptedEDocumentDate?: any | null;
-          acceptedPoliciesVersion?: number | null;
-          acceptedPoliciesDate?: any | null;
-          acceptedTermConditionVersion?: number | null;
-          acceptedTermConditionDate?: any | null;
-          changePaymentMethodRequest?: boolean | null;
-          creditPayment?: {
-            __typename?: "BusinessCustomerCreditPayment";
-            _id: string;
-            isSameAddress?: boolean | null;
-            financialFirstname: string;
-            financialLastname: string;
-            financialContactNumber: string;
-            financialContactEmails: Array<string>;
-            financialAddress: string;
-            financialPostcode: string;
-            financialProvince: string;
-            financialDistrict: string;
-            financialSubDistrict: string;
-            billingCycleType: string;
-            acceptedFirstCreditTermDate?: any | null;
-            creditLimit: number;
-            creditUsage: number;
-            creditOutstandingBalance: number;
-            billingCycle: {
-              __typename?: "YearlyBillingCycle";
-              jan: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              feb: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              mar: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              apr: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              may: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jun: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jul: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              aug: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              sep: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              oct: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              nov: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              dec: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-            };
-            businessRegistrationCertificateFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            copyIDAuthorizedSignatoryFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            certificateValueAddedTaxRegistrationFile?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          } | null;
-          cashPayment?: {
-            __typename?: "BusinessCustomerCashPayment";
-            _id: string;
-            acceptedEReceiptDate?: any | null;
-          } | null;
-        } | null;
-        driverDetail?: {
-          __typename?: "DriverDetail";
-          _id: string;
-          driverType: Array<EDriverType>;
-          title: string;
-          otherTitle: string;
-          firstname?: string | null;
-          lastname?: string | null;
-          businessName?: string | null;
-          businessBranch?: string | null;
-          taxNumber: string;
-          phoneNumber: string;
-          lineId: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          bank?: string | null;
-          bankBranch?: string | null;
-          bankName?: string | null;
-          bankNumber?: string | null;
-          balance: number;
-          fullname?: string | null;
-          serviceVehicleTypes?: Array<{
-            __typename?: "VehicleType";
-            _id: string;
-            type: string;
-            isPublic?: boolean | null;
-            isLarger?: boolean | null;
-            name: string;
-            width: number;
-            length: number;
-            height: number;
-            maxCapacity: number;
-            maxDroppoint?: number | null;
-            details?: string | null;
-            createdAt: any;
-            updatedAt: any;
-            image: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-          }> | null;
-          documents: {
-            __typename?: "DriverDocument";
-            _id: string;
-            frontOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            backOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            leftOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            rigthOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyVehicleRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyIDCard?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyDrivingLicense?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyBookBank?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyHouseRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            insurancePolicy?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            criminalRecordCheckCert?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            businessRegistrationCertificate?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            certificateValueAddedTaxRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          };
-        } | null;
-        profileImage?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      }>;
     } | null;
     additionalImages?: Array<{
       __typename?: "File";
@@ -39765,7 +37610,10 @@ export type GetTodayShipmentQuery = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -39981,6 +37829,8 @@ export type GetTodayShipmentQuery = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -40219,7 +38069,10 @@ export type GetTodayShipmentQuery = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -40435,6 +38288,8 @@ export type GetTodayShipmentQuery = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -40754,6 +38609,7 @@ export type MeQueryVariables = Exact<{ [key: string]: never }>;
 export type MeQuery = {
   __typename?: "Query";
   checkAvailableToWork: boolean;
+  getParentNames?: Array<string> | null;
   me: {
     __typename?: "User";
     _id: string;
@@ -40779,6 +38635,7 @@ export type MeQuery = {
     favoriteDrivers?: Array<string> | null;
     parents?: Array<string> | null;
     requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     validationRejectedMessage?: string | null;
     fullname?: string | null;
     email?: string | null;
@@ -40995,6 +38852,8 @@ export type MeQuery = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -41334,6 +39193,7 @@ export type MeQuery = {
       favoriteDrivers?: Array<string> | null;
       parents?: Array<string> | null;
       requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       validationRejectedMessage?: string | null;
       fullname?: string | null;
       email?: string | null;
@@ -41550,6 +39410,8 @@ export type MeQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -41913,7 +39775,10 @@ export type EmployeesQuery = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -42129,6 +39994,8 @@ export type EmployeesQuery = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -42304,7 +40171,10 @@ export type LookupDriverQuery = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -42520,6 +40390,8 @@ export type LookupDriverQuery = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -42693,7 +40565,10 @@ export type GetUserQuery = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -42909,6 +40784,8 @@ export type GetUserQuery = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -43082,7 +40959,10 @@ export type AvailableEmployeesQuery = {
     userRole: EUserRole;
     userType: EUserType;
     status: EUserStatus;
+    drivingStatus?: EDriverStatus | null;
     parents?: Array<string> | null;
+    requestedParents?: Array<string> | null;
+    rejectedRequestParents?: Array<string> | null;
     fullname?: string | null;
     email?: string | null;
     contactNumber?: string | null;
@@ -43298,6 +41178,8 @@ export type AvailableEmployeesQuery = {
       bankNumber?: string | null;
       balance: number;
       fullname?: string | null;
+      licensePlateNumber?: string | null;
+      licensePlateProvince?: string | null;
       serviceVehicleTypes?: Array<{
         __typename?: "VehicleType";
         _id: string;
@@ -43578,7 +41460,10 @@ export type ListenAvailableShipmentSubscription = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -43794,6 +41679,8 @@ export type ListenAvailableShipmentSubscription = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -43959,7 +41846,10 @@ export type ListenAvailableShipmentSubscription = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -44175,6 +42065,8 @@ export type ListenAvailableShipmentSubscription = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -44340,7 +42232,10 @@ export type ListenAvailableShipmentSubscription = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -44556,6 +42451,8 @@ export type ListenAvailableShipmentSubscription = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -44721,7 +42618,10 @@ export type ListenAvailableShipmentSubscription = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -44937,6 +42837,8 @@ export type ListenAvailableShipmentSubscription = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -45102,7 +43004,10 @@ export type ListenAvailableShipmentSubscription = {
       userRole: EUserRole;
       userType: EUserType;
       status: EUserStatus;
+      drivingStatus?: EDriverStatus | null;
       parents?: Array<string> | null;
+      requestedParents?: Array<string> | null;
+      rejectedRequestParents?: Array<string> | null;
       fullname?: string | null;
       email?: string | null;
       contactNumber?: string | null;
@@ -45318,6 +43223,8 @@ export type ListenAvailableShipmentSubscription = {
         bankNumber?: string | null;
         balance: number;
         fullname?: string | null;
+        licensePlateNumber?: string | null;
+        licensePlateProvince?: string | null;
         serviceVehicleTypes?: Array<{
           __typename?: "VehicleType";
           _id: string;
@@ -45602,394 +43509,12 @@ export type ListenAvailableShipmentSubscription = {
       unit: EPrivilegeDiscountUnit;
       minPrice?: number | null;
       maxDiscountPrice?: number | null;
-      isInfinity: boolean;
-      usedAmout?: number | null;
+      usedAmout: number;
       limitAmout?: number | null;
       description?: string | null;
       defaultShow?: boolean | null;
       createdAt: any;
       updatedAt: any;
-      usedUser: Array<{
-        __typename?: "User";
-        _id: string;
-        username: string;
-        userNumber: string;
-        userRole: EUserRole;
-        userType: EUserType;
-        status: EUserStatus;
-        parents?: Array<string> | null;
-        fullname?: string | null;
-        email?: string | null;
-        contactNumber?: string | null;
-        address?: string | null;
-        adminDetail?: {
-          __typename?: "Admin";
-          _id: string;
-          userNumber: string;
-          permission: EAdminPermission;
-          email: string;
-          title?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        individualDetail?: {
-          __typename?: "IndividualCustomer";
-          _id: string;
-          userNumber: string;
-          email: string;
-          title: string;
-          otherTitle?: string | null;
-          firstname: string;
-          lastname: string;
-          phoneNumber: string;
-          taxId?: string | null;
-          address?: string | null;
-          province?: string | null;
-          district?: string | null;
-          subDistrict?: string | null;
-          postcode?: string | null;
-          fullname?: string | null;
-        } | null;
-        businessDetail?: {
-          __typename?: "BusinessCustomer";
-          _id: string;
-          userNumber: string;
-          businessTitle: string;
-          businessName: string;
-          businessBranch?: string | null;
-          businessType: string;
-          businessTypeOther?: string | null;
-          taxNumber: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          contactNumber: string;
-          businessEmail: string;
-          paymentMethod: EPaymentMethod;
-          acceptedEDocumentDate?: any | null;
-          acceptedPoliciesVersion?: number | null;
-          acceptedPoliciesDate?: any | null;
-          acceptedTermConditionVersion?: number | null;
-          acceptedTermConditionDate?: any | null;
-          changePaymentMethodRequest?: boolean | null;
-          creditPayment?: {
-            __typename?: "BusinessCustomerCreditPayment";
-            _id: string;
-            isSameAddress?: boolean | null;
-            financialFirstname: string;
-            financialLastname: string;
-            financialContactNumber: string;
-            financialContactEmails: Array<string>;
-            financialAddress: string;
-            financialPostcode: string;
-            financialProvince: string;
-            financialDistrict: string;
-            financialSubDistrict: string;
-            billingCycleType: string;
-            acceptedFirstCreditTermDate?: any | null;
-            creditLimit: number;
-            creditUsage: number;
-            creditOutstandingBalance: number;
-            billingCycle: {
-              __typename?: "YearlyBillingCycle";
-              jan: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              feb: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              mar: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              apr: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              may: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jun: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              jul: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              aug: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              sep: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              oct: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              nov: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-              dec: {
-                __typename?: "MonthlyBillingCycle";
-                issueDate: number;
-                dueDate: number;
-                dueMonth: number;
-              };
-            };
-            businessRegistrationCertificateFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            copyIDAuthorizedSignatoryFile: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-            certificateValueAddedTaxRegistrationFile?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          } | null;
-          cashPayment?: {
-            __typename?: "BusinessCustomerCashPayment";
-            _id: string;
-            acceptedEReceiptDate?: any | null;
-          } | null;
-        } | null;
-        driverDetail?: {
-          __typename?: "DriverDetail";
-          _id: string;
-          driverType: Array<EDriverType>;
-          title: string;
-          otherTitle: string;
-          firstname?: string | null;
-          lastname?: string | null;
-          businessName?: string | null;
-          businessBranch?: string | null;
-          taxNumber: string;
-          phoneNumber: string;
-          lineId: string;
-          address: string;
-          province: string;
-          district: string;
-          subDistrict: string;
-          postcode: string;
-          bank?: string | null;
-          bankBranch?: string | null;
-          bankName?: string | null;
-          bankNumber?: string | null;
-          balance: number;
-          fullname?: string | null;
-          serviceVehicleTypes?: Array<{
-            __typename?: "VehicleType";
-            _id: string;
-            type: string;
-            isPublic?: boolean | null;
-            isLarger?: boolean | null;
-            name: string;
-            width: number;
-            length: number;
-            height: number;
-            maxCapacity: number;
-            maxDroppoint?: number | null;
-            details?: string | null;
-            createdAt: any;
-            updatedAt: any;
-            image: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            };
-          }> | null;
-          documents: {
-            __typename?: "DriverDocument";
-            _id: string;
-            frontOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            backOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            leftOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            rigthOfVehicle?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyVehicleRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyIDCard?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyDrivingLicense?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyBookBank?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            copyHouseRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            insurancePolicy?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            criminalRecordCheckCert?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            businessRegistrationCertificate?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-            certificateValueAddedTaxRegistration?: {
-              __typename?: "File";
-              _id: string;
-              fileId: string;
-              filename: string;
-              mimetype: string;
-              createdAt: any;
-              updatedAt: any;
-            } | null;
-          };
-        } | null;
-        profileImage?: {
-          __typename?: "File";
-          _id: string;
-          fileId: string;
-          filename: string;
-          mimetype: string;
-          createdAt: any;
-          updatedAt: any;
-        } | null;
-      }>;
     } | null;
     additionalImages?: Array<{
       __typename?: "File";
@@ -46040,7 +43565,10 @@ export type ListenAvailableShipmentSubscription = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -46256,6 +43784,8 @@ export type ListenAvailableShipmentSubscription = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -46494,7 +44024,10 @@ export type ListenAvailableShipmentSubscription = {
         userRole: EUserRole;
         userType: EUserType;
         status: EUserStatus;
+        drivingStatus?: EDriverStatus | null;
         parents?: Array<string> | null;
+        requestedParents?: Array<string> | null;
+        rejectedRequestParents?: Array<string> | null;
         fullname?: string | null;
         email?: string | null;
         contactNumber?: string | null;
@@ -46710,6 +44243,8 @@ export type ListenAvailableShipmentSubscription = {
           bankNumber?: string | null;
           balance: number;
           fullname?: string | null;
+          licensePlateNumber?: string | null;
+          licensePlateProvince?: string | null;
           serviceVehicleTypes?: Array<{
             __typename?: "VehicleType";
             _id: string;
@@ -47140,6 +44675,8 @@ export const DriverDetailFragmentFragmentDoc = gql`
     bankNumber
     balance
     fullname
+    licensePlateNumber
+    licensePlateProvince
     serviceVehicleTypes {
       ...VehicleTypeFragment
     }
@@ -47173,7 +44710,10 @@ export const UserNonInfoDataFragmentFragmentDoc = gql`
     profileImage {
       ...FileFragment
     }
+    drivingStatus
     parents
+    requestedParents
+    rejectedRequestParents
     fullname
     email
     contactNumber
@@ -47289,18 +44829,13 @@ export const PrivilegeFragmentFragmentDoc = gql`
     unit
     minPrice
     maxDiscountPrice
-    isInfinity
     usedAmout
     limitAmout
     description
-    usedUser {
-      ...UserNonInfoDataFragment
-    }
     defaultShow
     createdAt
     updatedAt
   }
-  ${UserNonInfoDataFragmentFragmentDoc}
 `;
 export const DirectionsResultFragmentFragmentDoc = gql`
   fragment DirectionsResultFragment on DirectionsResult {
@@ -48008,6 +45543,7 @@ export const UserSummaryFragmentFragmentDoc = gql`
     favoriteDrivers
     parents
     requestedParents
+    rejectedRequestParents
     validationRejectedMessage
     fullname
     email
@@ -48067,6 +45603,7 @@ export const UserFragmentFragmentDoc = gql`
     favoriteDrivers
     parents
     requestedParents
+    rejectedRequestParents
     validationRejectedMessage
     validationBy {
       ...UserSummaryFragment
@@ -48705,6 +46242,8 @@ export const VerifyDriverDataDocument = gql`
       bankName
       bankNumber
       serviceVehicleTypes
+      licensePlateProvince
+      licensePlateNumber
     }
   }
 `;
@@ -48916,6 +46455,8 @@ export const VerifyEmployeeDataDocument = gql`
       subDistrict
       postcode
       serviceVehicleTypes
+      licensePlateProvince
+      licensePlateNumber
     }
   }
 `;
@@ -49059,6 +46600,54 @@ export type RemoveEmployeeMutationResult =
 export type RemoveEmployeeMutationOptions = Apollo.BaseMutationOptions<
   RemoveEmployeeMutation,
   RemoveEmployeeMutationVariables
+>;
+export const ResentEmployeeDocument = gql`
+  mutation ResentEmployee($driverId: String!) {
+    resentEmployee(driverId: $driverId)
+  }
+`;
+export type ResentEmployeeMutationFn = Apollo.MutationFunction<
+  ResentEmployeeMutation,
+  ResentEmployeeMutationVariables
+>;
+
+/**
+ * __useResentEmployeeMutation__
+ *
+ * To run a mutation, you first call `useResentEmployeeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useResentEmployeeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [resentEmployeeMutation, { data, loading, error }] = useResentEmployeeMutation({
+ *   variables: {
+ *      driverId: // value for 'driverId'
+ *   },
+ * });
+ */
+export function useResentEmployeeMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    ResentEmployeeMutation,
+    ResentEmployeeMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    ResentEmployeeMutation,
+    ResentEmployeeMutationVariables
+  >(ResentEmployeeDocument, options);
+}
+export type ResentEmployeeMutationHookResult = ReturnType<
+  typeof useResentEmployeeMutation
+>;
+export type ResentEmployeeMutationResult =
+  Apollo.MutationResult<ResentEmployeeMutation>;
+export type ResentEmployeeMutationOptions = Apollo.BaseMutationOptions<
+  ResentEmployeeMutation,
+  ResentEmployeeMutationVariables
 >;
 export const UpdateProfileImageDocument = gql`
   mutation UpdateProfileImage($fileDetail: FileInput!, $uid: String) {
@@ -49350,8 +46939,16 @@ export type MarkAsFinishMutationOptions = Apollo.BaseMutationOptions<
   MarkAsFinishMutationVariables
 >;
 export const AssignShipmentDocument = gql`
-  mutation AssignShipment($shipmentId: String!, $driverId: String!) {
-    assignShipment(shipmentId: $shipmentId, driverId: $driverId)
+  mutation AssignShipment(
+    $shipmentId: String!
+    $driverId: String!
+    $isChanged: Boolean
+  ) {
+    assignShipment(
+      shipmentId: $shipmentId
+      driverId: $driverId
+      isChanged: $isChanged
+    )
   }
 `;
 export type AssignShipmentMutationFn = Apollo.MutationFunction<
@@ -49374,6 +46971,7 @@ export type AssignShipmentMutationFn = Apollo.MutationFunction<
  *   variables: {
  *      shipmentId: // value for 'shipmentId'
  *      driverId: // value for 'driverId'
+ *      isChanged: // value for 'isChanged'
  *   },
  * });
  */
@@ -50622,6 +48220,7 @@ export const MeDocument = gql`
       notification
     }
     checkAvailableToWork
+    getParentNames
   }
   ${UserFragmentFragmentDoc}
 `;

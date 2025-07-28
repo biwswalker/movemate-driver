@@ -207,6 +207,8 @@ export default function RePreview() {
         subDistrict: detail?.subDistrict || "",
         taxNumber: detail?.taxNumber || "",
         title: detail?.title || "",
+        licensePlateNumber: detail?.licensePlateNumber || "",
+        licensePlateProvince: detail?.licensePlateProvince || "",
       };
 
       reRegister({
@@ -312,6 +314,16 @@ export default function RePreview() {
                   },
                   ""
                 )}
+              </Text>
+            </View>
+          )}
+          {detail?.licensePlateNumber && detail?.licensePlateProvince && (
+            <View style={styles.detailWrapper}>
+              <Text varient="body2" color="disabled">
+                ทะเบียนรถ
+              </Text>
+              <Text varient="body1">
+                {detail?.licensePlateNumber} ({detail?.licensePlateProvince})
               </Text>
             </View>
           )}

@@ -56,7 +56,7 @@ function DriverShipments({ userId, onClose }: DriverShipmentProps) {
       <View style={styles.container}>
         <View style={styles.wrapper}>
           <View style={styles.driverInfoWrapper}>
-            <View style={[styles.headerText, { alignItems: 'center' }]}>
+            <View style={[styles.headerText, { alignItems: "center" }]}>
               <Text varient="h3" numberOfLines={1}>
                 รายการขนส่ง
               </Text>
@@ -71,7 +71,7 @@ function DriverShipments({ userId, onClose }: DriverShipmentProps) {
             ) : (
               <Iconify
                 icon="solar:user-circle-bold-duotone"
-                size={normalize(44)}
+                size={44}
                 color={colors.text.disabled}
               />
             )}
@@ -79,11 +79,7 @@ function DriverShipments({ userId, onClose }: DriverShipmentProps) {
               <Text varient="h5" numberOfLines={1}>
                 {user.fullname}
               </Text>
-              <Text
-                varient="body2"
-                color="secondary"
-                style={{ lineHeight: normalize(18) }}
-              >
+              <Text varient="body2" color="secondary">
                 {user.userNumber}
               </Text>
             </View>
@@ -115,26 +111,26 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     flex: 1,
-    paddingTop: normalize(16),
-    paddingHorizontal: normalize(16),
+    paddingTop: 16,
+    paddingHorizontal: 16,
   },
   loadingWrapper: {
-    paddingVertical: normalize(32),
+    paddingVertical: 32,
   },
   driverInfoWrapper: {
-    marginBottom: normalize(16),
+    marginBottom: 16,
     flexDirection: "row",
     alignItems: "center",
-    gap: normalize(8),
+    gap: 8,
   },
   profileImage: {
-    width: normalize(44),
-    height: normalize(44),
-    borderRadius: normalize(22),
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
-  headerText: { flex: 1 },
+  headerText: { flex: 1, padding: 6 },
   headerAction: {
-    paddingLeft: normalize(8),
+    paddingLeft: 8,
   },
 });
 

@@ -6,37 +6,28 @@ import {
   EShipmentMatchingCriteria,
   EShipmentStatus,
   Shipment,
-  useAcceptShipmentMutation,
   useGetAvailableShipmentByTrackingNumberQuery,
 } from "@/graphql/generated/graphql";
-import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { normalize } from "@/utils/normalizeSize";
-import { fCurrency, fNumber } from "@/utils/number";
-import { ApolloError } from "@apollo/client";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import hexToRgba from "hex-to-rgba";
-import { isEqual, last, sortBy } from "lodash";
-import {
-  Dispatch,
-  Fragment,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { BackHandler, Modal, StyleSheet, View } from "react-native";
-import { DropdownAlertType } from "react-native-dropdownalert";
+import { isEqual } from "lodash";
+import { useEffect, useMemo, useRef } from "react";
+import { BackHandler, StyleSheet, View } from "react-native";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Overview from "@/components/Shipment/WorkDetail/Overview";
 import Detail from "@/components/Shipment/WorkDetail/Detail";
 import useAuth from "@/hooks/useAuth";
+import ConfirmAcceptShipmentModal, {
+  ConfirmAcceptShipmentModalRef,
+} from "@/components/Modals/confirm-accept-shipment";
 
 export default function ShipmentOverview() {
   const { user } = useAuth();
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
+  const acceptShipmentModalRef = useRef<ConfirmAcceptShipmentModalRef>(null);
 
   const { data, loading } = useGetAvailableShipmentByTrackingNumberQuery({
     variables: { tracking: searchParam?.trackingNumber || "" },
@@ -88,11 +79,17 @@ export default function ShipmentOverview() {
   }
 
   function handleOnAccept() {
-    setConfirmOpen(true);
+    if (acceptShipmentModalRef.current && shipment) {
+      acceptShipmentModalRef.current.present(shipment);
+    }
+  }
+
+  function handleOnConfirmedSucces() {
+    router.push(`/shipment?active=${EShipmentMatchingCriteria.PROGRESSING}`);
   }
 
   return (
-    <Fragment>
+    <>
       <View style={styles.container}>
         <SafeAreaView style={styles.wrapper}>
           <NavigationBar
@@ -119,7 +116,7 @@ export default function ShipmentOverview() {
           >
             {shipment && <Overview shipment={shipment} />}
             {shipment && shipment.status === EShipmentStatus.IDLE && (
-              <Detail shipment={shipment} />
+              <Detail shipment={shipment} defaultExpanded />
             )}
             <View style={styles.spacingBox} />
           </ScrollView>
@@ -156,14 +153,11 @@ export default function ShipmentOverview() {
           </View>
         </SafeAreaView>
       </View>
-      {shipment && (
-        <ConfirmDialog
-          open={confirmOpen}
-          setOpen={setConfirmOpen}
-          shipment={shipment}
-        />
-      )}
-    </Fragment>
+      <ConfirmAcceptShipmentModal
+        ref={acceptShipmentModalRef}
+        onCallback={handleOnConfirmedSucces}
+      />
+    </>
   );
 }
 
@@ -202,123 +196,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     left: 0,
-  },
-});
-
-interface IConfirmDialogProps {
-  open: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
-  shipment: Shipment;
-}
-
-function ConfirmDialog({ open, setOpen, shipment }: IConfirmDialogProps) {
-  const { showSnackbar } = useSnackbarV2();
-  const _quotation = last(sortBy(shipment.quotations, "createdAt"));
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const [acceptShipment, { loading }] = useAcceptShipmentMutation();
-
-  function handleAcceptComplete() {
-    setOpen(false);
-    router.dismiss();
-    router.push(`/shipment?active=${EShipmentMatchingCriteria.PROGRESSING}`);
-  }
-
-  function handleAcceptShipmentError(error: ApolloError) {
-    showSnackbar({
-      message: error.message,
-      title: "ไม่สามารถรับงานนี้ได้",
-      type: DropdownAlertType.Error,
-    });
-  }
-
-  function handleConfirmed() {
-    if (shipment) {
-      acceptShipment({
-        variables: { shipmentId: shipment._id },
-        onError: handleAcceptShipmentError,
-        onCompleted: handleAcceptComplete,
-      });
-    }
-  }
-
-  return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={open}
-      onRequestClose={handleClose}
-    >
-      <View style={modalStyle.container}>
-        <View style={modalStyle.wrapper}>
-          <View style={modalStyle.titleWrapper}>
-            <Text varient="h4">ยืนยันการรับงาน</Text>
-          </View>
-          <View style={modalStyle.detailWrapper}>
-            <Text>คุณแน่ใจไหมว่า จะรับงานหมายเลข </Text>
-            <Text
-              varient="h5"
-              style={{ color: colors.primary.darker, paddingTop: 12 }}
-            >
-              {shipment?.trackingNumber || ""}
-            </Text>
-            <Text>
-              ราคา{" "}
-              <Text varient="subtitle1">
-                {fCurrency(_quotation?.cost.total || 0)}
-              </Text>{" "}
-              บาท ({fNumber(shipment?.displayDistance / 1000, "0,0.0")} กม.)
-            </Text>
-          </View>
-          <View style={modalStyle.actionWrapper}>
-            <Button
-              varient="contained"
-              size="large"
-              fullWidth
-              title="ยืนยันรับงาน"
-              loading={loading}
-              onPress={handleConfirmed}
-            />
-            <Button
-              varient="outlined"
-              color="inherit"
-              size="large"
-              fullWidth
-              title="ไม่, ฉันขอกลับไปดูรายละเอียด"
-              onPress={handleClose}
-            />
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-const modalStyle = StyleSheet.create({
-  container: {
-    backgroundColor: hexToRgba(colors.common.black, 0.32),
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: normalize(24),
-  },
-  wrapper: {
-    backgroundColor: colors.common.white,
-    overflow: "hidden",
-    borderRadius: normalize(16),
-    width: "100%",
-    padding: normalize(24),
-  },
-  actionWrapper: {
-    gap: 8,
-  },
-  titleWrapper: {
-    marginBottom: normalize(16),
-  },
-  detailWrapper: {
-    marginBottom: normalize(24),
   },
 });

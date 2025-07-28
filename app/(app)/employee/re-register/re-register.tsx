@@ -50,7 +50,10 @@ export default function ReRegister() {
   const params = JSON.parse(searchParam.param || "{}") as EmployeeRegisterParam;
   const driverId = get(params, "id", "");
 
-  const { data, refetch } = useGetUserQuery({ variables: { id: driverId } });
+  const { data, refetch } = useGetUserQuery({
+    variables: { id: driverId },
+    fetchPolicy: "network-only",
+  });
   const user = useMemo(() => data?.getUser, [data]);
 
   useFocusEffect(() => {
@@ -120,6 +123,8 @@ export default function ReRegister() {
       .min(5, "รหัสไปรษณีย์ 5 หลัก")
       .max(5, "รหัสไปรษณีย์ 5 หลัก"),
     serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
+    licensePlateProvince: Yup.string().required("ระบุจังหวัดทะเบียนรถ"),
+    licensePlateNumber: Yup.string().required("ระบุหมายเลขทะเบียนรถ"),
   });
 
   const defaultValues: FormValues = {
@@ -141,6 +146,8 @@ export default function ReRegister() {
       driverDetail?.serviceVehicleTypes,
       (service) => service._id
     ),
+    licensePlateProvince: driverDetail?.licensePlateProvince || "",
+    licensePlateNumber: driverDetail?.licensePlateNumber || "",
   };
 
   const methods = useForm<FormValues>({
@@ -214,7 +221,10 @@ export default function ReRegister() {
     const validatedData = data.verifyEmployeeData;
     const formValue = new DriverFormValue(validatedData as DriverFormValueType);
     const param = JSON.stringify(Object.assign(params, { detail: formValue }));
-    router.push({ pathname: "/employee/re-register/re-document", params: { param } });
+    router.push({
+      pathname: "/employee/re-register/re-document",
+      params: { param },
+    });
   }
 
   async function onSubmit(values: FormValues) {
@@ -233,6 +243,8 @@ export default function ReRegister() {
         subDistrict: values.subDistrict,
         postcode: values.postcode,
         serviceVehicleTypes: values.serviceVehicleTypes,
+        licensePlateProvince: values.licensePlateProvince,
+        licensePlateNumber: values.licensePlateNumber,
       });
       console.log("Pre verify", JSON.stringify(submitData, undefined, 2));
       verifyData({
@@ -395,7 +407,18 @@ export default function ReRegister() {
                   }
                 />
               </View>
-
+              <RHFSelectDropdown
+                name="licensePlateProvince"
+                label="จังหวัดทะเบียนรถ*"
+                options={prvinces?.getProvince || []}
+                labelField="nameTh"
+                valueField="nameTh"
+                value={values.licensePlateProvince}
+              />
+              <RHFTextInput
+                name="licensePlateNumber"
+                label="หมายเลขทะเบียนรถ*"
+              />
               <View style={styles.actionWrapper}>
                 <Button
                   fullWidth

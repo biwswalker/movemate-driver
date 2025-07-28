@@ -29,8 +29,8 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 const styles = StyleSheet.create({
   button: {
-    paddingHorizontal: normalize(16),
-    borderRadius: normalize(8),
+    paddingHorizontal: 16,
+    borderRadius: 4,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -49,13 +49,13 @@ const styles = StyleSheet.create({
     backgroundColor: hexToRgba(colors.primary.main, 0.16),
   },
   buttonSM: {
-    height: normalize(30),
+    height: 28,
   },
   buttonMD: {
-    height: normalize(36),
+    height: 34,
   },
   buttonLG: {
-    height: normalize(48),
+    height: 40,
   },
   fullwidth: {
     width: "100%",
@@ -73,11 +73,11 @@ const styles = StyleSheet.create({
     gap: normalize(8),
   },
   buttonRipple: {
-    width: normalize(200),
-    height: normalize(56),
+    width: 200,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: normalize(25),
+    borderRadius: 25,
     backgroundColor: colors.background.default,
   },
 });
@@ -245,7 +245,7 @@ export default function Button({
         ]}
       >
         {loading ? (
-          <ActivityIndicator size="small" color={textColor} />
+          <ActivityIndicator size="small" color={colors.text.secondary} />
         ) : (
           <View style={styles.rowDirection}>
             {StartIcon && StartIcon}

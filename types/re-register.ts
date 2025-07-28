@@ -27,6 +27,8 @@ export interface DriverFormValueType {
   bankNumber: string;
   // Service
   serviceVehicleTypes: string[];
+  licensePlateProvince: string;
+  licensePlateNumber: string;
 }
 
 export interface RegisterUploadsFormValueType {
@@ -70,6 +72,8 @@ export class DriverFormValue implements DriverFormValueType {
     this.bankName = data.bankName;
     this.bankNumber = data.bankNumber;
     this.serviceVehicleTypes = data.serviceVehicleTypes;
+    this.licensePlateProvince = data.licensePlateProvince;
+    this.licensePlateNumber = data.licensePlateNumber;
   }
 
   policyVersion: number;
@@ -94,6 +98,8 @@ export class DriverFormValue implements DriverFormValueType {
   bankName: string;
   bankNumber: string;
   serviceVehicleTypes: string[];
+  licensePlateProvince: string;
+  licensePlateNumber: string;
 }
 
 export class RegisterUploadsFormValue implements RegisterUploadsFormValueType {

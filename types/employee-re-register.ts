@@ -15,6 +15,8 @@ export interface DriverFormValueType {
   postcode: string;
   // Service
   serviceVehicleTypes: string[];
+  licensePlateProvince: string;
+  licensePlateNumber: string;
 }
 
 export interface RegisterUploadsFormValueType {
@@ -46,6 +48,8 @@ export class DriverFormValue implements DriverFormValueType {
     this.subDistrict = data.subDistrict;
     this.postcode = data.postcode;
     this.serviceVehicleTypes = data.serviceVehicleTypes;
+    this.licensePlateProvince = data.licensePlateProvince;
+    this.licensePlateNumber = data.licensePlateNumber;
   }
 
   title: string;
@@ -61,6 +65,8 @@ export class DriverFormValue implements DriverFormValueType {
   subDistrict: string;
   postcode: string;
   serviceVehicleTypes: string[];
+  licensePlateProvince: string;
+  licensePlateNumber: string;
 }
 
 export class RegisterUploadsFormValue implements RegisterUploadsFormValueType {

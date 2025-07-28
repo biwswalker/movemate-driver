@@ -1,4 +1,3 @@
-import Button from "@/components/Button";
 import ButtonIcon from "@/components/ButtonIcon";
 import Iconify from "@/components/Iconify";
 import SheetBackdrop from "@/components/Sheets/SheetBackdrop";
@@ -7,10 +6,8 @@ import colors from "@/constants/colors";
 import {
   EDriverStatus,
   EUserStatus,
-  EUserValidationStatus,
   useGetUserQuery,
   User,
-  useResentEmployeeMutation,
 } from "@/graphql/generated/graphql";
 import { imagePath } from "@/utils/file";
 import { normalize } from "@/utils/normalizeSize";
@@ -23,42 +20,26 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from "react";
 import { BackHandler, Image, StyleSheet, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
-import ConfirmRemoveEmployeee, {
-  ConfirmRemoveEmployeeModalRef,
-} from "@components/Modals/confirm-remove-employee";
-import DriverShipments, { DriverShipmentModalRef } from "./shipments";
-import { includes } from "lodash";
-import useAuth from "@/hooks/useAuth";
 import hexToRgba from "hex-to-rgba";
-import { router } from "expo-router";
-import { useSnackbarV2 } from "@/hooks/useSnackbar";
 
-interface DriverDetailProps {
+interface UserDetailProps {
   userId: string;
   onClose: VoidFunction;
 }
 
-export interface DriverDetailModalRef {
+export interface UserDetailModalRef {
   present: (userId: string) => void;
   close: Function;
 }
 
-function DriverDetail({ userId, onClose }: DriverDetailProps) {
-  const { user: me } = useAuth();
-  const { DropdownType, showSnackbar } = useSnackbarV2();
-
-  const shipmentModalRef = useRef<DriverShipmentModalRef>(null);
-  const confirmRemoveModalRef = useRef<ConfirmRemoveEmployeeModalRef>(null);
+function UserDetail({ userId, onClose }: UserDetailProps) {
   const { data, loading } = useGetUserQuery({
     variables: { id: userId },
     fetchPolicy: "network-only",
   });
-  const [resentEmployee, { loading: resentLoading }] =
-    useResentEmployeeMutation();
 
   const user = useMemo(() => {
     return data?.getUser as User | undefined;
@@ -72,63 +53,9 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
     );
   }
 
-  function handleOpenShipment() {
-    if (shipmentModalRef.current) {
-      shipmentModalRef.current.present(userId);
-    }
-  }
-
-  function handleOpenReRegister() {
-    onClose();
-    const param = JSON.stringify({ id: user?._id });
-    router.push({
-      pathname: "/employee/re-register/re-register",
-      params: { param },
-    });
-  }
-
-  function handleConfirmRemove() {
-    if (confirmRemoveModalRef.current) {
-      confirmRemoveModalRef.current.present();
-    }
-  }
-
-  function handleRemoved() {
-    onClose();
-  }
-
-  function handleReInviteDriver() {
-    resentEmployee({
-      variables: { driverId: userId },
-      onCompleted: () => {
-        showSnackbar({
-          title: "สำเร็จ",
-          message: "ส่งคำขอใหม่สำเร็จ",
-          type: DropdownType.Success,
-        });
-      },
-      onError: (error) => {
-        console.log("error: ", error);
-        showSnackbar({
-          title: "เกิดข้อผิดพลาด",
-          message: error.message || "ส่งคำขอใหม่อีกครั้ง",
-          type: DropdownType.Error,
-        });
-      },
-    });
-  }
-
-  const isRejectedRequest = includes(user.rejectedRequestParents, me?._id);
-  const isPendingRequest = includes(user.requestedParents, me?._id);
-
   const accountStatus = () => {
     switch (user.status) {
       case EUserStatus.ACTIVE:
-        if (includes(user.requestedParents, me?._id)) {
-          return { label: "รอตอบรับ", color: colors.warning.main };
-        } else if (includes(user.rejectedRequestParents, me?._id)) {
-          return { label: "ปฏิเสธการชวน", color: colors.error.main };
-        }
         return { label: "ปกติ", color: colors.success.main };
       case EUserStatus.BANNED:
         return { label: "ห้ามใช้งาน", color: colors.error.main };
@@ -161,8 +88,8 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
   };
 
   const { color: statusColor, label: statusLabel } = accountStatus();
-  const { color: drivingStatusColor, label: drivingStatusLabel } =
-    drivingStatus();
+  // const { color: drivingStatusColor, label: drivingStatusLabel } =
+  //   drivingStatus();
 
   return (
     <Fragment>
@@ -206,56 +133,6 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
               </ButtonIcon>
             </View>
           </View>
-          <View style={styles.actionWrapper}>
-            {isRejectedRequest ? (
-              <Button
-                title="คนขับปฏิเสธการชวน ชวนอีกครั้ง"
-                color="error"
-                varient="soft"
-                fullWidth
-                loading={resentLoading}
-                onPress={handleReInviteDriver}
-                StartIcon={
-                  <Iconify icon="bi:plus" size={16} color={colors.error.dark} />
-                }
-              />
-            ) : isPendingRequest ? (
-              <View>
-                <View style={styles.waitingForRequestWrapper}>
-                  <Text style={styles.waitingForRequestText}>
-                    กำลังรอการตอบรับจากคนขับ
-                  </Text>
-                </View>
-              </View>
-            ) : user.status === EUserStatus.ACTIVE ? (
-              <Button
-                fullWidth
-                StartIcon={
-                  <Iconify
-                    icon="solar:box-bold-duotone"
-                    color={colors.info.dark}
-                  />
-                }
-                title="รายการขนส่ง"
-                varient="soft"
-                color="info"
-                onPress={handleOpenShipment}
-              />
-            ) : user.validationStatus === EUserValidationStatus.DENIED ? (
-              <Button
-                fullWidth
-                StartIcon={
-                  <Iconify icon="gg:details-less" color={colors.warning.dark} />
-                }
-                title="ดำเนินการแก้ไขบัญชี"
-                varient="soft"
-                color="warning"
-                onPress={handleOpenReRegister}
-              />
-            ) : (
-              <Fragment />
-            )}
-          </View>
           <View style={styles.detailWrapper}>
             <View style={styles.detailRowWrapper}>
               <View style={styles.detail}>
@@ -290,7 +167,7 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
                   {statusLabel}
                 </Text>
               </View>
-              <View style={styles.detail}>
+              {/* <View style={styles.detail}>
                 <Text varient="body2">สถานะขับรถ</Text>
                 <Text
                   varient="body1"
@@ -306,22 +183,9 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
                     ? "-"
                     : drivingStatusLabel}
                 </Text>
-              </View>
+              </View> */}
             </View>
-            {user.validationRejectedMessage && (
-              <View style={styles.detailRowWrapper}>
-                <View style={styles.detail}>
-                  <Text varient="body2">เหตุผลปฏิเสธบัญชี</Text>
-                  <Text
-                    varient="body1"
-                    color="secondary"
-                    style={{ lineHeight: normalize(20) }}
-                  >
-                    {user.validationRejectedMessage}
-                  </Text>
-                </View>
-              </View>
-            )}
+            {user.driverDetail?.licensePlateNumber && user.driverDetail?.licensePlateProvince && (
             <View style={styles.detailRowWrapper}>
               <View style={styles.detail}>
                 <Text varient="body2">ทะเบียนรถ</Text>
@@ -330,28 +194,15 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
                   color="secondary"
                   style={{ lineHeight: normalize(20) }}
                 >
-                  {user.driverDetail?.licensePlateNumber}{" "}
-                  ({user.driverDetail?.licensePlateProvince})
+                  {user.driverDetail?.licensePlateNumber} (
+                  {user.driverDetail?.licensePlateProvince})
                 </Text>
               </View>
             </View>
-          </View>
-          <View style={styles.actionWrapper}>
-            <Button
-              title="นำคนขับออก"
-              varient="outlined"
-              color="error"
-              onPress={handleConfirmRemove}
-            />
+            )}
           </View>
         </View>
       </View>
-      <ConfirmRemoveEmployeee
-        user={user}
-        ref={confirmRemoveModalRef}
-        onRemoved={handleRemoved}
-      />
-      <DriverShipments ref={shipmentModalRef} />
     </Fragment>
   );
 }
@@ -411,7 +262,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default forwardRef<DriverDetailModalRef, any>(({}, ref) => {
+export default forwardRef<UserDetailModalRef, any>(({}, ref) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   useEffect(() => {
@@ -463,7 +314,7 @@ export default forwardRef<DriverDetailModalRef, any>(({}, ref) => {
       enableDynamicSizing={false}
     >
       {({ data }) => (
-        <DriverDetail userId={data as any} onClose={handleCloseModal} />
+        <UserDetail userId={data as any} onClose={handleCloseModal} />
       )}
     </BottomSheetModal>
   );

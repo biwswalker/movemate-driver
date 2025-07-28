@@ -10,13 +10,21 @@ import {
   EUserStatus,
   useEmployeesQuery,
   User,
+  useResentEmployeeMutation,
 } from "@/graphql/generated/graphql";
 import { normalize } from "@/utils/normalizeSize";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { get, includes, isEmpty, map, reduce } from "lodash";
-import { Fragment, useCallback, useEffect, useMemo, useRef } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { BackHandler, Image, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useAuth from "@/hooks/useAuth";
 import { ActivityIndicator } from "react-native-paper";
@@ -24,6 +32,7 @@ import { imagePath } from "@/utils/file";
 import Detail, { DriverDetailModalRef } from "./detail";
 import { useIsFocused } from "@react-navigation/native";
 import hexToRgba from "hex-to-rgba";
+import { useSnackbarV2 } from "@/hooks/useSnackbar";
 
 export default function Employees() {
   const isFocused = useIsFocused();
@@ -41,6 +50,18 @@ export default function Employees() {
   });
 
   useEffect(() => {
+    const backAction = () => {
+      handleOnClose();
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+    return () => backHandler.remove();
+  }, []);
+
+  useEffect(() => {
     if (isFocused) {
       refetch();
     }
@@ -55,7 +76,8 @@ export default function Employees() {
 
   function handleOnClose() {
     if (router.canDismiss()) {
-      router.dismiss();
+      router.dismissAll();
+      router.replace("/(app)/(tabs)");
     }
   }
 
@@ -102,7 +124,13 @@ export default function Employees() {
   }, []);
 
   function _Item({ item }: ListRenderItemInfo<User>) {
-    return <UserItem onPress={() => handleViewDetail(item._id)} user={item} />;
+    return (
+      <UserItem
+        onPress={() => handleViewDetail(item._id)}
+        user={item}
+        onReload={refetch}
+      />
+    );
   }
 
   return (
@@ -140,28 +168,61 @@ export default function Employees() {
 interface UserItemProps {
   user: User;
   onPress: VoidFunction;
+  onReload: VoidFunction;
 }
 
-function UserItem({ user, onPress }: UserItemProps) {
-  console.log('--> ', JSON.stringify(user, undefined, 2))
+function UserItem({ user, onPress, onReload }: UserItemProps) {
   const { user: me } = useAuth();
+  const { DropdownType, showSnackbar } = useSnackbarV2();
+  const [resentEmployee, { loading: resentLoading }] =
+    useResentEmployeeMutation();
+
   function handleViewDriver() {
     onPress();
   }
 
-  const isRequesting = includes(user.requestedParents, me?._id);
+  function handleReInviteDriver() {
+    resentEmployee({
+      variables: { driverId: user._id },
+      onCompleted: () => {
+        onReload();
+        showSnackbar({
+          title: "สำเร็จ",
+          message: "ส่งคำขอใหม่สำเร็จ",
+          type: DropdownType.Success,
+        });
+      },
+      onError: (error) => {
+        console.log("error: ", error);
+        showSnackbar({
+          title: "เกิดข้อผิดพลาด",
+          message: error.message || "ส่งคำขอใหม่อีกครั้ง",
+          type: DropdownType.Error,
+        });
+      },
+    });
+  }
+
+  const isPendingRequest = includes(user.requestedParents, me?._id);
+  const isRejectedRequest = includes(user.rejectedRequestParents, me?._id);
+
   const accountStatus = () => {
     switch (user.status) {
       case EUserStatus.ACTIVE:
+        if (includes(user.requestedParents, me?._id)) {
+          return { label: "รอตอบรับ", color: colors.warning.main };
+        } else if (includes(user.rejectedRequestParents, me?._id)) {
+          return { label: "ปฏิเสธการชวน", color: colors.error.main };
+        }
         return { label: "ปกติ", color: colors.success.main };
       case EUserStatus.BANNED:
         return { label: "ห้ามใช้งาน", color: colors.error.main };
       case EUserStatus.DENIED:
-        return { label: "ปฎิเสธบัญชี", color: colors.text.secondary };
+        return { label: "ถูกปฎิเสธบัญชี", color: colors.text.secondary };
       case EUserStatus.INACTIVE:
-        return { label: "ระงับใช้งาน", color: colors.warning.darker };
+        return { label: "โดนระงับ", color: colors.warning.darker };
       case EUserStatus.PENDING:
-        return { label: "รอตรวจสอบบัญชี", color: colors.warning.main };
+        return { label: "รอตรวจสอบ", color: colors.warning.light };
       default:
         return { label: "", color: colors.divider };
     }
@@ -180,7 +241,7 @@ function UserItem({ user, onPress }: UserItemProps) {
           return { label: "", color: colors.divider };
       }
     } else {
-      return { label: "-", color: colors.warning.main };
+      return { label: "-", color: colors.text.secondary };
     }
   };
 
@@ -203,7 +264,7 @@ function UserItem({ user, onPress }: UserItemProps) {
             color={colors.text.disabled}
           />
         )}
-        <View>
+        <View style={{ paddingLeft: 6 }}>
           <Text varient="body1">{user.fullname}</Text>
           <Text varient="body2" color="secondary">
             {user.contactNumber}
@@ -233,8 +294,18 @@ function UserItem({ user, onPress }: UserItemProps) {
           </View>
           <View style={styles.driverStatusText}>
             <Text varient="subtitle2">สถานะขับรถ</Text>
-            <Text varient="body2" style={[{ color: drivingStatusColor }]}>
-              {drivingStatusLabel}
+            <Text
+              varient="body2"
+              style={[
+                {
+                  color:
+                    isRejectedRequest || isPendingRequest
+                      ? colors.text.secondary
+                      : drivingStatusColor,
+                },
+              ]}
+            >
+              {isRejectedRequest || isPendingRequest ? "-" : drivingStatusLabel}
             </Text>
           </View>
         </View>
@@ -245,27 +316,34 @@ function UserItem({ user, onPress }: UserItemProps) {
             </Text>
           </View>
         )}
-        {isRequesting && (
-          <View style={styles.waitingForRequestWrapper}>
-            <Text varient="caption" style={styles.waitingForRequestText}>
-              กำลังรอการตอบรับจากคนขับ...
-            </Text>
-          </View>
+        {isRejectedRequest ? (
+          <Button
+            title="ชวนอีกครั้ง"
+            color="warning"
+            varient="soft"
+            fullWidth
+            loading={resentLoading}
+            onPress={handleReInviteDriver}
+            StartIcon={
+              <Iconify icon="bi:plus" size={16} color={colors.warning.dark} />
+            }
+          />
+        ) : (
+          <Button
+            title="รายละเอียด"
+            color="info"
+            varient="soft"
+            fullWidth
+            onPress={handleViewDriver}
+            StartIcon={
+              <Iconify
+                icon="gg:details-more"
+                size={16}
+                color={colors.info.dark}
+              />
+            }
+          />
         )}
-        <Button
-          title="รายละเอียด"
-          color="info"
-          varient="soft"
-          fullWidth
-          onPress={handleViewDriver}
-          StartIcon={
-            <Iconify
-              icon="gg:details-more"
-              size={normalize(16)}
-              color={colors.info.dark}
-            />
-          }
-        />
       </View>
     </View>
   );

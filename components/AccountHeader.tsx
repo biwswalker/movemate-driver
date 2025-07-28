@@ -9,7 +9,7 @@ import colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { normalize } from "@/utils/normalizeSize";
 import { router } from "expo-router";
-import { EUserValidationStatus } from "@/graphql/generated/graphql";
+import { EUserType, EUserValidationStatus } from "@/graphql/generated/graphql";
 
 const styles = StyleSheet.create({
   accountContainer: {
@@ -48,7 +48,7 @@ interface AccountHeaderProps {
 export default function AccountHeader({
   style: containerStyle = {},
 }: AccountHeaderProps) {
-  const { user, notificationCount } = useAuth();
+  const { user, notificationCount, parentNames } = useAuth();
 
   const validated = user?.validationStatus === EUserValidationStatus.APPROVE;
 
@@ -79,6 +79,11 @@ export default function AccountHeader({
         <Text varient="body2" color="secondary">
           {validated ? user?.userNumber : "-"}
         </Text>
+        {user?.userType === EUserType.INDIVIDUAL && (
+          <Text varient="caption" color="secondary">
+            สังกัด: {parentNames.join(", ") || "-"}
+          </Text>
+        )}
       </View>
       <View style={styles.accountActionWrapper}>
         <ButtonIcon varient="text" circle onPress={handleViewNotifications}>

@@ -193,29 +193,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentWrapper: {
-    paddingTop: normalize(24),
+    paddingTop: 24,
     alignItems: "center",
   },
   textCenter: {
     textAlign: "center",
   },
   infoTextContainer: {
-    marginBottom: normalize(24),
+    marginBottom: 24,
     // flexGrow: 1,
     // flex: 1,
     width: "100%",
-    paddingHorizontal: normalize(24),
+    paddingHorizontal: 24,
   },
   infoTextWrapper: {
     backgroundColor: hexToRgba(colors.warning.main, 0.08),
-    padding: normalize(16),
-    borderRadius: normalize(8),
+    padding: 16,
+    borderRadius: 8,
     gap: 4,
     flexDirection: "row",
     alignItems: "center",
   },
   iconWrapper: {
-    minWidth: normalize(32),
+    minWidth: 32,
   },
   infoText: {
     color: colors.warning.dark,
@@ -715,7 +715,7 @@ function Shipments({ status }: ShipmentsProps) {
         keyExtractor={(item, index) => `${index}-${item._id}`}
         contentContainerStyle={{
           paddingBottom: 156,
-          paddingHorizontal: 16,
+          paddingHorizontal: 8,
         }}
         ListFooterComponent={FooterAction}
       />

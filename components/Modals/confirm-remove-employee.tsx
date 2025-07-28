@@ -115,7 +115,7 @@ export default forwardRef<
             color="error"
           />
           <Button
-            loading={loading}
+            disabled={loading}
             onPress={handleCloseModal}
             fullWidth
             title="ไม่ใช่ตอนนี้"
@@ -140,6 +140,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   actionWrapper: {
-    gap: normalize(8),
+    gap: 8,
   },
 });

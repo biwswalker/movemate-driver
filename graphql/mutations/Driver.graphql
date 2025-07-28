@@ -33,6 +33,8 @@ mutation VerifyDriverData($data: DriverDetailInput!, $driverId: String) {
     bankName
     bankNumber
     serviceVehicleTypes
+    licensePlateProvince
+    licensePlateNumber
   }
 }
 
@@ -66,6 +68,8 @@ mutation VerifyEmployeeData($data: EmployeeDetailInput!, $driverId: String) {
     subDistrict
     postcode
     serviceVehicleTypes
+    licensePlateProvince
+    licensePlateNumber
   }
 }
 
@@ -75,6 +79,10 @@ mutation AcceptationEmployee($result: String!, $agentId: String!) {
 
 mutation RemoveEmployee($driverId: String!) {
   removeEmployee(driverId: $driverId)
+}
+
+mutation ResentEmployee($driverId: String!) {
+  resentEmployee(driverId: $driverId)
 }
 
 mutation UpdateProfileImage($fileDetail: FileInput!, $uid: String) {

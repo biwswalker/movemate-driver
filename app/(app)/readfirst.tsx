@@ -23,9 +23,12 @@ import RenderHtml, {
 import Button from "@/components/Button";
 import { isEmpty } from "lodash";
 import Checkbox from "@/components/Checkbox";
+import useAuth from "@/hooks/useAuth";
 
 export default function ReadfirstScreen() {
+  const { refetchMe } = useAuth();
   const [isAccept, setAccept] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { showSnackbar, DropdownType } = useSnackbarV2();
   const { width } = useWindowDimensions();
@@ -50,6 +53,7 @@ export default function ReadfirstScreen() {
 
   function handleError(error: ApolloError) {
     console.log("error: ", error);
+    setLoading(false);
     showSnackbar({
       title: "พบข้อผิดพลาด",
       message: error.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
@@ -57,11 +61,14 @@ export default function ReadfirstScreen() {
     });
   }
 
-  function handleSuccess() {
+  async function handleSuccess() {
+    await refetchMe();
     router.push("/");
+    setLoading(false);
   }
 
   async function handleOnAcceptPolicy() {
+    setLoading(true);
     acceptedPolicy({
       variables: { data: { version: policy?.version || 0 } },
       onCompleted: handleSuccess,
@@ -144,6 +151,7 @@ export default function ReadfirstScreen() {
             <View style={styles.actionWrapper}>
               <Button
                 disabled={!isAccept || acceptLoading || isEmpty(policy)}
+                loading={loading}
                 size="large"
                 title="ยอมรับข้อกำหนด"
                 fullWidth

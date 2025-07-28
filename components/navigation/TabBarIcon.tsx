@@ -46,7 +46,7 @@ const Label: Record<TMenu, string> = {
   profile: "โปรไฟล์",
 };
 
-export function IconItem(menu: TMenu, hidden: boolean = false) {
+export function IconItem(menu: TMenu) {
   return ({
     accessibilityState,
     onPress = () => {},
@@ -58,10 +58,6 @@ export function IconItem(menu: TMenu, hidden: boolean = false) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       onPress(event);
     };
-
-    if (hidden) {
-      return <View style={{ flex: 0 }} />; // Return an empty spacer
-    }
 
     return (
       <TouchableOpacity

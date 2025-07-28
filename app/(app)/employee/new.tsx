@@ -1,11 +1,11 @@
 import NavigationBar from "@/components/NavigationBar";
 import colors from "@/constants/colors";
-import { Image, Keyboard, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSnackbarV2 } from "@/hooks/useSnackbar";
-import { Fragment, useCallback, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { forEach, get, isEmpty } from "lodash";
-import TextInput from "@/components/TextInput";
+import TextInput, { TextInputHandlesRef } from "@/components/TextInput";
 import { normalize } from "@/utils/normalizeSize";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import {
@@ -32,6 +32,7 @@ import NewEmployeeForm from "./form";
 
 export default function NewEmployee() {
   const { showSnackbar, DropdownType } = useSnackbarV2();
+  const phoneInputRef = useRef<TextInputHandlesRef>(null);
 
   const [isDirty, setIsDirty] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -44,11 +45,20 @@ export default function NewEmployee() {
     undefined
   );
 
-  const [lookupDriver, { loading }] = useLookupDriverLazyQuery();
-  /**
-   * TODO:
-   * - Newest register
-   */
+  const [lookupDriver, { loading }] = useLookupDriverLazyQuery({
+    fetchPolicy: "network-only",
+  });
+
+  useEffect(() => {
+    // ถ้ามีข้อมูล existingUser (หมายความว่าค้นหาเจอ) ให้ซ่อนคีย์บอร์ด
+    if (existingUser) {
+      if (phoneInputRef.current) {
+        if (typeof phoneInputRef.current.blur === "function") {
+          phoneInputRef.current.blur();
+        }
+      }
+    }
+  }, [existingUser]);
 
   function phonumberValidator(phonenumber: string) {
     const phonnumberRegex = new RegExp(/^(0[689]{1})+([0-9]{8})+$/);
@@ -82,50 +92,46 @@ export default function NewEmployee() {
   }
 
   async function handleLookupPhonenumber(phonenumber: string) {
-    const userResponse = await lookupDriver({
+    await lookupDriver({
       variables: { phonenumber },
+      fetchPolicy: "network-only",
       onError: handleLookupError,
+      onCompleted: ({
+        isExistingParentDriverByPhonenumber: isExisting,
+        lookupDriverByPhonenumber: user,
+      }) => {
+        console.log("Lookup: userResponse", isExisting, user);
+        if (user) {
+          setIsNewUser(false);
+          setExistingUser(user as User);
+          setIsExistingParent(
+            typeof isExisting === "boolean" ? isExisting : false
+          );
+        } else {
+          setIsNewUser(true);
+          setExistingUser(undefined);
+          setIsExistingParent(false);
+        }
+      },
     });
-    const user = get(
-      userResponse,
-      "data.lookupDriverByPhonenumber",
-      undefined
-    ) as User | undefined;
-    const isExistingParent = get(
-      userResponse,
-      "data.isExistingParentDriverByPhonenumber",
-      false
-    ) as boolean | undefined;
-
-    if (user) {
-      setIsNewUser(false);
-      setExistingUser(user);
-      setIsExistingParent(isExistingParent || false);
-    } else {
-      setIsNewUser(true);
-      setExistingUser(undefined);
-      setIsExistingParent(false);
-    }
   }
 
-  const handleChangePhonenumber = useCallback(
-    (text: string) => {
-      setPhoneNumberError("");
-      setPhoneNumber(text);
-      const validated = phonumberValidator(text);
-      if (validated) {
-        handleLookupPhonenumber(text);
-        setIsReadyNext(true);
-        Keyboard.dismiss();
-      } else {
-        setIsReadyNext(false);
-        if (isDirty) {
-          setPhoneNumberError("เบอร์ติดต่อไม่ถูกต้อง");
-        }
+  const handleChangePhonenumber = (text: string) => {
+    setPhoneNumberError("");
+    setPhoneNumber(text);
+    setExistingUser(undefined);
+    setIsExistingParent(false);
+    const validated = phonumberValidator(text);
+    if (validated) {
+      handleLookupPhonenumber(text);
+      setIsReadyNext(true);
+    } else {
+      setIsReadyNext(false);
+      if (isDirty) {
+        setPhoneNumberError("เบอร์ติดต่อไม่ถูกต้อง");
       }
-    },
-    [phoneNumber]
-  );
+    }
+  };
 
   const handleOnBlurPhonenumber = useCallback(() => {
     const validated = phonumberValidator(phoneNumber);
@@ -143,6 +149,7 @@ export default function NewEmployee() {
         <NavigationBar title="เพิ่มคนขับ" />
         <KeyboardAwareScrollView style={styles.formWrapper}>
           <TextInput
+            ref={phoneInputRef}
             value={phoneNumber}
             onChangeText={handleChangePhonenumber}
             onBlur={handleOnBlurPhonenumber}
@@ -258,11 +265,11 @@ function ExistingDriver({ user, exist }: ExistingDriverProps) {
           ) : (
             <Iconify
               icon="solar:user-circle-bold-duotone"
-              size={normalize(44)}
+              size={44}
               color={colors.text.disabled}
             />
           )}
-          <View>
+          <View style={{ paddingLeft: 6 }}>
             <Text varient="body1">{user.fullname}</Text>
             <Text varient="body2" color="secondary">
               {user.contactNumber}
@@ -278,9 +285,11 @@ function ExistingDriver({ user, exist }: ExistingDriverProps) {
               </Text>
             </View>
             <View style={styles.driverStatusText}>
-              <Text varient="subtitle2">สถานะขับรถ</Text>
-              <Text varient="body2" style={[{ color: drivingStatusColor }]}>
-                {drivingStatusLabel}
+              <Text varient="subtitle2">ประเภทรถ</Text>
+              <Text varient="body2">
+                {user.driverDetail?.serviceVehicleTypes
+                  ?.map((vehicle) => vehicle.name)
+                  ?.join(", ")}
               </Text>
             </View>
           </View>
@@ -290,7 +299,7 @@ function ExistingDriver({ user, exist }: ExistingDriverProps) {
             </Text>
           </View>
           <Button
-            title={exist ? "เป็นคนขับของคุณอยู่แล้ว" : "เพิ่มคนขับ"}
+            title={exist ? "คุณเพิ่มคนขับคนนี้แล้ว" : "เพิ่มคนขับ"}
             color="primary"
             varient="soft"
             fullWidth
@@ -345,27 +354,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   itemContainer: {
-    padding: normalize(12),
-    borderRadius: normalize(16),
+    padding: 8,
+    paddingVertical: 16,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.divider,
     backgroundColor: colors.common.white,
-    gap: normalize(16),
+    gap: 16,
   },
   driverInfoWrapper: {
     flexDirection: "row",
     gap: normalize(4),
   },
   profileImage: {
-    width: normalize(44),
-    height: normalize(44),
-    borderRadius: normalize(22),
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   driverStatusWrapper: {
     backgroundColor: colors.grey[200],
-    borderRadius: normalize(16),
-    padding: normalize(12),
-    gap: normalize(8),
+    borderRadius: 8,
+    padding: 12,
+    gap: 12,
   },
   driverStatusTextWrapper: {
     flexDirection: "row",

@@ -173,6 +173,8 @@ export default function ReRegister() {
             .max(15, "ตัวเลขสูงสุด 15 หลัก"),
         }),
     serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
+    licensePlateProvince: Yup.string().required("ระบุจังหวัดทะเบียนรถ"),
+    licensePlateNumber: Yup.string().required("ระบุหมายเลขทะเบียนรถ"),
   });
 
   const defaultValues: FormValues = {
@@ -201,6 +203,8 @@ export default function ReRegister() {
       driverDetail?.serviceVehicleTypes,
       (service) => service._id
     ),
+    licensePlateProvince: driverDetail?.licensePlateProvince || "",
+    licensePlateNumber: driverDetail?.licensePlateNumber || "",
   };
 
   const methods = useForm<FormValues>({
@@ -302,6 +306,8 @@ export default function ReRegister() {
         bankName: values.bankName,
         bankNumber: values.bankNumber,
         serviceVehicleTypes: values.serviceVehicleTypes,
+        licensePlateProvince: values.licensePlateProvince,
+        licensePlateNumber: values.licensePlateNumber,
       });
       verifyData({
         variables: {
@@ -495,7 +501,18 @@ export default function ReRegister() {
                   }
                 />
               </View>
-
+              <RHFSelectDropdown
+                name="licensePlateProvince"
+                label="จังหวัดทะเบียนรถ*"
+                options={prvinces?.getProvince || []}
+                labelField="nameTh"
+                valueField="nameTh"
+                value={values.licensePlateProvince}
+              />
+              <RHFTextInput
+                name="licensePlateNumber"
+                label="หมายเลขทะเบียนรถ*"
+              />
               <View style={styles.actionWrapper}>
                 <Button
                   fullWidth

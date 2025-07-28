@@ -172,7 +172,7 @@ export default function RegisterOTPVerifyScreen() {
         variables: {
           data: {
             detail: {
-              ...(omit(detail, ['confirmPassword']) as DriverDetailInput),
+              ...(omit(detail, ["confirmPassword"]) as DriverDetailInput),
               password: encryptedPassword,
             },
             documents: {
@@ -395,8 +395,8 @@ const styles = StyleSheet.create({
   },
   actionContainer: {
     width: `100%`,
-    gap: normalize(8),
-    marginTop: normalize(24),
+    gap: 8,
+    marginTop: 24,
   },
   titleWrapper: {
     marginTop: normalize(16),

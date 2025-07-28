@@ -98,6 +98,8 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
       .min(5, "รหัสไปรษณีย์ 5 หลัก")
       .max(5, "รหัสไปรษณีย์ 5 หลัก"),
     serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
+    licensePlateProvince: Yup.string().required("ระบุจังหวัดทะเบียนรถ"),
+    licensePlateNumber: Yup.string().required("ระบุหมายเลขทะเบียนรถ"),
   });
 
   const defaultValues: EmployeeDriverFormValue = useMemo(() => {
@@ -117,6 +119,8 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
       subDistrict: detail?.subDistrict || "",
       postcode: detail?.postcode || "",
       serviceVehicleTypes: detail?.serviceVehicleTypes || [],
+      licensePlateProvince: detail?.licensePlateProvince || "",
+      licensePlateNumber: detail?.licensePlateNumber || "",
     };
   }, []);
 
@@ -192,14 +196,14 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
       validatedData as EmployeeDriverFormValueType
     );
     const param = JSON.stringify(Object.assign(params, { detail: formValue }));
-    console.log('postvalidate: => ', JSON.stringify(param, undefined, 2))
+    console.log("postvalidate: => ", JSON.stringify(param, undefined, 2));
     router.push({ pathname: "/employee/documents", params: { param } });
   }
 
   async function onSubmit(values: EmployeeDriverFormValue) {
     try {
       const submitData = new EmployeeDriverFormValue(values);
-      console.log('prevalidate: => ', JSON.stringify(submitData, undefined, 2))
+      console.log("prevalidate: => ", JSON.stringify(submitData, undefined, 2));
       verifyData({
         variables: { data: submitData },
         onCompleted: handleVerifySuccess,
@@ -339,6 +343,15 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
             }
           />
         </View>
+        <RHFSelectDropdown
+          name="licensePlateProvince"
+          label="จังหวัดทะเบียนรถ*"
+          options={prvinces?.getProvince || []}
+          labelField="nameTh"
+          valueField="nameTh"
+          value={values.licensePlateProvince}
+        />
+        <RHFTextInput name="licensePlateNumber" label="หมายเลขทะเบียนรถ*" />
         <View style={styles.actionWrapper}>
           <Button
             fullWidth

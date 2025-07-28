@@ -47,7 +47,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="finance"
-        options={{ tabBarButton: IconItem("finance", isOnlyBusinessDriver) }}
+        options={isOnlyBusinessDriver ? { href: null } : { tabBarButton: IconItem("finance") }}
       />
       <Tabs.Screen
         name="profile"

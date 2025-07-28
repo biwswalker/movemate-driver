@@ -169,6 +169,8 @@ fragment DriverDetailFragment on DriverDetail {
   bankNumber
   balance
   fullname
+  licensePlateNumber
+  licensePlateProvince
   serviceVehicleTypes {
     ...VehicleTypeFragment
   }
@@ -211,6 +213,7 @@ fragment UserSummaryFragment on User {
   favoriteDrivers
   parents
   requestedParents
+  rejectedRequestParents
   validationRejectedMessage
   fullname
   email
@@ -266,6 +269,7 @@ fragment UserFragment on User {
   favoriteDrivers
   parents
   requestedParents
+  rejectedRequestParents
   validationRejectedMessage
   validationBy {
     ...UserSummaryFragment
@@ -324,6 +328,7 @@ fragment UserFragment on User {
   favoriteDrivers
   parents
   requestedParents
+  rejectedRequestParents
   validationRejectedMessage
   validationBy {
     ...UserSummaryFragment
@@ -389,7 +394,10 @@ fragment UserNonInfoDataFragment on User {
   profileImage {
     ...FileFragment
   }
+  drivingStatus
   parents
+  requestedParents
+  rejectedRequestParents
   fullname
   email
   contactNumber

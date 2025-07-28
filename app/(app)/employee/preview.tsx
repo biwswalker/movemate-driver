@@ -126,7 +126,7 @@ export default function RegisterIndividualPreviewScreen() {
           documents.criminalRecordCheckCert
         );
 
-        console.log('submit detail...', JSON.stringify(detail, undefined, 2))
+        console.log("submit detail...", JSON.stringify(detail, undefined, 2));
 
         const data: EmployeeRegisterInput = {
           detail,
@@ -161,8 +161,6 @@ export default function RegisterIndividualPreviewScreen() {
     }
   }
 
-  console.log('00000', detail);
-  
   return (
     <SafeAreaView style={styles.container}>
       <NavigationBar title="ตรวจสอบข้อมูลและเอกสาร" />
@@ -232,12 +230,22 @@ export default function RegisterIndividualPreviewScreen() {
                     const vehicle = find(vehicleTypes, ["_id", curr]);
                     if (vehicle) {
                       const vehicleName = vehicle.name;
-                      return prev ? `${prev}, ${vehicleName}` : vehicleName;
+                      return prev ? `${prev},\n${vehicleName}` : vehicleName;
                     }
                     return prev;
                   },
                   ""
                 )}
+              </Text>
+            </View>
+          )}
+          {detail?.licensePlateNumber && detail?.licensePlateProvince && (
+            <View style={styles.detailWrapper}>
+              <Text varient="body2" color="disabled">
+                ทะเบียนรถ
+              </Text>
+              <Text varient="body1">
+                {detail?.licensePlateNumber} ({detail?.licensePlateProvince})
               </Text>
             </View>
           )}

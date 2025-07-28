@@ -224,12 +224,22 @@ export default function RegisterIndividualPreviewScreen() {
                     const vehicle = find(vehicleTypes, ["_id", curr]);
                     if (vehicle) {
                       const vehicleName = vehicle.name;
-                      return prev ? `${prev}, ${vehicleName}` : vehicleName;
+                      return prev ? `${prev}, \n${vehicleName}` : vehicleName;
                     }
                     return prev;
                   },
                   ""
                 )}
+              </Text>
+            </View>
+          )}
+          {detail?.licensePlateNumber && detail?.licensePlateProvince && (
+            <View style={styles.detailWrapper}>
+              <Text varient="body2" color="disabled">
+                ทะเบียนรถ
+              </Text>
+              <Text varient="body1">
+                {detail?.licensePlateNumber} ({detail?.licensePlateProvince})
               </Text>
             </View>
           )}

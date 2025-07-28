@@ -29,13 +29,14 @@ interface ChangePasswordFormValue {
 }
 
 export default function ChangePasswordScreen() {
-  const { requireAcceptedPolicy } = useAuth();
+  const { requireAcceptedPolicy, refetchMe } = useAuth();
   const { showSnackbar, DropdownType } = useSnackbarV2();
+  const [loading, setLoading] = useState(false);
 
   const [openPassword, setOpenPassword] = useState(false);
   const [openConfirmPassword, setOpenConfirmPassword] = useState(false);
 
-  const [changePassword, { loading }] = useChangePasswordMutation();
+  const [changePassword] = useChangePasswordMutation();
 
   const ChangePasswordScema = Yup.object().shape({
     password: Yup.string()
@@ -127,6 +128,7 @@ export default function ChangePasswordScreen() {
       : require("@/assets/images/eyeclose-duotone.png");
 
   function handleErrorChangePassword(error: ApolloError) {
+    setLoading(false);
     const graphQLErrors = get(error, "graphQLErrors", []);
     if (error.graphQLErrors) {
       graphQLErrors.forEach((graphQLError) => {
@@ -166,22 +168,26 @@ export default function ChangePasswordScreen() {
     }
   }
 
-  function handleChangePasswordSuccess() {
+  async function handleChangePasswordSuccess() {
     showSnackbar({
       title: "สำเร็จ",
       message: "รหัสผ่านถูกเปลี่ยนแล้ว",
       type: DropdownType.Success,
     });
+    console.log("requireAcceptedPolicy: READFIRST", requireAcceptedPolicy);
+    await refetchMe();
     if (requireAcceptedPolicy) {
-      router.push("/readfirst");
+      router.replace("/(app)/readfirst");
     } else {
-      router.push("/");
+      router.push("/(app)/(tabs)");
     }
+    setLoading(false);
   }
 
   async function onSubmit(values: ChangePasswordFormValue) {
     const encryptedPassword = encryption(values.password || "");
     const encryptedConfirmPassword = encryption(values.confirmPassword || "");
+    setLoading(true);
     changePassword({
       variables: {
         data: {
@@ -202,9 +208,9 @@ export default function ChangePasswordScreen() {
             <Iconify
               icon="solar:lock-password-unlocked-bold-duotone"
               color={colors.primary.main}
-              size={normalize(56)}
+              size={56}
             />
-            <Text varient="h3" style={{ paddingTop: normalize(8) }}>
+            <Text varient="h3" style={{ paddingTop: 8 }}>
               เปลี่ยนรหัสผ่าน
             </Text>
             <Text varient="body2" color="secondary">
@@ -269,18 +275,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWrapper: {
-    paddingHorizontal: normalize(16),
-    paddingBottom: normalize(16),
-    paddingTop: normalize(24),
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    paddingTop: 24,
   },
   inputWrapper: {
-    paddingHorizontal: normalize(16),
+    paddingHorizontal: 16,
   },
   actionWrapper: {
-    paddingVertical: normalize(32),
+    paddingVertical: 24,
   },
   helperText: {
-    marginTop: normalize(8),
-    paddingLeft: normalize(12),
+    marginTop: 8,
+    paddingLeft: 12,
   },
 });

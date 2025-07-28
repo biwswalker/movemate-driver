@@ -38,18 +38,26 @@ export interface TextInputProps extends RNPTextInputProps {
   helperText?: string | ((error: boolean) => ReactNode) | undefined;
 }
 
+export type TextInputHandlesRef = {
+  blur: () => void;
+  focus: () => void;
+  clear: () => void;
+  isFocused: () => boolean;
+  setNativeProps: (nativeProps: object) => void;
+  setSelection: (start: number, end: number) => void;
+};
+
 export default forwardRef(function TextInput(
   { helperText, ...props }: TextInputProps,
-  ref: Ref<any>
+  ref: Ref<TextInputHandlesRef>
 ) {
-
   return (
     <Pressable
       onPress={props.disabled ? props.onPress : undefined}
       style={styles.container}
     >
       <RNPTextInput
-        ref={ref}
+        ref={ref as any}
         placeholderTextColor={Colors.text.disabled}
         activeUnderlineColor={Colors.text.disabled}
         style={[styles.input]}

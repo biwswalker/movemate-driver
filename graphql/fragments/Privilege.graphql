@@ -9,13 +9,9 @@ fragment PrivilegeFragment on Privilege {
   unit
   minPrice
   maxDiscountPrice
-  isInfinity
   usedAmout
   limitAmout
   description
-  usedUser {
-    ...UserNonInfoDataFragment
-  }
   defaultShow
   createdAt
   updatedAt

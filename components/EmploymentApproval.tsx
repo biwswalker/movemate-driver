@@ -114,7 +114,7 @@ const EmploymentApproval = forwardRef<
             size="small"
             color="error"
             varient="soft"
-            loading={loading}
+            disabled={loading}
             onPress={() => handleDeniedEmployee(requester._id)}
           />
           <Button
@@ -123,7 +123,7 @@ const EmploymentApproval = forwardRef<
             size="small"
             color="success"
             varient="soft"
-            loading={loading}
+            disabled={loading}
             onPress={() => handleApproveEmployee(requester._id)}
           />
         </View>

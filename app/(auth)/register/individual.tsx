@@ -134,6 +134,8 @@ export default function RegisterIndividualScreen() {
       .min(10, "ตัวเลขขั้นต่ำ 10 หลัก")
       .max(15, "ตัวเลขสูงสุด 15 หลัก"),
     serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
+    licensePlateProvince: Yup.string().required("ระบุจังหวัดทะเบียนรถ"),
+    licensePlateNumber: Yup.string().required("ระบุหมายเลขทะเบียนรถ"),
   });
 
   const defaultValues: DriverFormValue = useMemo(() => {
@@ -166,6 +168,8 @@ export default function RegisterIndividualScreen() {
       bankNumber: detail?.bankNumber || "",
       // Vehicle type
       serviceVehicleTypes: detail?.serviceVehicleTypes || [],
+      licensePlateProvince: detail?.licensePlateProvince || "",
+      licensePlateNumber: detail?.licensePlateNumber || "",
     };
   }, []);
 
@@ -293,9 +297,7 @@ export default function RegisterIndividualScreen() {
 
   function handleVerifySuccess(data: VerifyDriverDataMutation) {
     const validatedData = data.verifyDriverData;
-    const formValue = new DriverFormValue(
-      validatedData as DriverFormValueType
-    );
+    const formValue = new DriverFormValue(validatedData as DriverFormValueType);
     const param = JSON.stringify(Object.assign(params, { detail: formValue }));
     router.push({ pathname: "/register/documents", params: { param } });
   }
@@ -511,6 +513,16 @@ export default function RegisterIndividualScreen() {
                 }
               />
             </View>
+            <RHFSelectDropdown
+              name="licensePlateProvince"
+              label="จังหวัดทะเบียนรถ*"
+              options={prvinces?.getProvince || []}
+              labelField="nameTh"
+              valueField="nameTh"
+              value={values.licensePlateProvince}
+            />
+            <RHFTextInput name="licensePlateNumber" label="หมายเลขทะเบียนรถ*" />
+
             <View style={styles.actionWrapper}>
               <Button
                 fullWidth

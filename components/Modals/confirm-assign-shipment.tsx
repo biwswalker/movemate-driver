@@ -23,7 +23,7 @@ interface ConfirmAssignShipmentProps {
 }
 
 export interface ConfirmAssignShipmentModalRef {
-  present: (user: User | undefined) => void;
+  present: (data: { user: User | undefined; isChanged?: boolean }) => void;
   close: Function;
 }
 
@@ -37,9 +37,12 @@ const ConfirmAssignShipmentModal = forwardRef<
 
   const [assignShipment, { loading }] = useAssignShipmentMutation();
 
-  function handlePresent(user: User | undefined) {
+  function handlePresent(data: {
+    user: User | undefined;
+    isChanged?: boolean;
+  }) {
     if (bottomSheetModalRef.current) {
-      bottomSheetModalRef.current?.present(user as any);
+      bottomSheetModalRef.current?.present(data as any);
     }
   }
 
@@ -65,6 +68,7 @@ const ConfirmAssignShipmentModal = forwardRef<
   }, []);
 
   function handleAssignDriverComplete() {
+    handleCloseModal();
     onCallback();
   }
 
@@ -77,13 +81,16 @@ const ConfirmAssignShipmentModal = forwardRef<
     });
   }
 
-  const handleAcceptDriver = useCallback((userId: string) => {
-    assignShipment({
-      variables: { shipmentId, driverId: userId },
-      onCompleted: handleAssignDriverComplete,
-      onError: handleAssignDriverError,
-    });
-  }, []);
+  const handleAcceptDriver = useCallback(
+    (userId: string, isChanged?: boolean) => {
+      assignShipment({
+        variables: { shipmentId, driverId: userId, isChanged },
+        onCompleted: handleAssignDriverComplete,
+        onError: handleAssignDriverError,
+      });
+    },
+    []
+  );
 
   return (
     <BottomSheetModal
@@ -94,22 +101,26 @@ const ConfirmAssignShipmentModal = forwardRef<
       enableDynamicSizing={false}
     >
       {({ data }) => {
-        const user = data as User | undefined;
+        const user = data.user as User | undefined;
+        const isChanged = data.isChanged as boolean | undefined;
         if (user) {
           return (
             <BottomSheetView style={styles.container}>
               <View style={styles.textWrapper}>
                 <Text varient="h4" style={{ marginBottom: normalize(12) }}>
-                  ยืนยันมอบหมายงาน
+                  {isChanged ? "ยืนยันเปลี่ยนคนขับรถ" : "ยืนยันมอบหมายงาน"}
                 </Text>
-                <Text>คุณแน่ใจใช่ไหมว่าต้องการมอบหมายงานให้</Text>
+                <Text>
+                  คุณแน่ใจใช่ไหมว่าต้องการ{isChanged ? "เปลี่ยน" : ""}
+                  มอบหมายงานให้
+                </Text>
                 <Text varient="subtitle1">{user.fullname}</Text>
                 <Text>ทำงานขนส่งนี้</Text>
               </View>
               <View style={styles.actionWrapper}>
                 <Button
                   loading={loading}
-                  onPress={() => handleAcceptDriver(user._id)}
+                  onPress={() => handleAcceptDriver(user._id, isChanged)}
                   fullWidth
                   size="large"
                   title="ใช่, ยืนยัน"
@@ -117,7 +128,7 @@ const ConfirmAssignShipmentModal = forwardRef<
                   color="primary"
                 />
                 <Button
-                  loading={loading}
+                  disabled={loading}
                   onPress={handleCloseModal}
                   fullWidth
                   title="ไม่, ฉันยังไม่แน่ใจ"
@@ -140,15 +151,15 @@ export default ConfirmAssignShipmentModal;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    gap: normalize(16),
-    padding: normalize(16),
+    gap: 16,
+    padding: 16,
     backgroundColor: colors.background.default,
   },
   textWrapper: {
-    gap: normalize(4),
+    gap: 2,
     alignItems: "center",
   },
   actionWrapper: {
-    gap: normalize(8),
+    gap: 8,
   },
 });

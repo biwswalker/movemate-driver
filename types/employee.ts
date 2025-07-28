@@ -16,6 +16,8 @@ export interface EmployeeDriverFormValueType {
   subDistrict: string;
   postcode: string;
   serviceVehicleTypes: string[];
+  licensePlateProvince: string;
+  licensePlateNumber: string;
 }
 
 export interface RegisterUploadsFormValueType {
@@ -47,6 +49,8 @@ export class EmployeeDriverFormValue implements EmployeeDriverFormValueType {
     this.subDistrict = data.subDistrict;
     this.postcode = data.postcode;
     this.serviceVehicleTypes = data.serviceVehicleTypes
+    this.licensePlateProvince = data.licensePlateProvince;
+    this.licensePlateNumber = data.licensePlateNumber;
   }
 
   // Detail
@@ -64,6 +68,8 @@ export class EmployeeDriverFormValue implements EmployeeDriverFormValueType {
   subDistrict: string;
   postcode: string;
   serviceVehicleTypes: string[];
+  licensePlateProvince: string;
+  licensePlateNumber: string;
 }
 
 export interface IndividualParam {

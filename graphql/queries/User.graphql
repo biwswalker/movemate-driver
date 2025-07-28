@@ -10,6 +10,7 @@ query Me {
     notification
   }
   checkAvailableToWork
+  getParentNames
 }
 
 query Employees(

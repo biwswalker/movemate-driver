@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Text from "@components/Text";
 import Button from "@components/Button";
-import { Image, StyleSheet, View } from "react-native";
+import { BackHandler, Image, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { get } from "lodash";
 import { Iconify } from "react-native-iconify";
@@ -67,6 +67,18 @@ export default function EmployeeRegisterSuccessScreen() {
   const subtitleIndividual = `ขอบคุณสำหรับการสมัครสมาชิกขับรถรูปแบบ\nส่วนบุคคลกับ Movemate`;
   const subtitle2 = `คนขับจะได้รับข้อความแจ้งสถานะการสมัครสมาชิก\nผ่านทาง SMS ภายใน 1-3 วันทำการ \nโดยเราจะส่งข้อความไปยัง\n`;
   const subtitle3 = ` \nโปรดตรวจสอบข้อความของท่าน`;
+
+  useEffect(() => {
+    const backAction = () => {
+      handleGoToList();
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+    return () => backHandler.remove();
+  }, []);
 
   function handleGoToList() {
     router.navigate("/employee/employees");

@@ -7,6 +7,7 @@ import React, { useEffect, useRef } from "react";
 import { Fragment } from "react";
 import {
   Animated,
+  BackHandler,
   Dimensions,
   Easing,
   Image,
@@ -19,6 +20,18 @@ import { router } from "expo-router";
 import { EDriverType } from "@/graphql/generated/graphql";
 
 export default function RegisterStarted() {
+  useEffect(() => {
+    const backAction = () => {
+      handleOnClose();
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+    return () => backHandler.remove();
+  }, []);
+
   function handleSelectedDriverType(driverType: EDriverType) {
     router.setParams({ driverType });
     router.push({
@@ -27,10 +40,17 @@ export default function RegisterStarted() {
     });
   }
 
+  function handleOnClose() {
+    if (router.canDismiss()) {
+      router.dismissAll();
+      router.replace("/(auth)/landing");
+    }
+  }
+
   return (
     <Fragment>
       <SafeAreaView style={styles.container}>
-        <NavigationBar />
+        <NavigationBar onBack={handleOnClose} />
         <View style={styles.headerWrapper}>
           <Text varient="h3">สมัครสมาชิก</Text>
           <Text varient="body2" color="disabled">
@@ -104,7 +124,9 @@ function RegisterTypeCard({ onSelectDriverType }: RegisterTypeCardProps) {
   return (
     <View style={styles.contentWrapper}>
       <View style={styles.cardContainer}>
-        <TouchableOpacity onPress={() => handlePressDriverType(EDriverType.INDIVIDUAL_DRIVER)}>
+        <TouchableOpacity
+          onPress={() => handlePressDriverType(EDriverType.INDIVIDUAL_DRIVER)}
+        >
           <View style={styles.cardWrapper}>
             <Text varient="body1" color="disabled">
               ประเภท
@@ -132,7 +154,9 @@ function RegisterTypeCard({ onSelectDriverType }: RegisterTypeCardProps) {
         </Animated.View>
       </View>
       <View style={styles.cardContainer}>
-        <TouchableOpacity onPress={() => handlePressDriverType(EDriverType.BUSINESS)}>
+        <TouchableOpacity
+          onPress={() => handlePressDriverType(EDriverType.BUSINESS)}
+        >
           <View style={styles.cardWrapper}>
             <Text varient="body1" color="disabled">
               ประเภท

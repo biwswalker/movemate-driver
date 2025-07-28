@@ -18,6 +18,6 @@ mutation MarkAsFinish($shipmentId: String!) {
   markAsFinish(shipmentId: $shipmentId)
 }
 
-mutation AssignShipment($shipmentId: String!, $driverId: String!) {
-  assignShipment(shipmentId: $shipmentId, driverId: $driverId)
+mutation AssignShipment($shipmentId: String!, $driverId: String!, $isChanged: Boolean) {
+  assignShipment(shipmentId: $shipmentId, driverId: $driverId, isChanged: $isChanged)
 }

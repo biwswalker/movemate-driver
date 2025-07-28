@@ -31,6 +31,7 @@ interface AuthContextProps {
   isAuthenticated: boolean;
   isInitialized: boolean;
   user: User | null;
+  parentNames: string[];
   loading: boolean;
   authError: ApolloError | undefined;
   refetchMe: () => void;
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const { devicePushToken } = usePushNotifications();
   const [notificationCount, setNotificationCount] = useState(0);
   const [user, setUser] = useState<User | null>(null);
+  const [parentNames, setParents] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isAuthenticated, setAuthenticated] = useState(false);
   const [authError, setAuthError] = useState<ApolloError | undefined>(
@@ -87,10 +89,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
         requireBeforeSignin,
         unreadCount: { notification = 0 },
         checkAvailableToWork,
+        getParentNames: parentNamesData
       }) => {
         // logout()
         if (meData) {
           setUser(meData as User);
+          setParents(parentNamesData || [])
           setAuthenticated(true);
           setAvailableWork(checkAvailableToWork);
         }
@@ -104,6 +108,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       },
       onError: () => {
         setUser(null);
+        setParents([])
         setAuthenticated(false);
         setIsInitialized(true);
         setAvailableWork(false);
@@ -129,6 +134,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (data) {
       setUser(data.me as User);
+      setParents(data.getParentNames || [])
       if (data.requireBeforeSignin) {
         setRequireAcceptedPolicy(
           data.requireBeforeSignin.requireAcceptedPolicy
@@ -228,11 +234,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
       console.log("error: ", error);
     } finally {
       setUser(null);
+      setParents([])
       setAvailableWork(false);
       setIsInitialized(true);
       setTimeout(() => {
         setAuthenticated(false);
-      }, 256)
+      }, 256);
     }
     // await apolloClient.resetStore();
   };
@@ -247,6 +254,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         clearAuthError,
         isInitialized,
         user,
+        parentNames,
         loading,
         authError,
         isFirstLaunch,

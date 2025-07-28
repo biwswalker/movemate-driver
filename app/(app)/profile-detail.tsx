@@ -102,10 +102,10 @@ export default function ProfileDetail() {
     [checkPendingStatusRaw]
   );
 
-  useFocusEffect(() => {
+  useEffect(() => {
     refetchMe();
-    refetchGetStatus()
-  });
+    refetchGetStatus();
+  }, []);
 
   const { data: vehicleData } = useGetVehicleTypeAvailableQuery();
   const { data: prvinces, loading: provinceLoading } = useGetProvinceQuery();
@@ -197,6 +197,8 @@ export default function ProfileDetail() {
             .max(15, "ตัวเลขสูงสุด 15 หลัก"),
         }),
     serviceVehicleTypes: Yup.array().min(1, "ระบุประเภทรถที่ให้บริการ"),
+    licensePlateProvince: Yup.string().required("ระบุจังหวัดทะเบียนรถ"),
+    licensePlateNumber: Yup.string().required("ระบุหมายเลขทะเบียนรถ"),
   });
 
   const defaultValues: FormValues = {
@@ -225,6 +227,8 @@ export default function ProfileDetail() {
       driverDetail?.serviceVehicleTypes,
       (service) => service._id
     ),
+    licensePlateProvince: driverDetail?.licensePlateProvince || "",
+    licensePlateNumber: driverDetail?.licensePlateNumber || "",
   };
 
   const methods = useForm<FormValues>({
@@ -556,6 +560,24 @@ export default function ProfileDetail() {
                   }
                 />
               </View>
+              {!isAgent && (
+                <>
+                  <RHFSelectDropdown
+                    name="licensePlateProvince"
+                    label="จังหวัดทะเบียนรถ*"
+                    disabled={!isApproved || isPendingReview}
+                    options={prvinces?.getProvince || []}
+                    labelField="nameTh"
+                    valueField="nameTh"
+                    value={values.licensePlateProvince}
+                  />
+                  <RHFTextInput
+                    disabled={!isApproved || isPendingReview}
+                    name="licensePlateNumber"
+                    label="หมายเลขทะเบียนรถ*"
+                  />
+                </>
+              )}
 
               <View style={styles.actionWrapper}>
                 <Button

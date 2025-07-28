@@ -1,10 +1,10 @@
 import Iconify from "@/components/Iconify";
-import Text from "@/components/Text";
+import Text, { getFontVarient } from "@/components/Text";
 import colors from "@constants/colors";
 import { imagePath } from "@/utils/file";
 import { normalize } from "@/utils/normalizeSize";
 import hexToRgba from "hex-to-rgba";
-import { get, includes, map, tail } from "lodash";
+import { find, get, includes, isEmpty, isNumber, map, tail } from "lodash";
 import { Fragment } from "react";
 import {
   Image,
@@ -15,8 +15,11 @@ import {
 } from "react-native";
 import {
   EShipmentStatus,
+  EStepDefinition,
+  EStepStatus,
   EUserType,
   Shipment,
+  StepDefinition,
 } from "@/graphql/generated/graphql";
 import useAuth from "@/hooks/useAuth";
 import Reanimated, {
@@ -25,15 +28,28 @@ import Reanimated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import Button from "@/components/Button";
+import ButtonIcon from "@/components/ButtonIcon";
+import { isBefore, parseISO } from "date-fns";
 
 interface OverviewDetailProps {
   shipment: Shipment;
+  defaultExpanded?: boolean;
+  onViewUserDetail?: (userId: string) => void;
+  onChangeDriver?: VoidFunction;
 }
 
-export default function Detail({ shipment }: OverviewDetailProps) {
+export default function Detail({
+  shipment,
+  defaultExpanded = false,
+  onViewUserDetail = () => {},
+  onChangeDriver = () => {},
+}: OverviewDetailProps) {
   const { user } = useAuth();
+  const { showActionSheetWithOptions } = useActionSheet();
 
-  const progress = useSharedValue(0); // Start expanded
+  const progress = useSharedValue(defaultExpanded ? 1 : 0); // Start expanded
 
   const animationConfig = {
     duration: 80,
@@ -87,6 +103,59 @@ export default function Detail({ shipment }: OverviewDetailProps) {
     shipment?.status
   );
 
+  function handleOpenActionSheet() {
+    const now = new Date();
+    const bookingTime = parseISO(shipment.bookingDateTime.toString());
+    const isBeforeStartBooking = isBefore(now, bookingTime);
+
+    const confirmStep = find(shipment.steps as StepDefinition[], {
+      step: EStepDefinition.CONFIRM_DATETIME,
+    });
+    const isCannotChangeDriver = includes(
+      [EStepStatus.DONE, EStepStatus.CANCELLED],
+      confirmStep?.stepStatus
+    );
+
+    const defaultMenu = [
+      { label: "รายละเอียดคนขับ", value: "DETAIL" },
+      ...(isBusiness && isBeforeStartBooking && !isCannotChangeDriver
+        ? [{ label: "เปลี่ยนคนขับ", value: "CHANGE_DRIVER" }]
+        : []),
+      { label: "ยกเลิก", value: "CANCEL" },
+    ];
+
+    showActionSheetWithOptions(
+      {
+        title: "เลือกเมนูดำเนินการ",
+        message: "กรุณาเลือกเมนูดำเนินการที่ต้องการ",
+        options: defaultMenu.map((option) => option.label),
+        cancelButtonIndex: defaultMenu.length - 1,
+        titleTextStyle: getFontVarient("h4"),
+        messageTextStyle: {
+          ...getFontVarient("body2"),
+          color: colors.text.disabled,
+        },
+        textStyle: getFontVarient("buttonL"),
+      },
+      (selectedIndex: number | undefined) => {
+        if (isNumber(selectedIndex)) {
+          const pressMenu = defaultMenu[selectedIndex!];
+          if (pressMenu.value === "DETAIL") {
+            if (!isBusiness && agentDriver) {
+              onViewUserDetail(agentDriver._id);
+            } else if (driver) {
+              onViewUserDetail(driver._id);
+            }
+          } else if (pressMenu.value === "CHANGE_DRIVER") {
+            if (isBusiness) {
+              onChangeDriver();
+            }
+          }
+        }
+      }
+    );
+  }
+
   return (
     <Reanimated.View style={[detailStyles.accordionCard, cardAnimatedStyle]}>
       <TouchableOpacity onPress={toggleAccordion} activeOpacity={0.8}>
@@ -134,6 +203,15 @@ export default function Detail({ shipment }: OverviewDetailProps) {
                 {driver?.fullname}
               </Text>
             </View>
+            <ButtonIcon
+              onPress={handleOpenActionSheet}
+              varient="text"
+              color="inherit"
+            >
+              {({ color }) => (
+                <Iconify icon="mage:dots" size={24} color={color} />
+              )}
+            </ButtonIcon>
           </View>
         )}
 
@@ -168,6 +246,15 @@ export default function Detail({ shipment }: OverviewDetailProps) {
                 {agentDriver?.fullname}
               </Text>
             </View>
+            <ButtonIcon
+              onPress={handleOpenActionSheet}
+              varient="text"
+              color="inherit"
+            >
+              {({ color }) => (
+                <Iconify icon="mage:dots" size={24} color={color} />
+              )}
+            </ButtonIcon>
           </View>
         )}
 
@@ -251,6 +338,11 @@ export default function Detail({ shipment }: OverviewDetailProps) {
                 </Text>
               );
             })}
+            {isEmpty(additionalService) && !shipment?.isRoundedReturn && (
+              <Text varient="subtitle1" color="primary">
+                -
+              </Text>
+            )}
           </View>
 
           {/* Vehicle Type */}
@@ -270,16 +362,15 @@ export default function Detail({ shipment }: OverviewDetailProps) {
 
 const detailStyles = StyleSheet.create({
   accordionCard: {
-    gap: normalize(8),
+    gap: 8,
     backgroundColor: colors.background.default,
     borderColor: colors.background.neutral,
-    borderWidth: normalize(6),
-    borderRadius: normalize(12),
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(12),
-
-    marginHorizontal: normalize(16),
-    marginTop: normalize(16),
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginHorizontal: 8,
+    marginTop: 16,
     // 2. Adjust base styles for shadows
     ...Platform.select({
       ios: {
@@ -296,39 +387,37 @@ const detailStyles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: normalize(6),
+    paddingVertical: 6,
   },
   body: {
     overflow: "hidden",
   },
   divider: {
-    marginHorizontal: normalize(16),
+    marginHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingRight: normalize(16),
+    paddingRight: 16,
   },
   dividerWithText: {},
   accountContainer: {
-    margin: normalize(16),
-    padding: normalize(8),
-    paddingHorizontal: normalize(12),
+    padding: 8,
     backgroundColor: colors.background.default,
     borderColor: colors.background.neutral,
     borderWidth: 1,
-    borderRadius: normalize(12),
+    borderRadius: 8,
     flexDirection: "row",
     alignItems: "center",
-    gap: normalize(8),
+    gap: 8,
     ...Platform.select({
       ios: {
         shadowColor: colors.grey[500],
         shadowOpacity: 0.16,
-        shadowRadius: normalize(8),
-        shadowOffset: { width: 0, height: normalize(4) },
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
       },
       android: {
         elevation: 8,
@@ -338,9 +427,9 @@ const detailStyles = StyleSheet.create({
   },
   accountAvatarWrapper: {},
   avatarImage: {
-    borderRadius: normalize(24),
-    width: normalize(32),
-    height: normalize(32),
+    borderRadius: 24,
+    width: 32,
+    height: 32,
     resizeMode: "cover",
     aspectRatio: 1,
   },
@@ -348,58 +437,57 @@ const detailStyles = StyleSheet.create({
     flex: 1,
   },
   boxIconWrapper: {
-    marginTop: normalize(8),
-    padding: normalize(4),
-    width: normalize(32),
-    height: normalize(32),
+    marginTop: 8,
+    padding: 4,
+    width: 32,
+    height: 32,
     // backgroundColor: colors.master.lighter,
     alignSelf: "flex-start",
-    borderRadius: normalize(16),
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
     borderColor: colors.divider,
   },
   boxReturnIconWrapper: {
-    marginTop: normalize(8),
-    padding: normalize(4),
-    width: normalize(32),
-    height: normalize(32),
+    marginTop: 8,
+    padding: 4,
+    width: 32,
+    height: 32,
     alignSelf: "flex-start",
-    borderRadius: normalize(16),
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.background.neutral,
   },
   boxNumberWrapper: {
     backgroundColor: colors.background.default,
-    marginTop: normalize(8),
-    width: normalize(32),
-    height: normalize(32),
+    marginTop: 8,
+    width: 32,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
     // alignSelf: "flex-start",
-    borderRadius: normalize(16),
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.divider,
   },
   cardWrapper: {
     // flex: 1,
-    marginHorizontal: normalize(16),
-    paddingVertical: normalize(16),
+    // marginHorizontal: 8,
+    paddingVertical: 8,
     backgroundColor: colors.common.white,
   },
   additionalServiceWrapper: {
-    // padding: normalize(12),
-    marginHorizontal: normalize(12),
-    marginLeft: normalize(46),
-    paddingVertical: normalize(8),
+    // padding: (12),
+    marginHorizontal: 12,
+    marginLeft: 46,
+    paddingVertical: 8,
   },
   locationWrapper: {
     flexDirection: "row",
-    gap: normalize(8),
-    padding: normalize(12),
-    paddingVertical: normalize(8),
+    gap: 8,
+    padding: 8,
   },
   locationTitleWrapper: {
     flexDirection: "row",

@@ -563,29 +563,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerWrapper: {
-    paddingHorizontal: normalize(16),
-    paddingBottom: normalize(16),
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   contentWrapper: {
-    marginTop: normalize(48),
-    gap: normalize(12),
+    marginTop: 48,
+    gap: 12,
   },
   inputWrapper: {
-    paddingHorizontal: normalize(16),
+    paddingHorizontal: 16,
   },
   actionWrapper: {
-    paddingVertical: normalize(32),
+    paddingVertical: 32,
   },
   formSubtitle: {
-    paddingTop: normalize(32),
-    paddingLeft: 8,
+    paddingTop: 26,
   },
   helperText: {
-    marginTop: normalize(8),
-    paddingLeft: normalize(12),
+    marginTop: 8,
+    paddingLeft: 12,
   },
   inputWrapperColumn: {
     flexDirection: "row",
-    gap: normalize(8),
+    gap: 8,
   },
 });

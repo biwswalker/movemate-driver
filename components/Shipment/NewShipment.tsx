@@ -43,7 +43,7 @@ interface NewShipmentsProps {
 const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
   ({ onPress }, ref) => {
     const isFocused = useIsFocused();
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
 
     const [shipments, setShipments] = useState<Shipment[]>([]);
 
@@ -56,6 +56,7 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
       onError: (errr) => {
         console.log("Listen error: ", JSON.stringify(errr, undefined, 2));
       },
+      skip: !isAuthenticated,
       fetchPolicy: "network-only",
     });
 

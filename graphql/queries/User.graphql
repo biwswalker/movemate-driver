@@ -60,3 +60,7 @@ query GetEmployeeRequest {
     fullname
   }
 }
+
+query CheckAvailableToWork {
+  checkAvailableToWork
+}

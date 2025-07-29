@@ -21,6 +21,7 @@ import {
   EDriverType,
   EUserStatus,
   EUserValidationStatus,
+  useCheckAvailableToWorkQuery,
 } from "@/graphql/generated/graphql";
 import UsersHeader from "@/components/UsersHeader";
 import Text from "@/components/Text";
@@ -31,7 +32,20 @@ import EmploymentApproval, {
 } from "@/components/EmploymentApproval";
 
 export default function HomeScreen() {
-  const { user, refetchMe, isAvailableWork } = useAuth();
+  const { user, refetchMe, isAuthenticated } = useAuth();
+
+  const {
+    data: checkAvailableToWorkData,
+    refetch: refetchCheckAvailableToWork,
+  } = useCheckAvailableToWorkQuery({
+    fetchPolicy: "network-only",
+    skip: !isAuthenticated,
+  });
+
+  const isAvailableWork = useMemo(
+    () => checkAvailableToWorkData?.checkAvailableToWork || false,
+    [checkAvailableToWorkData]
+  );
 
   // Get all driver include Parents
 
@@ -62,6 +76,7 @@ export default function HomeScreen() {
       // Refresh
       setRefreshing(true);
       await refetchMe();
+      await refetchCheckAvailableToWork();
       if (newShipmentsRef.current && !isOnlyBusinessDriver) {
         newShipmentsRef.current.onRestartListening();
       }

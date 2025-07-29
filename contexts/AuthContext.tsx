@@ -11,7 +11,7 @@ import {
 import { usePushNotifications } from "@/hooks/usePushNotification";
 import { encryption } from "@/utils/crypto";
 import { storage } from "@/utils/mmkv-storage";
-import { ApolloError, useApolloClient } from "@apollo/client";
+import { ApolloClient, ApolloError } from "@apollo/client";
 import { router } from "expo-router";
 import { get, isEqual } from "lodash";
 import {
@@ -19,8 +19,10 @@ import {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
+import { createApolloClient } from "@graphql/apollo-client";
 
 interface ILogin {
   username: string;
@@ -45,12 +47,12 @@ interface AuthContextProps {
   notificationCount: number;
   isFirstLaunch: boolean | undefined;
   isAvailableWork: boolean | undefined; //For business driver (Agent)
+  client: ApolloClient<any>;
 }
 
 export const AuthContext = createContext<AuthContextProps | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const apolloClient = useApolloClient();
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | undefined>(
     undefined
   );
@@ -67,18 +69,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [requireAcceptedPolicy, setRequireAcceptedPolicy] = useState(false);
   const [requirePasswordChange, setRequirePasswordChange] = useState(false);
   const [isAvailableWork, setAvailableWork] = useState(false);
+  const [token, setToken] = useState<string | null>(
+    () => storage.getString("access_token") || ""
+  );
 
   // CONTACT GRAPHQL
-  const [me, { refetch, data }] = useMeLazyQuery();
-  const [storeFCMToken] = useStoreFcmMutation();
-  const [removeFCMToken] = useRemoveFcmMutation();
-  const [auth] = useLoginMutation();
+  const client = useMemo(() => createApolloClient(token), [token]);
+  const [me, { refetch, data }] = useMeLazyQuery({ client });
+  const [storeFCMToken] = useStoreFcmMutation({ client });
+  const [removeFCMToken] = useRemoveFcmMutation({ client });
+  const [auth] = useLoginMutation({ client });
+  const [signout] = useLogoutMutation({ client });
 
   const refetchMe = () => {
     return refetch();
   };
-
-  const [signout] = useLogoutMutation();
 
   const initialize = useCallback(async () => {
     setLoading(true);
@@ -89,12 +94,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
         requireBeforeSignin,
         unreadCount: { notification = 0 },
         checkAvailableToWork,
-        getParentNames: parentNamesData
+        getParentNames: parentNamesData,
       }) => {
         // logout()
         if (meData) {
           setUser(meData as User);
-          setParents(parentNamesData || [])
+          setParents(parentNamesData || []);
           setAuthenticated(true);
           setAvailableWork(checkAvailableToWork);
         }
@@ -108,7 +113,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       },
       onError: () => {
         setUser(null);
-        setParents([])
+        setParents([]);
         setAuthenticated(false);
         setIsInitialized(true);
         setAvailableWork(false);
@@ -134,7 +139,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (data) {
       setUser(data.me as User);
-      setParents(data.getParentNames || [])
+      setParents(data.getParentNames || []);
       if (data.requireBeforeSignin) {
         setRequireAcceptedPolicy(
           data.requireBeforeSignin.requireAcceptedPolicy
@@ -163,6 +168,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setRequireAcceptedPolicy(login.requireAcceptedPolicy);
         setRequirePasswordChange(login.requirePasswordChange);
         refetchMe();
+        client.reFetchObservableQueries(); // Refetch queries
         router.replace("/");
       } else {
         setLoading(false);
@@ -194,7 +200,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       await storeFCMToken({
         variables: { fcmToken: token },
         onError: (error) => {
-          console.log("----error---", error);
+          console.log("error", error);
         },
       });
     }
@@ -217,7 +223,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     auth({
       variables: { username: data.username },
       context: {
-        headers: { authorization: `Bearer ${hashedPassword}` },
+        headers: {
+          authorization: `Bearer ${hashedPassword}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
       },
       onCompleted: handleAuthSuccess,
       onError: handleAuthError,
@@ -228,25 +237,25 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const logout = async () => {
     try {
       await signout();
-      await storage.delete("access_token");
-      await apolloClient.clearStore();
     } catch (error) {
       console.log("error: ", error);
     } finally {
+      await storage.delete("access_token");
+      await client.clearStore();
       setUser(null);
-      setParents([])
+      setParents([]);
       setAvailableWork(false);
       setIsInitialized(true);
       setTimeout(() => {
         setAuthenticated(false);
       }, 256);
     }
-    // await apolloClient.resetStore();
   };
 
   return (
     <AuthContext.Provider
       value={{
+        client,
         requireAcceptedPolicy,
         requirePasswordChange,
         notificationCount,

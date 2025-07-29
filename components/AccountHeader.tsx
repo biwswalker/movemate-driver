@@ -10,6 +10,7 @@ import useAuth from "@/hooks/useAuth";
 import { normalize } from "@/utils/normalizeSize";
 import { router } from "expo-router";
 import { EUserType, EUserValidationStatus } from "@/graphql/generated/graphql";
+import useNotification from "@/hooks/useNotification";
 
 const styles = StyleSheet.create({
   accountContainer: {
@@ -48,7 +49,8 @@ interface AccountHeaderProps {
 export default function AccountHeader({
   style: containerStyle = {},
 }: AccountHeaderProps) {
-  const { user, notificationCount, parentNames } = useAuth();
+  const { user, parentNames } = useAuth();
+  const { count } = useNotification();
 
   const validated = user?.validationStatus === EUserValidationStatus.APPROVE;
 
@@ -92,9 +94,9 @@ export default function AccountHeader({
             size={normalize(28)}
             color={colors.text.secondary}
           />
-          {notificationCount > 0 && (
+          {count > 0 && (
             <Badge style={[styles.notificationBadge]} size={normalize(20)}>
-              {notificationCount > 99 ? "99+" : notificationCount}
+              {count > 99 ? "99+" : count}
             </Badge>
           )}
         </ButtonIcon>

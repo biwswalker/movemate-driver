@@ -15,9 +15,10 @@ import { SnackbarV2Provider } from "@/contexts/SnackbarV2Context";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { StatusBar } from "expo-status-bar";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useAuth from "@/hooks/useAuth";
 import SplashScreenCustom from "@components/SplashScreen";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -46,28 +47,30 @@ const useAppFonts = () => {
 };
 
 const AppProviders = ({ children }: { children: React.ReactNode }) => (
-  <ApolloProvider>
-    <AuthProvider>
+  <AuthProvider>
+    <ApolloProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <PaperProvider theme={RNPaperConfig}>
           <ThemeProvider value={DefaultTheme}>
             <SnackbarProvider>
               <SnackbarV2Provider>
-                <ActionSheetProvider>
-                  <BottomSheetModalProvider>
-                    <SafeAreaProvider>
-                      <StatusBar style="dark" />
-                      {children}
-                    </SafeAreaProvider>
-                  </BottomSheetModalProvider>
-                </ActionSheetProvider>
+                <NotificationProvider>
+                  <ActionSheetProvider>
+                    <BottomSheetModalProvider>
+                      <SafeAreaProvider>
+                        <StatusBar style="dark" />
+                        {children}
+                      </SafeAreaProvider>
+                    </BottomSheetModalProvider>
+                  </ActionSheetProvider>
+                </NotificationProvider>
               </SnackbarV2Provider>
             </SnackbarProvider>
           </ThemeProvider>
         </PaperProvider>
       </GestureHandlerRootView>
-    </AuthProvider>
-  </ApolloProvider>
+    </ApolloProvider>
+  </AuthProvider>
 );
 
 const RootLayoutNav = () => {

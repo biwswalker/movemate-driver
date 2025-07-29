@@ -1,0 +1,21 @@
+subscription ListenNotificationCount {
+  listenNotificationCount
+}
+
+subscription GetNotificationMessage {
+  listenNotificationMessage {
+    ...NotificationFragment
+  }
+}
+
+subscription GetNotificationMessageGroup {
+  listenNotificationGroupMessage {
+    ...NotificationFragment
+  }
+}
+
+subscription GetRealtimeNotification($limit: Int, $skip: Int) {
+  realtimeNotifications(limit: $limit, skip: $skip) {
+    ...NotificationFragment
+  }
+}

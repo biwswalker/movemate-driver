@@ -10,7 +10,7 @@ import useAuth from "@/hooks/useAuth";
 import { get, includes } from "lodash";
 
 export default function TabLayout() {
-  const { refetchMe, user, logout } = useAuth();
+  const { refetchMe, user, logout, isAuthenticated } = useAuth();
 
   useListenUserStatusSubscription({
     onData: (response) => {
@@ -22,6 +22,8 @@ export default function TabLayout() {
       }
       refetchMe();
     },
+    skip: !isAuthenticated,
+    fetchPolicy: "network-only",
   });
 
   // Subscription
@@ -47,7 +49,11 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="finance"
-        options={isOnlyBusinessDriver ? { href: null } : { tabBarButton: IconItem("finance") }}
+        options={
+          isOnlyBusinessDriver
+            ? { href: null }
+            : { tabBarButton: IconItem("finance") }
+        }
       />
       <Tabs.Screen
         name="profile"

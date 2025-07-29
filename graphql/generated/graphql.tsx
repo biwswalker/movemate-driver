@@ -41350,6 +41350,15 @@ export type GetEmployeeRequestQuery = {
   } | null;
 };
 
+export type CheckAvailableToWorkQueryVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type CheckAvailableToWorkQuery = {
+  __typename?: "Query";
+  checkAvailableToWork: boolean;
+};
+
 export type GetVehicleTypeAvailableQueryVariables = Exact<{
   [key: string]: never;
 }>;
@@ -44403,6 +44412,94 @@ export type ListenAvailableShipmentSubscription = {
         } | null;
       } | null;
     }>;
+  }>;
+};
+
+export type ListenNotificationCountSubscriptionVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type ListenNotificationCountSubscription = {
+  __typename?: "Subscription";
+  listenNotificationCount: number;
+};
+
+export type GetNotificationMessageSubscriptionVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type GetNotificationMessageSubscription = {
+  __typename?: "Subscription";
+  listenNotificationMessage: {
+    __typename?: "Notification";
+    _id: string;
+    userId: string;
+    varient: string;
+    title: string;
+    message: Array<string>;
+    infoText?: string | null;
+    infoLink?: string | null;
+    errorText?: string | null;
+    errorLink?: string | null;
+    masterText?: string | null;
+    masterLink?: string | null;
+    permanent: boolean;
+    read: boolean;
+    createdAt: any;
+    updatedAt: any;
+  };
+};
+
+export type GetNotificationMessageGroupSubscriptionVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type GetNotificationMessageGroupSubscription = {
+  __typename?: "Subscription";
+  listenNotificationGroupMessage: {
+    __typename?: "Notification";
+    _id: string;
+    userId: string;
+    varient: string;
+    title: string;
+    message: Array<string>;
+    infoText?: string | null;
+    infoLink?: string | null;
+    errorText?: string | null;
+    errorLink?: string | null;
+    masterText?: string | null;
+    masterLink?: string | null;
+    permanent: boolean;
+    read: boolean;
+    createdAt: any;
+    updatedAt: any;
+  };
+};
+
+export type GetRealtimeNotificationSubscriptionVariables = Exact<{
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  skip?: InputMaybe<Scalars["Int"]["input"]>;
+}>;
+
+export type GetRealtimeNotificationSubscription = {
+  __typename?: "Subscription";
+  realtimeNotifications: Array<{
+    __typename?: "Notification";
+    _id: string;
+    userId: string;
+    varient: string;
+    title: string;
+    message: Array<string>;
+    infoText?: string | null;
+    infoLink?: string | null;
+    errorText?: string | null;
+    errorLink?: string | null;
+    masterText?: string | null;
+    masterLink?: string | null;
+    permanent: boolean;
+    read: boolean;
+    createdAt: any;
+    updatedAt: any;
   }>;
 };
 
@@ -48680,6 +48777,81 @@ export type GetEmployeeRequestQueryResult = Apollo.QueryResult<
   GetEmployeeRequestQuery,
   GetEmployeeRequestQueryVariables
 >;
+export const CheckAvailableToWorkDocument = gql`
+  query CheckAvailableToWork {
+    checkAvailableToWork
+  }
+`;
+
+/**
+ * __useCheckAvailableToWorkQuery__
+ *
+ * To run a query within a React component, call `useCheckAvailableToWorkQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCheckAvailableToWorkQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCheckAvailableToWorkQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCheckAvailableToWorkQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    CheckAvailableToWorkQuery,
+    CheckAvailableToWorkQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<
+    CheckAvailableToWorkQuery,
+    CheckAvailableToWorkQueryVariables
+  >(CheckAvailableToWorkDocument, options);
+}
+export function useCheckAvailableToWorkLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    CheckAvailableToWorkQuery,
+    CheckAvailableToWorkQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    CheckAvailableToWorkQuery,
+    CheckAvailableToWorkQueryVariables
+  >(CheckAvailableToWorkDocument, options);
+}
+export function useCheckAvailableToWorkSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        CheckAvailableToWorkQuery,
+        CheckAvailableToWorkQueryVariables
+      >,
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<
+    CheckAvailableToWorkQuery,
+    CheckAvailableToWorkQueryVariables
+  >(CheckAvailableToWorkDocument, options);
+}
+export type CheckAvailableToWorkQueryHookResult = ReturnType<
+  typeof useCheckAvailableToWorkQuery
+>;
+export type CheckAvailableToWorkLazyQueryHookResult = ReturnType<
+  typeof useCheckAvailableToWorkLazyQuery
+>;
+export type CheckAvailableToWorkSuspenseQueryHookResult = ReturnType<
+  typeof useCheckAvailableToWorkSuspenseQuery
+>;
+export type CheckAvailableToWorkQueryResult = Apollo.QueryResult<
+  CheckAvailableToWorkQuery,
+  CheckAvailableToWorkQueryVariables
+>;
 export const GetVehicleTypeAvailableDocument = gql`
   query GetVehicleTypeAvailable {
     getVehicleTypeAvailable {
@@ -48882,6 +49054,169 @@ export type ListenAvailableShipmentSubscriptionHookResult = ReturnType<
 >;
 export type ListenAvailableShipmentSubscriptionResult =
   Apollo.SubscriptionResult<ListenAvailableShipmentSubscription>;
+export const ListenNotificationCountDocument = gql`
+  subscription ListenNotificationCount {
+    listenNotificationCount
+  }
+`;
+
+/**
+ * __useListenNotificationCountSubscription__
+ *
+ * To run a query within a React component, call `useListenNotificationCountSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useListenNotificationCountSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListenNotificationCountSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useListenNotificationCountSubscription(
+  baseOptions?: Apollo.SubscriptionHookOptions<
+    ListenNotificationCountSubscription,
+    ListenNotificationCountSubscriptionVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useSubscription<
+    ListenNotificationCountSubscription,
+    ListenNotificationCountSubscriptionVariables
+  >(ListenNotificationCountDocument, options);
+}
+export type ListenNotificationCountSubscriptionHookResult = ReturnType<
+  typeof useListenNotificationCountSubscription
+>;
+export type ListenNotificationCountSubscriptionResult =
+  Apollo.SubscriptionResult<ListenNotificationCountSubscription>;
+export const GetNotificationMessageDocument = gql`
+  subscription GetNotificationMessage {
+    listenNotificationMessage {
+      ...NotificationFragment
+    }
+  }
+  ${NotificationFragmentFragmentDoc}
+`;
+
+/**
+ * __useGetNotificationMessageSubscription__
+ *
+ * To run a query within a React component, call `useGetNotificationMessageSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGetNotificationMessageSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetNotificationMessageSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetNotificationMessageSubscription(
+  baseOptions?: Apollo.SubscriptionHookOptions<
+    GetNotificationMessageSubscription,
+    GetNotificationMessageSubscriptionVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useSubscription<
+    GetNotificationMessageSubscription,
+    GetNotificationMessageSubscriptionVariables
+  >(GetNotificationMessageDocument, options);
+}
+export type GetNotificationMessageSubscriptionHookResult = ReturnType<
+  typeof useGetNotificationMessageSubscription
+>;
+export type GetNotificationMessageSubscriptionResult =
+  Apollo.SubscriptionResult<GetNotificationMessageSubscription>;
+export const GetNotificationMessageGroupDocument = gql`
+  subscription GetNotificationMessageGroup {
+    listenNotificationGroupMessage {
+      ...NotificationFragment
+    }
+  }
+  ${NotificationFragmentFragmentDoc}
+`;
+
+/**
+ * __useGetNotificationMessageGroupSubscription__
+ *
+ * To run a query within a React component, call `useGetNotificationMessageGroupSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGetNotificationMessageGroupSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetNotificationMessageGroupSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetNotificationMessageGroupSubscription(
+  baseOptions?: Apollo.SubscriptionHookOptions<
+    GetNotificationMessageGroupSubscription,
+    GetNotificationMessageGroupSubscriptionVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useSubscription<
+    GetNotificationMessageGroupSubscription,
+    GetNotificationMessageGroupSubscriptionVariables
+  >(GetNotificationMessageGroupDocument, options);
+}
+export type GetNotificationMessageGroupSubscriptionHookResult = ReturnType<
+  typeof useGetNotificationMessageGroupSubscription
+>;
+export type GetNotificationMessageGroupSubscriptionResult =
+  Apollo.SubscriptionResult<GetNotificationMessageGroupSubscription>;
+export const GetRealtimeNotificationDocument = gql`
+  subscription GetRealtimeNotification($limit: Int, $skip: Int) {
+    realtimeNotifications(limit: $limit, skip: $skip) {
+      ...NotificationFragment
+    }
+  }
+  ${NotificationFragmentFragmentDoc}
+`;
+
+/**
+ * __useGetRealtimeNotificationSubscription__
+ *
+ * To run a query within a React component, call `useGetRealtimeNotificationSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGetRealtimeNotificationSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRealtimeNotificationSubscription({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *      skip: // value for 'skip'
+ *   },
+ * });
+ */
+export function useGetRealtimeNotificationSubscription(
+  baseOptions?: Apollo.SubscriptionHookOptions<
+    GetRealtimeNotificationSubscription,
+    GetRealtimeNotificationSubscriptionVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useSubscription<
+    GetRealtimeNotificationSubscription,
+    GetRealtimeNotificationSubscriptionVariables
+  >(GetRealtimeNotificationDocument, options);
+}
+export type GetRealtimeNotificationSubscriptionHookResult = ReturnType<
+  typeof useGetRealtimeNotificationSubscription
+>;
+export type GetRealtimeNotificationSubscriptionResult =
+  Apollo.SubscriptionResult<GetRealtimeNotificationSubscription>;
 export const ListenUserStatusDocument = gql`
   subscription ListenUserStatus {
     listenUserStatus

@@ -4,7 +4,7 @@ import React, {
   Fragment,
   useEffect,
   useImperativeHandle,
-  useMemo,
+  useState,
 } from "react";
 import {
   FlatList,
@@ -44,7 +44,15 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
   ({ onPress }, ref) => {
     const isFocused = useIsFocused();
     const { user } = useAuth();
-    const { data, restart, loading } = useListenAvailableShipmentSubscription({
+
+    const [shipments, setShipments] = useState<Shipment[]>([]);
+
+    const { restart, loading } = useListenAvailableShipmentSubscription({
+      onData: ({ data }) => {
+        const shipments = (data.data?.listenAvailableShipment ||
+          []) as Shipment[];
+        setShipments(shipments);
+      },
       onError: (errr) => {
         console.log("Listen error: ", JSON.stringify(errr, undefined, 2));
       },
@@ -61,13 +69,6 @@ const NewShipments = forwardRef<NewShipmentsRef, NewShipmentsProps>(
         restart();
       }
     }, [isFocused]);
-
-    const shipments = useMemo<Shipment[]>(() => {
-      if (data?.listenAvailableShipment) {
-        return data.listenAvailableShipment as Shipment[];
-      }
-      return [];
-    }, [data?.listenAvailableShipment]);
 
     function Item({ item, index }: ListRenderItemInfo<Shipment>) {
       const _quotation = last(sortBy(item.quotations, "createdAt"));

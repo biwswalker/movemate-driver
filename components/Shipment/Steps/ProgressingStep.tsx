@@ -15,11 +15,12 @@ export interface ProgressingStepsProps {
 }
 
 export default function ProgressingSteps(props: ProgressingStepsProps) {
-  const currentStepSeq = props.shipment?.currentStepSeq;
-  const currentStep = find(props.shipment?.steps, ["seq", currentStepSeq]);
+  const currentStep = props.shipment?.currentStepId as
+    | StepDefinition
+    | undefined;
   const isCurrentStep = includes(
     map(props.step?.definitions, (def) => def.seq),
-    currentStepSeq
+    currentStep?.seq
   );
   const stepDefinition = (
     isCurrentStep ? currentStep : last(props.step?.definitions)

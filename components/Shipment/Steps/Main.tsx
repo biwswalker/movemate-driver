@@ -1,5 +1,9 @@
 import colors from "@constants/colors";
-import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import {
+  EStepDefinition,
+  Shipment,
+  StepDefinition,
+} from "@/graphql/generated/graphql";
 import {
   filter,
   find,
@@ -74,7 +78,10 @@ export function MainStep({ steps, shipment, refetch }: IShipmentStep) {
   useEffect(() => {
     setTimeout(() => {
       const contentStep = findIndex(contents, (content) => {
-        const def = find(content.definitions, ["seq", shipment.currentStepSeq]);
+        const def = find(content.definitions, [
+          "seq",
+          shipment.currentStepId?.seq,
+        ]);
         return !isEmpty(def);
       });
       setActiveSections([contentStep]);
@@ -82,7 +89,7 @@ export function MainStep({ steps, shipment, refetch }: IShipmentStep) {
         accordionRef.current.forceUpdate();
       }
     }, 10);
-  }, [shipment.currentStepSeq]);
+  }, [shipment.currentStepId]);
 
   function _renderHeader(
     content: Step,

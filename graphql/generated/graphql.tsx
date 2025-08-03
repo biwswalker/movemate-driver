@@ -3507,7 +3507,7 @@ export type Shipment = {
   cancellationReason?: Maybe<Scalars["String"]["output"]>;
   cancelledDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   createdAt: Scalars["DateTimeISO"]["output"];
-  currentStepSeq: Scalars["Int"]["output"];
+  currentStepId?: Maybe<StepDefinition>;
   customer: User;
   deliveredDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   destinations: Array<Destination>;
@@ -4577,7 +4577,6 @@ export type BillingFragmentFragment = {
     bookingDateTime?: any | null;
     refId?: string | null;
     remark?: string | null;
-    currentStepSeq: number;
     paymentMethod: EPaymentMethod;
     createdAt: any;
     updatedAt: any;
@@ -6684,6 +6683,28 @@ export type BillingFragmentFragment = {
         updatedAt: any;
       }>;
     }>;
+    currentStepId?: {
+      __typename?: "StepDefinition";
+      _id: string;
+      step: EStepDefinition;
+      seq: number;
+      stepName: string;
+      customerMessage: string;
+      driverMessage: string;
+      meta?: number | null;
+      stepStatus: EStepStatus;
+      createdAt: any;
+      updatedAt?: any | null;
+      images: Array<{
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      }>;
+    } | null;
     history?: Array<{
       __typename?: "UpdateHistory";
       _id: string;
@@ -10452,7 +10473,6 @@ export type BillingListFragmentFragment = {
     bookingDateTime?: any | null;
     refId?: string | null;
     remark?: string | null;
-    currentStepSeq: number;
     paymentMethod: EPaymentMethod;
     createdAt: any;
     updatedAt: any;
@@ -17131,7 +17151,6 @@ export type ShipmentFragmentFragment = {
   bookingDateTime?: any | null;
   refId?: string | null;
   remark?: string | null;
-  currentStepSeq: number;
   paymentMethod: EPaymentMethod;
   createdAt: any;
   updatedAt: any;
@@ -19234,6 +19253,28 @@ export type ShipmentFragmentFragment = {
       updatedAt: any;
     }>;
   }>;
+  currentStepId?: {
+    __typename?: "StepDefinition";
+    _id: string;
+    step: EStepDefinition;
+    seq: number;
+    stepName: string;
+    customerMessage: string;
+    driverMessage: string;
+    meta?: number | null;
+    stepStatus: EStepStatus;
+    createdAt: any;
+    updatedAt?: any | null;
+    images: Array<{
+      __typename?: "File";
+      _id: string;
+      fileId: string;
+      filename: string;
+      mimetype: string;
+      createdAt: any;
+      updatedAt: any;
+    }>;
+  } | null;
   history?: Array<{
     __typename?: "UpdateHistory";
     _id: string;
@@ -20107,7 +20148,6 @@ export type ShipmentListFragmentFragment = {
   bookingDateTime?: any | null;
   refId?: string | null;
   remark?: string | null;
-  currentStepSeq: number;
   paymentMethod: EPaymentMethod;
   createdAt: any;
   updatedAt: any;
@@ -22210,6 +22250,28 @@ export type ShipmentListFragmentFragment = {
       updatedAt: any;
     }>;
   }>;
+  currentStepId?: {
+    __typename?: "StepDefinition";
+    _id: string;
+    step: EStepDefinition;
+    seq: number;
+    stepName: string;
+    customerMessage: string;
+    driverMessage: string;
+    meta?: number | null;
+    stepStatus: EStepStatus;
+    createdAt: any;
+    updatedAt?: any | null;
+    images: Array<{
+      __typename?: "File";
+      _id: string;
+      fileId: string;
+      filename: string;
+      mimetype: string;
+      createdAt: any;
+      updatedAt: any;
+    }>;
+  } | null;
   formula: Array<{
     __typename?: "DistanceCostPricing";
     _id: string;
@@ -22687,7 +22749,6 @@ export type ShipmentPureFragmentFragment = {
   bookingDateTime?: any | null;
   refId?: string | null;
   remark?: string | null;
-  currentStepSeq: number;
   paymentMethod: EPaymentMethod;
   createdAt: any;
   updatedAt: any;
@@ -29514,7 +29575,6 @@ export type GetAvailableShipmentQuery = {
     bookingDateTime?: any | null;
     refId?: string | null;
     remark?: string | null;
-    currentStepSeq: number;
     paymentMethod: EPaymentMethod;
     createdAt: any;
     updatedAt: any;
@@ -31621,6 +31681,28 @@ export type GetAvailableShipmentQuery = {
         updatedAt: any;
       }>;
     }>;
+    currentStepId?: {
+      __typename?: "StepDefinition";
+      _id: string;
+      step: EStepDefinition;
+      seq: number;
+      stepName: string;
+      customerMessage: string;
+      driverMessage: string;
+      meta?: number | null;
+      stepStatus: EStepStatus;
+      createdAt: any;
+      updatedAt?: any | null;
+      images: Array<{
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      }>;
+    } | null;
     history?: Array<{
       __typename?: "UpdateHistory";
       _id: string;
@@ -32501,7 +32583,6 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
     bookingDateTime?: any | null;
     refId?: string | null;
     remark?: string | null;
-    currentStepSeq: number;
     paymentMethod: EPaymentMethod;
     createdAt: any;
     updatedAt: any;
@@ -34608,6 +34689,28 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
         updatedAt: any;
       }>;
     }>;
+    currentStepId?: {
+      __typename?: "StepDefinition";
+      _id: string;
+      step: EStepDefinition;
+      seq: number;
+      stepName: string;
+      customerMessage: string;
+      driverMessage: string;
+      meta?: number | null;
+      stepStatus: EStepStatus;
+      createdAt: any;
+      updatedAt?: any | null;
+      images: Array<{
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      }>;
+    } | null;
     history?: Array<{
       __typename?: "UpdateHistory";
       _id: string;
@@ -35486,7 +35589,6 @@ export type GetTodayShipmentQuery = {
     bookingDateTime?: any | null;
     refId?: string | null;
     remark?: string | null;
-    currentStepSeq: number;
     paymentMethod: EPaymentMethod;
     createdAt: any;
     updatedAt: any;
@@ -37593,6 +37695,28 @@ export type GetTodayShipmentQuery = {
         updatedAt: any;
       }>;
     }>;
+    currentStepId?: {
+      __typename?: "StepDefinition";
+      _id: string;
+      step: EStepDefinition;
+      seq: number;
+      stepName: string;
+      customerMessage: string;
+      driverMessage: string;
+      meta?: number | null;
+      stepStatus: EStepStatus;
+      createdAt: any;
+      updatedAt?: any | null;
+      images: Array<{
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      }>;
+    } | null;
     history?: Array<{
       __typename?: "UpdateHistory";
       _id: string;
@@ -41450,7 +41574,6 @@ export type ListenAvailableShipmentSubscription = {
     bookingDateTime?: any | null;
     refId?: string | null;
     remark?: string | null;
-    currentStepSeq: number;
     paymentMethod: EPaymentMethod;
     createdAt: any;
     updatedAt: any;
@@ -43557,6 +43680,28 @@ export type ListenAvailableShipmentSubscription = {
         updatedAt: any;
       }>;
     }>;
+    currentStepId?: {
+      __typename?: "StepDefinition";
+      _id: string;
+      step: EStepDefinition;
+      seq: number;
+      stepName: string;
+      customerMessage: string;
+      driverMessage: string;
+      meta?: number | null;
+      stepStatus: EStepStatus;
+      createdAt: any;
+      updatedAt?: any | null;
+      images: Array<{
+        __typename?: "File";
+        _id: string;
+        fileId: string;
+        filename: string;
+        mimetype: string;
+        createdAt: any;
+        updatedAt: any;
+      }>;
+    } | null;
     history?: Array<{
       __typename?: "UpdateHistory";
       _id: string;
@@ -45106,7 +45251,9 @@ export const ShipmentFragmentFragmentDoc = gql`
     steps {
       ...StepDefinitionFragment
     }
-    currentStepSeq
+    currentStepId {
+      ...StepDefinitionFragment
+    }
     paymentMethod
     createdAt
     updatedAt
@@ -45333,7 +45480,6 @@ export const ShipmentPureFragmentFragmentDoc = gql`
     bookingDateTime
     refId
     remark
-    currentStepSeq
     paymentMethod
     createdAt
     updatedAt
@@ -45508,7 +45654,9 @@ export const ShipmentListFragmentFragmentDoc = gql`
     steps {
       ...StepDefinitionFragment
     }
-    currentStepSeq
+    currentStepId {
+      ...StepDefinitionFragment
+    }
     paymentMethod
     createdAt
     updatedAt

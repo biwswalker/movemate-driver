@@ -98,7 +98,7 @@ const ConfirmAcceptShipmentModal = forwardRef<
       snapPoints={snapPoints}
       ref={bottomSheetModalRef}
       onChange={handleSheetChanges}
-      backdropComponent={SheetBackdrop.NoAnimate}
+      backdropComponent={SheetBackdrop.Normal}
       enableDynamicSizing={false}
     >
       {({ data }) => {

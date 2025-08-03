@@ -113,10 +113,7 @@ const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
       });
     }
     // const status
-    const currentStatus = find(shipment?.steps, [
-      "seq",
-      shipment?.currentStepSeq,
-    ]);
+    const currentStatus = shipment?.currentStepId
 
     return (
       <View style={todayCardStyles.todayContainer}>

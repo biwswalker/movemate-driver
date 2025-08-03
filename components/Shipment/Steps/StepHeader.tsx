@@ -26,10 +26,12 @@ export default function StepHeader({
   isActive,
   shipment,
 }: StepHeaderProps) {
-  const currentStep = find(shipment.steps, ["seq", shipment.currentStepSeq]);
+  const currentStep = shipment.currentStepId as
+    | StepDefinition
+    | undefined;
   const isCurrentStep = includes(
     map(step.definitions, (def) => def.seq),
-    shipment.currentStepSeq
+    currentStep?.seq
   );
   const latestStep = last(step.definitions);
   const stepDefinition = (

@@ -1,4 +1,8 @@
-import { EStepStatus, Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import {
+  EStepStatus,
+  Shipment,
+  StepDefinition,
+} from "@/graphql/generated/graphql";
 import IdleSteps from "./IdleStep";
 import { find, get, includes, last, map } from "lodash";
 import ProgressingSteps from "./ProgressingStep";
@@ -15,13 +19,12 @@ interface StepContentProps {
 }
 
 export default function StepContent(props: StepContentProps) {
-  const currentStep = find(props.shipment?.steps, [
-    "seq",
-    props.shipment?.currentStepSeq,
-  ]);
+  const currentStep = props.shipment?.currentStepId as
+    | StepDefinition
+    | undefined;
   const isCurrentStep = includes(
     map(props.step?.definitions, (def) => def.seq),
-    props.shipment?.currentStepSeq
+    currentStep?.seq
   );
   const latestStep = last(props.step?.definitions);
   const stepDefinition = (

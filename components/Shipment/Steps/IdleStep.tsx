@@ -1,4 +1,8 @@
-import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import {
+  EStepDefinition,
+  Shipment,
+  StepDefinition,
+} from "@/graphql/generated/graphql";
 import { find, includes, last, map } from "lodash";
 import { Step } from "./Main";
 import { Fragment } from "react";
@@ -11,13 +15,12 @@ interface IdleStepsProps {
 }
 
 export default function IdleSteps(props: IdleStepsProps) {
-  const currentStep = find(props.shipment?.steps, [
-    "seq",
-    props.shipment?.currentStepSeq,
-  ]);
+  const currentStep = props.shipment?.currentStepId as
+    | StepDefinition
+    | undefined;
   const isCurrentStep = includes(
     map(props.step?.definitions, (def) => def.seq),
-    props.shipment?.currentStepSeq
+    currentStep?.seq
   );
   const latestStep = last(props.step?.definitions);
   const stepDefinition = (

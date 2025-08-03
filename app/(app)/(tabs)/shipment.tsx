@@ -436,7 +436,7 @@ function Shipments({ status }: ShipmentsProps) {
       item.status
     );
 
-    const currentLog = find(item.steps, ["seq", item.currentStepSeq]);
+    const currentLog = item.currentStepId
 
     const isFirstProcess =
       index === 0 &&

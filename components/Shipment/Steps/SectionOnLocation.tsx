@@ -2,7 +2,11 @@ import { ProgressingStepsProps } from "./ProgressingStep";
 import { StyleSheet, View } from "react-native";
 import { normalize } from "@/utils/normalizeSize";
 import { find, head, includes, last, map, tail } from "lodash";
-import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import {
+  EStepDefinition,
+  Shipment,
+  StepDefinition,
+} from "@/graphql/generated/graphql";
 import { Step } from "./Main";
 import { ActivityIndicator } from "react-native-paper";
 import {
@@ -14,10 +18,10 @@ import { CompletedStepsProps } from "./CompletedStep";
 import Animated from "react-native-reanimated";
 
 const getDirection = (step: Step, shipment: Shipment) => {
-  const currentStep = find(shipment?.steps, ["seq", shipment?.currentStepSeq]);
+  const currentStep = shipment.currentStepId as StepDefinition | undefined;
   const isCurrentStep = includes(
     map(step.definitions, (def) => def.seq),
-    shipment.currentStepSeq
+    currentStep?.seq
   );
   const latestStep = last(step.definitions);
   const stepDefinition = (
@@ -47,7 +51,7 @@ export function OnLocation({
   step,
   index,
 }: ProgressingStepsProps) {
-  const currentStep = find(shipment.steps, ["seq", shipment.currentStepSeq]);
+  const currentStep = shipment.currentStepId as StepDefinition | undefined;
   const destination = getDirection(step, shipment);
 
   if (!currentStep || !destination) {
@@ -93,7 +97,7 @@ export function DoneOnLocation({
   step,
   index,
 }: CompletedStepsProps) {
-  const currentStep = find(shipment.steps, ["seq", shipment.currentStepSeq]);
+  const currentStep = shipment.currentStepId as StepDefinition | undefined;
   const destination = getDirection(step, shipment);
 
   if (!currentStep || !destination) {

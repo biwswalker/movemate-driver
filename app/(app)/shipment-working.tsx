@@ -94,20 +94,21 @@ export default function ShipmentDetail() {
     const sorted = sortBy(allSteps, ["seq"]);
     return sorted;
   }, [data]);
-
-  const currentStepSeq = get(shipment, "currentStepSeq", 0);
-  const currentStepDefinition = find(steps || [], ["seq", currentStepSeq]);
+  const currentStep = useMemo<StepDefinition | undefined>(() => {
+    const _step = shipment?.currentStepId as StepDefinition | undefined;
+    return _step;
+  }, [shipment]);
 
   const isPendingAssignDriver = useMemo(() => {
     const _isPendingAssignDriver =
-      currentStepDefinition?.step === EStepDefinition.ASSIGN_SHIPMENT &&
-      currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
+      currentStep?.step === EStepDefinition.ASSIGN_SHIPMENT &&
+      currentStep?.stepStatus === EStepStatus.PROGRESSING &&
       shipment?.status === EShipmentStatus.PROGRESSING;
     return _isPendingAssignDriver;
-  }, [shipment, currentStepDefinition]);
+  }, [shipment, currentStep]);
 
   const isConfirmFinishShipment =
-    currentStepDefinition?.step === EStepDefinition.FINISH &&
+    currentStep?.step === EStepDefinition.FINISH &&
     // currentStepDefinition.stepStatus === EStepStatus.PROGRESSING &&
     shipment?.status === EShipmentStatus.PROGRESSING;
 
@@ -121,7 +122,7 @@ export default function ShipmentDetail() {
     ]);
     if (!confirmDateTimeStep) {
       return false;
-    } else if ((currentStepDefinition?.seq || 0) > confirmDateTimeStep.seq) {
+    } else if ((currentStep?.seq || 0) > confirmDateTimeStep.seq) {
       return false;
     }
     const currentData = new Date();
@@ -131,7 +132,7 @@ export default function ShipmentDetail() {
       return false;
     }
     return true;
-  }, [currentStepDefinition, shipment]);
+  }, [currentStep, shipment]);
 
   useEffect(() => {
     const backAction = () => {
@@ -176,7 +177,7 @@ export default function ShipmentDetail() {
   }
 
   function handleAssignSuccess() {
-    dismissAll()
+    dismissAll();
     handleRefetch();
   }
 
@@ -192,7 +193,7 @@ export default function ShipmentDetail() {
     if (shipment?.status !== EShipmentStatus.PROGRESSING) {
       notIncludedCondition = true;
     }
-    if (!currentStepDefinition) {
+    if (!currentStep) {
       notIncludedCondition = true;
     }
 
@@ -202,7 +203,7 @@ export default function ShipmentDetail() {
     ]);
     if (!confirmDateTimeStep) {
       notIncludedCondition = true;
-    } else if ((currentStepDefinition?.seq || 0) > confirmDateTimeStep.seq) {
+    } else if ((currentStep?.seq || 0) > confirmDateTimeStep.seq) {
       notIncludedCondition = true;
     }
 

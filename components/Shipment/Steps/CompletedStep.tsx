@@ -1,4 +1,8 @@
-import { EStepDefinition, Shipment, StepDefinition } from "@/graphql/generated/graphql";
+import {
+  EStepDefinition,
+  Shipment,
+  StepDefinition,
+} from "@/graphql/generated/graphql";
 import { find, includes, last, map } from "lodash";
 import { DoneConfirmDatetime } from "./SectionConfirmDatetimeStep";
 import { DonePOD } from "./SectionPODStep";
@@ -14,11 +18,12 @@ export interface CompletedStepsProps {
 }
 
 export default function CompletedSteps(props: CompletedStepsProps) {
-  const currentStepSeq = props.shipment?.currentStepSeq;
-  const currentStep = find(props.shipment?.steps, ["seq", currentStepSeq]);
+  const currentStep = props.shipment?.currentStepId as
+    | StepDefinition
+    | undefined;
   const isCurrentStep = includes(
     map(props.step?.definitions, (def) => def.seq),
-    currentStepSeq
+    currentStep?.seq
   );
   const stepDefinition = (
     isCurrentStep ? currentStep : last(props.step?.definitions)

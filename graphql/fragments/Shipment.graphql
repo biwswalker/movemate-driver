@@ -89,7 +89,9 @@ fragment ShipmentFragment on Shipment {
   steps {
     ...StepDefinitionFragment
   }
-  currentStepSeq
+  currentStepId {
+    ...StepDefinitionFragment
+  }
   paymentMethod
   createdAt
   updatedAt
@@ -165,7 +167,9 @@ fragment ShipmentListFragment on Shipment {
   steps {
     ...StepDefinitionFragment
   }
-  currentStepSeq
+  currentStepId {
+    ...StepDefinitionFragment
+  }
   paymentMethod
   createdAt
   updatedAt
@@ -202,7 +206,6 @@ fragment ShipmentPureFragment on Shipment {
   bookingDateTime
   refId
   remark
-  currentStepSeq
   paymentMethod
   createdAt
   updatedAt

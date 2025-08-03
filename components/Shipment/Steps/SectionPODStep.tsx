@@ -252,9 +252,7 @@ export function DonePOD({ step, shipment }: ProgressingStepsProps) {
           <Text varient="body2">
             {isHiddenInfo
               ? "********"
-              : `${podDetail.address} แขวง/ตำบล ${podDetail.subDistrict} เขต/อำเภอ{" "}
-            ${podDetail.district} จังหวัด ${podDetail.province}{" "}
-            ${podDetail.postcode}`}
+              : `${podDetail.address} แขวง/ตำบล ${podDetail.subDistrict} เขต/อำเภอ ${podDetail.district} จังหวัด ${podDetail.province} ${podDetail.postcode}`}
           </Text>
           <Text varient="body2" color="disabled" style={styles.title}>
             หมายเลขติดต่อ

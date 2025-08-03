@@ -2,7 +2,7 @@ import Button from "@/components/Button";
 import Iconify from "@/components/Iconify";
 import colors from "@constants/colors";
 import { useMarkAsFinishMutation } from "@/graphql/generated/graphql";
-import useSnackbar from "@/hooks/useSnackbar";
+import useSnackbar, { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { normalize } from "@/utils/normalizeSize";
 import { ApolloError } from "@apollo/client";
 import { useState } from "react";
@@ -20,14 +20,18 @@ export default function FinishShipment({
   onFinishComplete,
 }: FinishShipmentProps) {
   const insets = useSafeAreaInsets();
-  const { showSnackbar } = useSnackbar();
+  const { showSnackbar, DropdownType } = useSnackbarV2();
   const [loading, setLoading] = useState(false);
   const [markAsFinish] = useMarkAsFinishMutation();
 
   function onFinishError(error: ApolloError) {
     setLoading(false);
     const message = error.message || "ไม่สามารถจบงานได้";
-    showSnackbar({ message: message, varient: "warning" });
+    showSnackbar({
+      message,
+      title: "พบข้อผิดพลาด",
+      type: DropdownType.Error,
+    });
   }
 
   function onFinish() {

@@ -48,7 +48,7 @@ fragment BillingDocumentFragment on BillingDocument {
   postalTime
   trackingNumber
   provider
-  receviedWHTDocumentDate
+  receivedWHTDocumentDate
   updatedBy {
     ...UserNonInfoDataFragment
   }

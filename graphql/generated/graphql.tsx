@@ -282,7 +282,7 @@ export type BillingDocument = {
   filename: Scalars["String"]["output"];
   postalTime?: Maybe<Scalars["DateTimeISO"]["output"]>;
   provider?: Maybe<Scalars["String"]["output"]>;
-  receviedWHTDocumentDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  receivedWHTDocumentDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   trackingNumber?: Maybe<Scalars["String"]["output"]>;
   updatedBy?: Maybe<User>;
 };
@@ -321,6 +321,8 @@ export type BillingListPayload = {
   billingNumber: Scalars["String"]["output"];
   billingStartDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   createdAt: Scalars["DateTimeISO"]["output"];
+  displayStatus: Scalars["String"]["output"];
+  displayStatusName: Scalars["String"]["output"];
   invoiceDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   invoiceFilename?: Maybe<Scalars["String"]["output"]>;
   invoicePostalStatus?: Maybe<Scalars["String"]["output"]>;
@@ -342,12 +344,22 @@ export type BillingListPayload = {
   userFullname: Scalars["String"]["output"];
   userId: Scalars["String"]["output"];
   userTitle: Scalars["String"]["output"];
+  userType: EUserType;
 };
 
 export type BillingReason = {
   __typename?: "BillingReason";
   detail: Scalars["String"]["output"];
   type: EBillingReason;
+};
+
+/** ผลลัพธ์สถานะของ Billing หนึ่งรายการ */
+export type BillingStatusPayload = {
+  __typename?: "BillingStatusPayload";
+  billingId: Scalars["ID"]["output"];
+  paymentMethod: EPaymentMethod;
+  status: Scalars["String"]["output"];
+  statusName: Scalars["String"]["output"];
 };
 
 export type BookingConfigPayload = {
@@ -932,6 +944,26 @@ export type DriverRegisterInput = {
   otp: RegisterOtpInput;
 };
 
+/** ข้อมูลสรุปยอด Transaction ของคนขับแต่ละราย */
+export type DriverTransactionPayload = {
+  __typename?: "DriverTransactionPayload";
+  driverId: Scalars["String"]["output"];
+  driverName: Scalars["String"]["output"];
+  driverNumber: Scalars["String"]["output"];
+  driverType?: Maybe<EUserType>;
+  /** วันที่ของรายการที่ชำระล่าสุด (สถานะ COMPLETE) */
+  lastPaymentDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
+  /** ยอดรวมทั้งหมดที่ยังค้างชำระ (PENDING + OUTSTANDING) */
+  netTotalAmount: Scalars["Float"]["output"];
+  /** ชื่อไฟล์รูปโปรไฟล์ */
+  profileImage?: Maybe<Scalars["String"]["output"]>;
+  /** สถานะสรุปรวมของคนขับ (PENDING > COMPLETE > OUTSTANDING > CANCELED) */
+  status: ETransactionDriverStatus;
+  statusName: Scalars["String"]["output"];
+  /** คำนำหน้าชื่อ */
+  title?: Maybe<Scalars["String"]["output"]>;
+};
+
 export type DriverTransactionSummaryPayload = {
   __typename?: "DriverTransactionSummaryPayload";
   all: TransactionSummaryPayload;
@@ -1148,6 +1180,25 @@ export enum ECreditBillingCycleType {
   DEFAULT = "DEFAULT",
 }
 
+/** Credit Display Status */
+export enum ECreditDisplayStatus {
+  IN_CYCLE = "IN_CYCLE",
+  OVERDUE = "OVERDUE",
+  PAID = "PAID",
+  WHT_RECEIVED = "WHT_RECEIVED",
+}
+
+/** Cash Display Status */
+export enum EDisplayStatus {
+  AWAITING_VERIFICATION = "AWAITING_VERIFICATION",
+  BILLED = "BILLED",
+  CANCELLED = "CANCELLED",
+  NONE = "NONE",
+  PAID = "PAID",
+  REFUNDED = "REFUNDED",
+  WHT_RECEIVED = "WHT_RECEIVED",
+}
+
 /** Driver acceptance status */
 export enum EDriverAcceptanceStatus {
   ACCEPTED = "ACCEPTED",
@@ -1330,7 +1381,10 @@ export enum EStepStatus {
 /** Transaction Driver Status */
 export enum ETransactionDriverStatus {
   ALL = "ALL",
+  CANCELLED = "CANCELLED",
+  COMPLETE = "COMPLETE",
   NON_OUTSTANDING = "NON_OUTSTANDING",
+  OUTSTANDING = "OUTSTANDING",
   PENDING = "PENDING",
 }
 
@@ -1343,7 +1397,9 @@ export enum ETransactionOwner {
 
 /** Transaction status */
 export enum ETransactionStatus {
+  CANCELED = "CANCELED",
   COMPLETE = "COMPLETE",
+  OUTSTANDING = "OUTSTANDING",
   PENDING = "PENDING",
 }
 
@@ -1540,6 +1596,10 @@ export type FileUploadPayload = {
 export type GetBillingInput = {
   billedDate?: InputMaybe<Array<Scalars["DateTimeISO"]["input"]>>;
   billingNumber?: InputMaybe<Scalars["String"]["input"]>;
+  /** กรองตามสถานะ (หากไม่ระบุ จะแสดงทั้งหมด) */
+  cashStatuses?: InputMaybe<Array<EDisplayStatus>>;
+  /** กรองตามสถานะ (หากไม่ระบุ จะแสดงทั้งหมด) */
+  creditStatuses?: InputMaybe<Array<ECreditDisplayStatus>>;
   customerId?: InputMaybe<Scalars["String"]["input"]>;
   customerName?: InputMaybe<Scalars["String"]["input"]>;
   issueDate?: InputMaybe<Array<Scalars["DateTimeISO"]["input"]>>;
@@ -1549,6 +1609,7 @@ export type GetBillingInput = {
   shipmentNumber?: InputMaybe<Scalars["String"]["input"]>;
   state?: InputMaybe<EBillingCriteriaState>;
   status?: InputMaybe<EBillingCriteriaStatus>;
+  userType?: InputMaybe<EUserCriterialType>;
 };
 
 export type GetDriverPaymentArgs = {
@@ -1560,10 +1621,14 @@ export type GetDriverPaymentArgs = {
   startDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
 };
 
-export type GetDriverTransactionArgs = {
+/** Input สำหรับกรองและจัดเรียงข้อมูลสรุปยอดของคนขับ */
+export type GetDriverTransactionInput = {
+  /** กรองตามชื่อคนขับ (ค้นหาบางส่วน) */
   driverName?: InputMaybe<Scalars["String"]["input"]>;
-  driverType?: InputMaybe<EUserType>;
-  isPending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  /** กรองตามประเภทคนขับ */
+  driverTypes?: InputMaybe<Array<EUserType>>;
+  /** กรองตามสถานะ (ใช้สถานะจริงของ Transaction) */
+  statuses?: InputMaybe<Array<ETransactionDriverStatus>>;
 };
 
 export type GetShipmentInput = {
@@ -1751,6 +1816,7 @@ export type Mutation = {
   processBillingRefund: Scalars["Boolean"]["output"];
   processPendingUser: Scalars["Boolean"]["output"];
   regenerateReceipt: Scalars["Boolean"]["output"];
+  regenerateRefundReceipt: Scalars["Boolean"]["output"];
   register: Scalars["Boolean"]["output"];
   removeEmployee: Scalars["Boolean"]["output"];
   removeEvent: Scalars["Boolean"]["output"];
@@ -2040,6 +2106,11 @@ export type MutationProcessPendingUserArgs = {
 export type MutationRegenerateReceiptArgs = {
   billingId: Scalars["String"]["input"];
   receiptId: Scalars["String"]["input"];
+};
+
+export type MutationRegenerateRefundReceiptArgs = {
+  billingId: Scalars["String"]["input"];
+  refundId: Scalars["String"]["input"];
 };
 
 export type MutationRegisterArgs = {
@@ -2525,6 +2596,8 @@ export type Query = {
   getBilling: Billing;
   getBillingInfoByShipmentId: BillingInfoPayload;
   getBillingList: BillingListPaginationPayload;
+  /** ดึงสถานะล่าสุดของ Billing จาก ID (รองรับทั้ง Cash และ Credit) */
+  getBillingStatusById: BillingStatusPayload;
   getBillingStatusCount: Array<TotalBillingRecordPayload>;
   getBookingConfig: BookingConfigPayload;
   getBusinessTypeInfo?: Maybe<Array<SettingBusinessType>>;
@@ -2749,6 +2822,10 @@ export type QueryGetBillingListArgs = {
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
+export type QueryGetBillingStatusByIdArgs = {
+  billingNumber: Scalars["String"]["input"];
+};
+
 export type QueryGetBillingStatusCountArgs = {
   customerId?: InputMaybe<Scalars["String"]["input"]>;
   type: EPaymentMethod;
@@ -2940,7 +3017,7 @@ export type QueryGetTransactionArgs = {
 };
 
 export type QueryGetTransactionDriversArgs = {
-  filters: GetDriverTransactionArgs;
+  filters: GetDriverTransactionInput;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   page?: InputMaybe<Scalars["Int"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
@@ -3112,6 +3189,7 @@ export type Quotation = {
   price: Price;
   quotationDate: Scalars["DateTimeISO"]["output"];
   quotationNumber: Scalars["String"]["output"];
+  remark?: Maybe<Scalars["String"]["output"]>;
   status: EQuotationStatus;
   subTotal: Scalars["Float"]["output"];
   tax: Scalars["Float"]["output"];
@@ -3213,6 +3291,9 @@ export type RefundNote = {
   refundDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   refundNoteNumber: Scalars["String"]["output"];
   remark?: Maybe<Scalars["String"]["output"]>;
+  subtotal: Scalars["Float"]["output"];
+  tax: Scalars["Float"]["output"];
+  total: Scalars["Float"]["output"];
 };
 
 export type RegisterBusinessInput = {
@@ -3723,7 +3804,7 @@ export type TransactionDetailPayload = {
 
 export type TransactionDriversAggregatePayload = {
   __typename?: "TransactionDriversAggregatePayload";
-  docs: Array<TransactionDrivesPayload>;
+  docs: Array<DriverTransactionPayload>;
   hasNextPage: Scalars["Boolean"]["output"];
   hasPrevPage: Scalars["Boolean"]["output"];
   limit: Scalars["Int"]["output"];
@@ -3741,14 +3822,6 @@ export type TransactionDriversTotalRecordPayload = {
   count: Scalars["Int"]["output"];
   key: ETransactionDriverStatus;
   label: Scalars["String"]["output"];
-};
-
-export type TransactionDrivesPayload = {
-  __typename?: "TransactionDrivesPayload";
-  driver?: Maybe<User>;
-  driverType?: Maybe<EUserType>;
-  lastestPaid?: Maybe<Scalars["DateTimeISO"]["output"]>;
-  pendingAmount: Scalars["Float"]["output"];
 };
 
 export type TransactionSummaryPayload = {
@@ -3797,6 +3870,7 @@ export type UpdateShipmentInput = {
   locations: Array<DestinationInput>;
   podDetail?: InputMaybe<PodAddressInput>;
   quotation?: InputMaybe<QuotationEditorDetailInput>;
+  remark?: InputMaybe<Scalars["String"]["input"]>;
   serviceIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   shipmentId?: InputMaybe<Scalars["String"]["input"]>;
   vehicleTypeId: Scalars["String"]["input"];
@@ -8443,7 +8517,7 @@ export type BillingFragmentFragment = {
       postalTime?: any | null;
       trackingNumber?: string | null;
       provider?: string | null;
-      receviedWHTDocumentDate?: any | null;
+      receivedWHTDocumentDate?: any | null;
       updatedBy?: {
         __typename?: "User";
         _id: string;
@@ -8889,7 +8963,7 @@ export type BillingFragmentFragment = {
       postalTime?: any | null;
       trackingNumber?: string | null;
       provider?: string | null;
-      receviedWHTDocumentDate?: any | null;
+      receivedWHTDocumentDate?: any | null;
       updatedBy?: {
         __typename?: "User";
         _id: string;
@@ -11396,7 +11470,7 @@ export type BillingListFragmentFragment = {
       postalTime?: any | null;
       trackingNumber?: string | null;
       provider?: string | null;
-      receviedWHTDocumentDate?: any | null;
+      receivedWHTDocumentDate?: any | null;
       updatedBy?: {
         __typename?: "User";
         _id: string;
@@ -11842,7 +11916,7 @@ export type BillingListFragmentFragment = {
       postalTime?: any | null;
       trackingNumber?: string | null;
       provider?: string | null;
-      receviedWHTDocumentDate?: any | null;
+      receivedWHTDocumentDate?: any | null;
       updatedBy?: {
         __typename?: "User";
         _id: string;
@@ -13609,7 +13683,7 @@ export type BillingDocumentFragmentFragment = {
   postalTime?: any | null;
   trackingNumber?: string | null;
   provider?: string | null;
-  receviedWHTDocumentDate?: any | null;
+  receivedWHTDocumentDate?: any | null;
   updatedBy?: {
     __typename?: "User";
     _id: string;
@@ -14030,7 +14104,7 @@ export type InvoiceFragmentFragment = {
     postalTime?: any | null;
     trackingNumber?: string | null;
     provider?: string | null;
-    receviedWHTDocumentDate?: any | null;
+    receivedWHTDocumentDate?: any | null;
     updatedBy?: {
       __typename?: "User";
       _id: string;
@@ -16659,7 +16733,7 @@ export type ReceiptFragmentFragment = {
     postalTime?: any | null;
     trackingNumber?: string | null;
     provider?: string | null;
-    receviedWHTDocumentDate?: any | null;
+    receivedWHTDocumentDate?: any | null;
     updatedBy?: {
       __typename?: "User";
       _id: string;
@@ -45334,7 +45408,7 @@ export const BillingDocumentFragmentFragmentDoc = gql`
     postalTime
     trackingNumber
     provider
-    receviedWHTDocumentDate
+    receivedWHTDocumentDate
     updatedBy {
       ...UserNonInfoDataFragment
     }

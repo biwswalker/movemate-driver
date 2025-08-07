@@ -1188,6 +1188,11 @@ export enum ECreditDisplayStatus {
   WHT_RECEIVED = "WHT_RECEIVED",
 }
 
+/** Customer Report Type */
+export enum ECustomerReportType {
+  BOOKING = "BOOKING",
+}
+
 /** Cash Display Status */
 export enum EDisplayStatus {
   AWAITING_VERIFICATION = "AWAITING_VERIFICATION",
@@ -1797,6 +1802,7 @@ export type Mutation = {
   generateQRPaymentCodes: Scalars["String"]["output"];
   getAdminReport: Scalars["String"]["output"];
   getCalculationDetail: PricingCalculationMethodPayload;
+  getCustomerReport: Scalars["String"]["output"];
   getPreparationPaymentByTransactions: PreparationTransactionPayload;
   initialAdditionalService: Scalars["Boolean"]["output"];
   initialVehicleCost: Scalars["String"]["output"];
@@ -2025,6 +2031,11 @@ export type MutationGetAdminReportArgs = {
 
 export type MutationGetCalculationDetailArgs = {
   shipmentId: Scalars["String"]["input"];
+};
+
+export type MutationGetCustomerReportArgs = {
+  ids: Array<Scalars["String"]["input"]>;
+  type: ECustomerReportType;
 };
 
 export type MutationGetPreparationPaymentByTransactionsArgs = {

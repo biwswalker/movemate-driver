@@ -444,6 +444,7 @@ export type CalculationInput = {
   discountId?: InputMaybe<Scalars["String"]["input"]>;
   isRounded: Scalars["Boolean"]["input"];
   locations: Array<DestinationInput>;
+  quotation?: InputMaybe<QuotationEditorDetailInput>;
   serviceIds?: InputMaybe<Array<Scalars["String"]["input"]>>;
   shipmentId?: InputMaybe<Scalars["String"]["input"]>;
   vehicleTypeId: Scalars["String"]["input"];
@@ -1227,6 +1228,19 @@ export enum EDriverType {
   INDIVIDUAL_DRIVER = "INDIVIDUAL_DRIVER",
 }
 
+/** General Billing Display Status */
+export enum EGeneralBillingDisplayStatus {
+  AWAITING_VERIFICATION = "AWAITING_VERIFICATION",
+  BILLED = "BILLED",
+  CANCELLED = "CANCELLED",
+  IN_CYCLE = "IN_CYCLE",
+  NONE = "NONE",
+  OVERDUE = "OVERDUE",
+  PAID = "PAID",
+  REFUNDED = "REFUNDED",
+  WHT_RECEIVED = "WHT_RECEIVED",
+}
+
 /** Payment method */
 export enum EPaymentMethod {
   CASH = "CASH",
@@ -1468,6 +1482,17 @@ export enum EUserValidationStatus {
   PENDING = "PENDING",
 }
 
+export type EditQuotationResultPayload = {
+  __typename?: "EditQuotationResultPayload";
+  cost: Price;
+  displayDistance: Scalars["Float"]["output"];
+  displayTime: Scalars["Float"]["output"];
+  distance: Scalars["Float"]["output"];
+  price: Price;
+  quotation: QuotationEditorDetail;
+  returnDistance: Scalars["Float"]["output"];
+};
+
 export type EmployeeDetailInput = {
   address: Scalars["String"]["input"];
   district: Scalars["String"]["input"];
@@ -1607,6 +1632,8 @@ export type GetBillingInput = {
   creditStatuses?: InputMaybe<Array<ECreditDisplayStatus>>;
   customerId?: InputMaybe<Scalars["String"]["input"]>;
   customerName?: InputMaybe<Scalars["String"]["input"]>;
+  /** กรองตามสถานะ (หากไม่ระบุ จะแสดงทั้งหมด) */
+  displayStatus?: InputMaybe<Array<EGeneralBillingDisplayStatus>>;
   issueDate?: InputMaybe<Array<Scalars["DateTimeISO"]["input"]>>;
   paymentMethod?: InputMaybe<EPaymentMethod>;
   receiptDate?: InputMaybe<Array<Scalars["DateTimeISO"]["input"]>>;
@@ -1781,7 +1808,8 @@ export type Mutation = {
   approvalBillingPayment: Scalars["Boolean"]["output"];
   approvalUser: User;
   assignShipment: Scalars["Boolean"]["output"];
-  calculateExistingShipment: CalculateQuotationResultPayload;
+  calculateExistingShipment: EditQuotationResultPayload;
+  calculateShipment: CalculateQuotationResultPayload;
   changeDrivingStatus: Scalars["Boolean"]["output"];
   changePassword: Scalars["Boolean"]["output"];
   confirmBillingDocumentPostalSent: Scalars["Boolean"]["output"];
@@ -1938,6 +1966,10 @@ export type MutationAssignShipmentArgs = {
 };
 
 export type MutationCalculateExistingShipmentArgs = {
+  data: CalculationInput;
+};
+
+export type MutationCalculateShipmentArgs = {
   data: CalculationInput;
 };
 
@@ -2839,7 +2871,7 @@ export type QueryGetBillingStatusByIdArgs = {
 
 export type QueryGetBillingStatusCountArgs = {
   customerId?: InputMaybe<Scalars["String"]["input"]>;
-  type: EPaymentMethod;
+  type?: InputMaybe<EPaymentMethod>;
 };
 
 export type QueryGetBusinessTypeInfoArgs = {
@@ -3222,7 +3254,7 @@ export type QuotationDetail = {
 
 export type QuotationEditorDetail = {
   __typename?: "QuotationEditorDetail";
-  discounts?: Maybe<PriceEditorItem>;
+  discount?: Maybe<PriceEditorItem>;
   rounded?: Maybe<PriceEditorItem>;
   services?: Maybe<Array<PriceEditorItem>>;
   shipping: PriceEditorItem;

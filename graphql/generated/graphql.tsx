@@ -621,6 +621,58 @@ export type CreditorReportResponse = {
   totalPages: Scalars["Int"]["output"];
 };
 
+/** ข้อมูลสรุปลูกค้าสำหรับแสดงผล */
+export type CustomerDetailPayload = {
+  __typename?: "CustomerDetailPayload";
+  _id: Scalars["ID"]["output"];
+  /** เบอร์โทรศัพท์สำหรับติดต่อ */
+  contactNumber?: Maybe<Scalars["String"]["output"]>;
+  /** createdAt */
+  createdAt?: Maybe<Scalars["String"]["output"]>;
+  /** วงเงินเครดิต (สำหรับลูกค้าบริษัท) */
+  creditLimit?: Maybe<Scalars["Float"]["output"]>;
+  /** วงเงินเครดิต (สำหรับลูกค้าบริษัท) */
+  creditUsage?: Maybe<Scalars["Float"]["output"]>;
+  /** driverType */
+  driverType?: Maybe<Array<EDriverType>>;
+  /** อีเมลสำหรับติดต่อ */
+  email?: Maybe<Scalars["String"]["output"]>;
+  /** ชื่อ-นามสกุล หรือ ชื่อบริษัท */
+  fullName: Scalars["String"]["output"];
+  /** สถานะการยืนยันอีเมล */
+  isVerifiedEmail: Scalars["Boolean"]["output"];
+  /** สถานะการยืนยันเบอร์โทรศัพท์ */
+  isVerifiedPhoneNumber: Scalars["Boolean"]["output"];
+  /** licensePlateNumber */
+  licensePlateNumber?: Maybe<Scalars["String"]["output"]>;
+  /** licensePlateProvince */
+  licensePlateProvince?: Maybe<Scalars["String"]["output"]>;
+  /** lineId */
+  lineId?: Maybe<Scalars["String"]["output"]>;
+  /** parents */
+  parents?: Maybe<Scalars["String"]["output"]>;
+  /** วิธีการชำระเงินหลัก */
+  paymentMethod?: Maybe<EPaymentMethod>;
+  /** profileImageName */
+  profileImageName?: Maybe<Scalars["String"]["output"]>;
+  /** serviceVehicleTypeName */
+  serviceVehicleTypeName?: Maybe<Scalars["String"]["output"]>;
+  /** สถานะของ User */
+  status: EUserStatus;
+  /** Title */
+  title: Scalars["String"]["output"];
+  /** รหัสลูกค้า */
+  userNumber: Scalars["String"]["output"];
+  /** Role */
+  userRole: Scalars["String"]["output"];
+  /** Type */
+  userType: Scalars["String"]["output"];
+  /** Username */
+  username?: Maybe<Scalars["String"]["output"]>;
+  /** User Validation Status */
+  validationStatus: Scalars["String"]["output"];
+};
+
 export type CutomerBusinessInput = {
   acceptedEDocumentDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   acceptedPoliciesDate?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
@@ -1682,6 +1734,45 @@ export type GetShipmentInput = {
   vehicleTypeId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+export type GetUserArgs = {
+  _id?: InputMaybe<Scalars["String"]["input"]>;
+  email?: InputMaybe<Scalars["String"]["input"]>;
+  /** หากเป็น true และ userType=BUSINESS, จะค้นหาลูกค้ารออัปเกรดแทน */
+  isUpgradeRequest?: InputMaybe<Scalars["Boolean"]["input"]>;
+  isVerifiedEmail?: InputMaybe<Scalars["Boolean"]["input"]>;
+  isVerifiedPhoneNumber?: InputMaybe<Scalars["Boolean"]["input"]>;
+  lastestOTP?: InputMaybe<Scalars["String"]["input"]>;
+  lastestOTPRef?: InputMaybe<Scalars["String"]["input"]>;
+  lineId?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  parentId?: InputMaybe<Scalars["String"]["input"]>;
+  phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
+  registration?: InputMaybe<ERegistration>;
+  serviceVehicleType?: InputMaybe<Scalars["String"]["input"]>;
+  status?: InputMaybe<EUserCriterialStatus>;
+  taxId?: InputMaybe<Scalars["String"]["input"]>;
+  userNumber?: InputMaybe<Scalars["String"]["input"]>;
+  userRole?: InputMaybe<EUserRole>;
+  userType?: InputMaybe<EUserCriterialType>;
+  username?: InputMaybe<Scalars["String"]["input"]>;
+  validationStatus?: InputMaybe<EUserValidationStatus>;
+};
+
+export type GetUserListPaginationPayload = {
+  __typename?: "GetUserListPaginationPayload";
+  docs: Array<CustomerDetailPayload>;
+  hasNextPage: Scalars["Boolean"]["output"];
+  hasPrevPage: Scalars["Boolean"]["output"];
+  limit: Scalars["Int"]["output"];
+  nextPage?: Maybe<Scalars["Int"]["output"]>;
+  offset?: Maybe<Scalars["Int"]["output"]>;
+  page?: Maybe<Scalars["Int"]["output"]>;
+  pagingCounter: Scalars["Int"]["output"];
+  prevPage?: Maybe<Scalars["Int"]["output"]>;
+  totalDocs: Scalars["Int"]["output"];
+  totalPages: Scalars["Int"]["output"];
+};
+
 export type IndividualCustomer = {
   __typename?: "IndividualCustomer";
   _id: Scalars["ID"]["output"];
@@ -2631,6 +2722,7 @@ export type Query = {
   getAdditionalServicesByVehicleType: Array<AdditionalService>;
   getAddressByPostcode: AddressPayload;
   getAllBillingIds: Array<Scalars["String"]["output"]>;
+  getAllUserIds: Array<Scalars["String"]["output"]>;
   getAuditLog: AuditLog;
   getAuditLogs: AuditLogPaginationPayload;
   getAvailableDrivers: Array<User>;
@@ -2690,6 +2782,7 @@ export type Query = {
   getTransactionDriversCounting: Array<TransactionDriversTotalRecordPayload>;
   getUser: User;
   getUserByUsername: User;
+  getUserList: GetUserListPaginationPayload;
   getVehicleCost: VehicleCost;
   getVehicleCostByVehicleType: VehicleCost;
   getVehicleCosts: Array<VehicleCost>;
@@ -2744,6 +2837,7 @@ export type QueryAllshipmentIdsArgs = {
 export type QueryAlluserIdsArgs = {
   _id?: InputMaybe<Scalars["String"]["input"]>;
   email?: InputMaybe<Scalars["String"]["input"]>;
+  isUpgradeRequest?: InputMaybe<Scalars["Boolean"]["input"]>;
   isVerifiedEmail?: InputMaybe<Scalars["Boolean"]["input"]>;
   isVerifiedPhoneNumber?: InputMaybe<Scalars["Boolean"]["input"]>;
   lastestOTP?: InputMaybe<Scalars["String"]["input"]>;
@@ -2812,6 +2906,10 @@ export type QueryGetAddressByPostcodeArgs = {
 
 export type QueryGetAllBillingIdsArgs = {
   data?: InputMaybe<GetBillingInput>;
+};
+
+export type QueryGetAllUserIdsArgs = {
+  filters?: InputMaybe<GetUserArgs>;
 };
 
 export type QueryGetAuditLogArgs = {
@@ -3070,6 +3168,7 @@ export type QueryGetTransactionDriversArgs = {
 export type QueryGetUserArgs = {
   _id?: InputMaybe<Scalars["String"]["input"]>;
   email?: InputMaybe<Scalars["String"]["input"]>;
+  isUpgradeRequest?: InputMaybe<Scalars["Boolean"]["input"]>;
   isVerifiedEmail?: InputMaybe<Scalars["Boolean"]["input"]>;
   isVerifiedPhoneNumber?: InputMaybe<Scalars["Boolean"]["input"]>;
   lastestOTP?: InputMaybe<Scalars["String"]["input"]>;
@@ -3091,6 +3190,14 @@ export type QueryGetUserArgs = {
 
 export type QueryGetUserByUsernameArgs = {
   username: Scalars["String"]["input"];
+};
+
+export type QueryGetUserListArgs = {
+  filters?: InputMaybe<GetUserArgs>;
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  page?: InputMaybe<Scalars["Int"]["input"]>;
+  sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
+  sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
 export type QueryGetVehicleCostArgs = {
@@ -3200,6 +3307,7 @@ export type QueryTotalShipmentArgs = {
 export type QueryUsersArgs = {
   _id?: InputMaybe<Scalars["String"]["input"]>;
   email?: InputMaybe<Scalars["String"]["input"]>;
+  isUpgradeRequest?: InputMaybe<Scalars["Boolean"]["input"]>;
   isVerifiedEmail?: InputMaybe<Scalars["Boolean"]["input"]>;
   isVerifiedPhoneNumber?: InputMaybe<Scalars["Boolean"]["input"]>;
   lastestOTP?: InputMaybe<Scalars["String"]["input"]>;

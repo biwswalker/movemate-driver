@@ -224,7 +224,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       variables: { username: data.username },
       context: {
         headers: {
-          authorization: `Bearer ${hashedPassword}`,
+          "x-auth-key": hashedPassword,
           "Content-Type": "application/json; charset=utf-8",
         },
       },

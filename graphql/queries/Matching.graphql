@@ -23,8 +23,8 @@ query GetAvailableShipmentByTrackingNumber($tracking: String!) {
   }
 }
 
-query GetTodayShipment {
-  getTodayShipment {
+query GetActiveShipment {
+  getActiveShipment {
     ...ShipmentFragment
   }
 }

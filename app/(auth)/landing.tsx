@@ -8,7 +8,10 @@ import { StatusBar } from "expo-status-bar";
 import React, { Fragment, useEffect } from "react";
 import { View, StyleSheet, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { requestForegroundPermissionsAsync } from "expo-location";
+import {
+  requestBackgroundPermissionsAsync,
+  requestForegroundPermissionsAsync,
+} from "expo-location";
 
 const styles = StyleSheet.create({
   container: {
@@ -64,10 +67,17 @@ export default function Landing() {
   async function mapsPermissionRequest() {
     console.log("Request notification permisssion!");
     try {
-      const { status } = await requestForegroundPermissionsAsync();
-      if (status !== "granted") {
+      const { status: foregroundStatus } =
+        await requestForegroundPermissionsAsync();
+      if (foregroundStatus !== "granted") {
         console.log("Permission to access location was denied");
         return;
+      }
+      const { status: backgroundStatus } =
+        await requestBackgroundPermissionsAsync();
+      if (backgroundStatus !== "granted") {
+        console.log("Background location permission not granted");
+        return false;
       }
     } catch (err) {
       console.log("initial error");

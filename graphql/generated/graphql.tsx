@@ -653,6 +653,7 @@ export type CustomerDetailPayload = {
   parents?: Maybe<Scalars["String"]["output"]>;
   /** วิธีการชำระเงินหลัก */
   paymentMethod?: Maybe<EPaymentMethod>;
+  permission?: Maybe<EAdminPermission>;
   /** profileImageName */
   profileImageName?: Maybe<Scalars["String"]["output"]>;
   /** serviceVehicleTypeName */
@@ -948,6 +949,12 @@ export type DriverDocumentInput = {
   insurancePolicy?: InputMaybe<FileInput>;
   leftOfVehicle?: InputMaybe<FileInput>;
   rigthOfVehicle?: InputMaybe<FileInput>;
+};
+
+export type DriverLocation = {
+  __typename?: "DriverLocation";
+  latitude: Scalars["Float"]["output"];
+  longitude: Scalars["Float"]["output"];
 };
 
 export type DriverPayment = {
@@ -1253,7 +1260,9 @@ export enum EDisplayStatus {
   CANCELLED = "CANCELLED",
   NONE = "NONE",
   PAID = "PAID",
+  PENDING_PAYMENT = "PENDING_PAYMENT",
   REFUNDED = "REFUNDED",
+  VERIFY_REFUND = "VERIFY_REFUND",
   WHT_RECEIVED = "WHT_RECEIVED",
 }
 
@@ -1773,6 +1782,21 @@ export type GetUserListPaginationPayload = {
   totalPages: Scalars["Int"]["output"];
 };
 
+export type GetUserPendingListInput = {
+  email?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
+  requestEnd?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  requestStart?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
+  status?: InputMaybe<EUpdateUserStatus>;
+  taxId?: InputMaybe<Scalars["String"]["input"]>;
+  userId?: InputMaybe<Scalars["String"]["input"]>;
+  userNumber?: InputMaybe<Scalars["String"]["input"]>;
+  userRole?: InputMaybe<EUserRole>;
+  userType?: InputMaybe<EUserCriterialType>;
+  username?: InputMaybe<Scalars["String"]["input"]>;
+};
+
 export type IndividualCustomer = {
   __typename?: "IndividualCustomer";
   _id: Scalars["ID"]["output"];
@@ -1969,6 +1993,7 @@ export type Mutation = {
   updateCustomerRequest: Scalars["Boolean"]["output"];
   updateCustomerTerms: Scalars["Boolean"]["output"];
   updateDistanceCost: Scalars["Boolean"]["output"];
+  updateDriverLocation: Scalars["Boolean"]["output"];
   updateDriverPolicies: Scalars["Boolean"]["output"];
   updateDriverRequest: Scalars["Boolean"]["output"];
   updateDriverTerms: Scalars["Boolean"]["output"];
@@ -2357,6 +2382,11 @@ export type MutationUpdateDistanceCostArgs = {
   id: Scalars["String"]["input"];
 };
 
+export type MutationUpdateDriverLocationArgs = {
+  latitude: Scalars["Float"]["input"];
+  longitude: Scalars["Float"]["input"];
+};
+
 export type MutationUpdateDriverPoliciesArgs = {
   data: Scalars["String"]["input"];
 };
@@ -2703,6 +2733,19 @@ export type Province = {
   nameTh: Scalars["String"]["output"];
 };
 
+/** ข้อมูลการติดตามสถานะการจัดส่งสำหรับบุคคลภายนอก */
+export type PublicTrackingPayload = {
+  __typename?: "PublicTrackingPayload";
+  /** ขั้นตอนปัจจุบันที่กำลังดำเนินการ */
+  currentStep?: Maybe<StepDefinition>;
+  /** ข้อมูลจุดรับและจุดส่งทั้งหมด */
+  destinations: Array<Destination>;
+  isRoundedReturn?: Maybe<Scalars["Boolean"]["output"]>;
+  status: EShipmentStatus;
+  /** ขั้นตอนการทำงานทั้งหมด */
+  steps: Array<StepDefinition>;
+};
+
 export type Query = {
   __typename?: "Query";
   allpendinguserIds: Array<Scalars["String"]["output"]>;
@@ -2717,6 +2760,7 @@ export type Query = {
   event: Event;
   events: Array<Event>;
   getAboutusInfo?: Maybe<SettingAboutus>;
+  getActiveShipment?: Maybe<Shipment>;
   getAdditionalService: AdditionalService;
   getAdditionalServices: AdditionalServicePaginationPayload;
   getAdditionalServicesByVehicleType: Array<AdditionalService>;
@@ -2771,11 +2815,12 @@ export type Query = {
   getPrivilegeById: Privilege;
   getPrivileges: PrivilegePaginationPayload;
   getProvince: Array<Province>;
+  /** ดึงข้อมูลการติดตามสถานะสำหรับบุคคลภายนอก */
+  getPublicShipmentTracking: PublicTrackingPayload;
   getShipmentByTracking: Shipment;
   getShipmentCancellationPreview: CancellationPreview;
   getShipmentList: Array<ShipmentListPayload>;
   getSubDistrict: Array<SubDistrict>;
-  getTodayShipment?: Maybe<Shipment>;
   getTotalMonthBilling: Scalars["Int"]["output"];
   getTransaction: Array<Transaction>;
   getTransactionDrivers: TransactionDriversAggregatePayload;
@@ -2816,18 +2861,7 @@ export type Query = {
 };
 
 export type QueryAllpendinguserIdsArgs = {
-  email?: InputMaybe<Scalars["String"]["input"]>;
-  name?: InputMaybe<Scalars["String"]["input"]>;
-  phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
-  requestEnd?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  requestStart?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  status?: InputMaybe<EUpdateUserStatus>;
-  taxId?: InputMaybe<Scalars["String"]["input"]>;
-  userId?: InputMaybe<Scalars["String"]["input"]>;
-  userNumber?: InputMaybe<Scalars["String"]["input"]>;
-  userRole?: InputMaybe<EUserRole>;
-  userType?: InputMaybe<EUserCriterialType>;
-  username?: InputMaybe<Scalars["String"]["input"]>;
+  filters?: InputMaybe<GetUserPendingListInput>;
 };
 
 export type QueryAllshipmentIdsArgs = {
@@ -3126,6 +3160,10 @@ export type QueryGetPrivilegesArgs = {
   status?: InputMaybe<EPrivilegeStatusCriteria>;
 };
 
+export type QueryGetPublicShipmentTrackingArgs = {
+  trackingNumber: Scalars["String"]["input"];
+};
+
 export type QueryGetShipmentByTrackingArgs = {
   trackingNumber: Scalars["String"]["input"];
 };
@@ -3245,22 +3283,11 @@ export type QueryNotificationsArgs = {
 };
 
 export type QueryPendingUsersArgs = {
-  email?: InputMaybe<Scalars["String"]["input"]>;
+  filters?: InputMaybe<GetUserPendingListInput>;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
-  name?: InputMaybe<Scalars["String"]["input"]>;
   page?: InputMaybe<Scalars["Int"]["input"]>;
-  phoneNumber?: InputMaybe<Scalars["String"]["input"]>;
-  requestEnd?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
-  requestStart?: InputMaybe<Scalars["DateTimeISO"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
-  status?: InputMaybe<EUpdateUserStatus>;
-  taxId?: InputMaybe<Scalars["String"]["input"]>;
-  userId?: InputMaybe<Scalars["String"]["input"]>;
-  userNumber?: InputMaybe<Scalars["String"]["input"]>;
-  userRole?: InputMaybe<EUserRole>;
-  userType?: InputMaybe<EUserCriterialType>;
-  username?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryPrivilegesArgs = {
@@ -3438,7 +3465,7 @@ export type RefundNote = {
   amountType: ERefundAmountType;
   billing: Billing;
   document?: Maybe<BillingDocument>;
-  refAdvanceReceiptNo: Scalars["String"]["output"];
+  refAdvanceReceiptNo: Array<Scalars["String"]["output"]>;
   refundDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   refundNoteNumber: Scalars["String"]["output"];
   remark?: Maybe<Scalars["String"]["output"]>;
@@ -3897,6 +3924,7 @@ export type Subscription = {
   listenNotificationMessage: Notification;
   listenProgressingShipmentCount: Scalars["Float"]["output"];
   listenUserStatus: Scalars["String"]["output"];
+  onDriverLocationUpdate: DriverLocation;
   realtimeNotifications: Array<Notification>;
 };
 
@@ -4116,7 +4144,7 @@ export type UserPending = {
 
 export type UserPendingAggregatePayload = {
   __typename?: "UserPendingAggregatePayload";
-  docs: Array<UserPending>;
+  docs: Array<UserPendingListPayload>;
   hasNextPage: Scalars["Boolean"]["output"];
   hasPrevPage: Scalars["Boolean"]["output"];
   limit: Scalars["Int"]["output"];
@@ -4127,6 +4155,27 @@ export type UserPendingAggregatePayload = {
   prevPage?: Maybe<Scalars["Int"]["output"]>;
   totalDocs: Scalars["Int"]["output"];
   totalPages: Scalars["Int"]["output"];
+};
+
+export type UserPendingListPayload = {
+  __typename?: "UserPendingListPayload";
+  _id: Scalars["ID"]["output"];
+  approveBy?: Maybe<Scalars["String"]["output"]>;
+  businessBranch?: Maybe<Scalars["String"]["output"]>;
+  contactNumber?: Maybe<Scalars["String"]["output"]>;
+  driverType?: Maybe<Array<EDriverType>>;
+  email?: Maybe<Scalars["String"]["output"]>;
+  fullName?: Maybe<Scalars["String"]["output"]>;
+  licensePlateNumber?: Maybe<Scalars["String"]["output"]>;
+  licensePlateProvince?: Maybe<Scalars["String"]["output"]>;
+  lineId?: Maybe<Scalars["String"]["output"]>;
+  profileImageName?: Maybe<Scalars["String"]["output"]>;
+  serviceVehicleTypeName?: Maybe<Scalars["String"]["output"]>;
+  status?: Maybe<EUpdateUserStatus>;
+  title?: Maybe<Scalars["String"]["output"]>;
+  updatedAt?: Maybe<Scalars["String"]["output"]>;
+  userNumber?: Maybe<Scalars["String"]["output"]>;
+  userType?: Maybe<EUserType>;
 };
 
 export type VehicleCost = {
@@ -29693,6 +29742,16 @@ export type OtpRequestMutation = {
   };
 };
 
+export type UpdateDriverLocationMutationVariables = Exact<{
+  latitude: Scalars["Float"]["input"];
+  longitude: Scalars["Float"]["input"];
+}>;
+
+export type UpdateDriverLocationMutation = {
+  __typename?: "Mutation";
+  updateDriverLocation: boolean;
+};
+
 export type FileUploadMutationVariables = Exact<{
   file: Scalars["Upload"]["input"];
 }>;
@@ -35794,11 +35853,11 @@ export type GetAvailableShipmentByTrackingNumberQuery = {
   };
 };
 
-export type GetTodayShipmentQueryVariables = Exact<{ [key: string]: never }>;
+export type GetActiveShipmentQueryVariables = Exact<{ [key: string]: never }>;
 
-export type GetTodayShipmentQuery = {
+export type GetActiveShipmentQuery = {
   __typename?: "Query";
-  getTodayShipment?: {
+  getActiveShipment?: {
     __typename?: "Shipment";
     _id: string;
     trackingNumber: string;
@@ -47526,6 +47585,55 @@ export type OtpRequestMutationOptions = Apollo.BaseMutationOptions<
   OtpRequestMutation,
   OtpRequestMutationVariables
 >;
+export const UpdateDriverLocationDocument = gql`
+  mutation UpdateDriverLocation($latitude: Float!, $longitude: Float!) {
+    updateDriverLocation(latitude: $latitude, longitude: $longitude)
+  }
+`;
+export type UpdateDriverLocationMutationFn = Apollo.MutationFunction<
+  UpdateDriverLocationMutation,
+  UpdateDriverLocationMutationVariables
+>;
+
+/**
+ * __useUpdateDriverLocationMutation__
+ *
+ * To run a mutation, you first call `useUpdateDriverLocationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateDriverLocationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateDriverLocationMutation, { data, loading, error }] = useUpdateDriverLocationMutation({
+ *   variables: {
+ *      latitude: // value for 'latitude'
+ *      longitude: // value for 'longitude'
+ *   },
+ * });
+ */
+export function useUpdateDriverLocationMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    UpdateDriverLocationMutation,
+    UpdateDriverLocationMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    UpdateDriverLocationMutation,
+    UpdateDriverLocationMutationVariables
+  >(UpdateDriverLocationDocument, options);
+}
+export type UpdateDriverLocationMutationHookResult = ReturnType<
+  typeof useUpdateDriverLocationMutation
+>;
+export type UpdateDriverLocationMutationResult =
+  Apollo.MutationResult<UpdateDriverLocationMutation>;
+export type UpdateDriverLocationMutationOptions = Apollo.BaseMutationOptions<
+  UpdateDriverLocationMutation,
+  UpdateDriverLocationMutationVariables
+>;
 export const FileUploadDocument = gql`
   mutation FileUpload($file: Upload!) {
     file_upload(file: $file) {
@@ -48132,9 +48240,9 @@ export type GetAvailableShipmentByTrackingNumberQueryResult =
     GetAvailableShipmentByTrackingNumberQuery,
     GetAvailableShipmentByTrackingNumberQueryVariables
   >;
-export const GetTodayShipmentDocument = gql`
-  query GetTodayShipment {
-    getTodayShipment {
+export const GetActiveShipmentDocument = gql`
+  query GetActiveShipment {
+    getActiveShipment {
       ...ShipmentFragment
     }
   }
@@ -48142,50 +48250,50 @@ export const GetTodayShipmentDocument = gql`
 `;
 
 /**
- * __useGetTodayShipmentQuery__
+ * __useGetActiveShipmentQuery__
  *
- * To run a query within a React component, call `useGetTodayShipmentQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetTodayShipmentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetActiveShipmentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetActiveShipmentQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetTodayShipmentQuery({
+ * const { data, loading, error } = useGetActiveShipmentQuery({
  *   variables: {
  *   },
  * });
  */
-export function useGetTodayShipmentQuery(
+export function useGetActiveShipmentQuery(
   baseOptions?: Apollo.QueryHookOptions<
-    GetTodayShipmentQuery,
-    GetTodayShipmentQueryVariables
+    GetActiveShipmentQuery,
+    GetActiveShipmentQueryVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetTodayShipmentQuery, GetTodayShipmentQueryVariables>(
-    GetTodayShipmentDocument,
-    options,
-  );
+  return Apollo.useQuery<
+    GetActiveShipmentQuery,
+    GetActiveShipmentQueryVariables
+  >(GetActiveShipmentDocument, options);
 }
-export function useGetTodayShipmentLazyQuery(
+export function useGetActiveShipmentLazyQuery(
   baseOptions?: Apollo.LazyQueryHookOptions<
-    GetTodayShipmentQuery,
-    GetTodayShipmentQueryVariables
+    GetActiveShipmentQuery,
+    GetActiveShipmentQueryVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions };
   return Apollo.useLazyQuery<
-    GetTodayShipmentQuery,
-    GetTodayShipmentQueryVariables
-  >(GetTodayShipmentDocument, options);
+    GetActiveShipmentQuery,
+    GetActiveShipmentQueryVariables
+  >(GetActiveShipmentDocument, options);
 }
-export function useGetTodayShipmentSuspenseQuery(
+export function useGetActiveShipmentSuspenseQuery(
   baseOptions?:
     | Apollo.SkipToken
     | Apollo.SuspenseQueryHookOptions<
-        GetTodayShipmentQuery,
-        GetTodayShipmentQueryVariables
+        GetActiveShipmentQuery,
+        GetActiveShipmentQueryVariables
       >,
 ) {
   const options =
@@ -48193,22 +48301,22 @@ export function useGetTodayShipmentSuspenseQuery(
       ? baseOptions
       : { ...defaultOptions, ...baseOptions };
   return Apollo.useSuspenseQuery<
-    GetTodayShipmentQuery,
-    GetTodayShipmentQueryVariables
-  >(GetTodayShipmentDocument, options);
+    GetActiveShipmentQuery,
+    GetActiveShipmentQueryVariables
+  >(GetActiveShipmentDocument, options);
 }
-export type GetTodayShipmentQueryHookResult = ReturnType<
-  typeof useGetTodayShipmentQuery
+export type GetActiveShipmentQueryHookResult = ReturnType<
+  typeof useGetActiveShipmentQuery
 >;
-export type GetTodayShipmentLazyQueryHookResult = ReturnType<
-  typeof useGetTodayShipmentLazyQuery
+export type GetActiveShipmentLazyQueryHookResult = ReturnType<
+  typeof useGetActiveShipmentLazyQuery
 >;
-export type GetTodayShipmentSuspenseQueryHookResult = ReturnType<
-  typeof useGetTodayShipmentSuspenseQuery
+export type GetActiveShipmentSuspenseQueryHookResult = ReturnType<
+  typeof useGetActiveShipmentSuspenseQuery
 >;
-export type GetTodayShipmentQueryResult = Apollo.QueryResult<
-  GetTodayShipmentQuery,
-  GetTodayShipmentQueryVariables
+export type GetActiveShipmentQueryResult = Apollo.QueryResult<
+  GetActiveShipmentQuery,
+  GetActiveShipmentQueryVariables
 >;
 export const NotificationsDocument = gql`
   query Notifications($limit: Int, $skip: Int) {

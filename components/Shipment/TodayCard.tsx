@@ -13,11 +13,11 @@ import Text from "@components/Text";
 import { fDate } from "@utils/formatTime";
 import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
-import { find, get } from "lodash";
+import { get } from "lodash";
 import useAuth from "@/hooks/useAuth";
 import {
   Shipment,
-  useGetTodayShipmentQuery,
+  useGetActiveShipmentQuery,
 } from "@/graphql/generated/graphql";
 import { ActivityIndicator } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native";
@@ -34,15 +34,17 @@ interface TodayShipmentsProps {}
 const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
   (_, ref) => {
     const isFocused = useIsFocused();
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
 
     const [mainLoading, setMainLoading] = useState(false);
 
-    const { data, refetch, loading } = useGetTodayShipmentQuery({
+    const { data, refetch, loading } = useGetActiveShipmentQuery({
       notifyOnNetworkStatusChange: true,
+      skip: !isAuthenticated,
       onError: (error) => {
         console.log("error: ", error);
       },
+      fetchPolicy: "network-only",
     });
 
     function refetchShipment() {
@@ -69,7 +71,7 @@ const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
 
     const shipment = useMemo(() => {
       return get(data, "getTodayShipment", undefined) as Shipment | undefined;
-    }, [data?.getTodayShipment]);
+    }, [data?.getActiveShipment]);
 
     // TODO: To support business recheck
     const vehicleImages = get(
@@ -113,7 +115,7 @@ const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
       });
     }
     // const status
-    const currentStatus = shipment?.currentStepId
+    const currentStatus = shipment?.currentStepId;
 
     return (
       <View style={todayCardStyles.todayContainer}>

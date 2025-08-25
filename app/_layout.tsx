@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import useAuth from "@/hooks/useAuth";
 import SplashScreenCustom from "@components/SplashScreen";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { ActiveJobProvider } from "@/contexts/ActiveJobContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -49,26 +50,28 @@ const useAppFonts = () => {
 const AppProviders = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>
     <ApolloProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <PaperProvider theme={RNPaperConfig}>
-          <ThemeProvider value={DefaultTheme}>
-            <SnackbarProvider>
-              <SnackbarV2Provider>
-                <NotificationProvider>
-                  <ActionSheetProvider>
-                    <BottomSheetModalProvider>
-                      <SafeAreaProvider>
-                        <StatusBar style="dark" />
-                        {children}
-                      </SafeAreaProvider>
-                    </BottomSheetModalProvider>
-                  </ActionSheetProvider>
-                </NotificationProvider>
-              </SnackbarV2Provider>
-            </SnackbarProvider>
-          </ThemeProvider>
-        </PaperProvider>
-      </GestureHandlerRootView>
+      <ActiveJobProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <PaperProvider theme={RNPaperConfig}>
+            <ThemeProvider value={DefaultTheme}>
+              <SnackbarProvider>
+                <SnackbarV2Provider>
+                  <NotificationProvider>
+                    <ActionSheetProvider>
+                      <BottomSheetModalProvider>
+                        <SafeAreaProvider>
+                          <StatusBar style="dark" />
+                          {children}
+                        </SafeAreaProvider>
+                      </BottomSheetModalProvider>
+                    </ActionSheetProvider>
+                  </NotificationProvider>
+                </SnackbarV2Provider>
+              </SnackbarProvider>
+            </ThemeProvider>
+          </PaperProvider>
+        </GestureHandlerRootView>
+      </ActiveJobProvider>
     </ApolloProvider>
   </AuthProvider>
 );

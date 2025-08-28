@@ -65,6 +65,8 @@ import UserDetail, {
   UserDetailModalRef,
 } from "@/components/Modals/user-detail";
 import ButtonIcon from "@/components/ButtonIcon";
+import { useActiveJob } from "@/hooks/useActiveJob";
+import { isTrackingActive } from "@/services/LocationTrackingService";
 
 export default function ShipmentDetail() {
   const searchParam = useLocalSearchParams<{ trackingNumber: string }>();
@@ -74,6 +76,7 @@ export default function ShipmentDetail() {
   const userDetailRef = useRef<UserDetailModalRef>(null);
   // const { showSnackbar, DropdownType } = useSnackbarV2();
   const { dismissAll } = useBottomSheetModal();
+  const { refetchActiveJob, activeJob } = useActiveJob();
 
   const {
     data,
@@ -143,6 +146,7 @@ export default function ShipmentDetail() {
       "hardwareBackPress",
       backAction
     );
+    isTrackingActive()
     return () => backHandler.remove();
   }, []);
 
@@ -174,6 +178,9 @@ export default function ShipmentDetail() {
   // Datas
   function handleRefetch() {
     refetch();
+    if (activeJob) {
+      refetchActiveJob();
+    }
   }
 
   function handleAssignSuccess() {

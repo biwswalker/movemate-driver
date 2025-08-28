@@ -6,7 +6,12 @@ import { LocationObject } from "expo-location";
 
 export const LOCATION_TASK_NAME = "background-location-task";
 
+console.log(`✅ TaskManager: Defining task "${LOCATION_TASK_NAME}"`); // 🎯 เพิ่ม Log นี้
+
+
 TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
+  console.log("--- BACKGROUND TASK IS RUNNING ---");
+
   if (error) {
     console.error("Background location task error:", error);
     return;

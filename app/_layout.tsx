@@ -20,6 +20,7 @@ import useAuth from "@/hooks/useAuth";
 import SplashScreenCustom from "@components/SplashScreen";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ActiveJobProvider } from "@/contexts/ActiveJobContext";
+import '@/tasks/locationTask'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

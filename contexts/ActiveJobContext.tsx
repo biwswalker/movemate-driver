@@ -25,7 +25,7 @@ interface ActiveJobContextType {
   refetchActiveJob: VoidFunction;
 }
 
-const ActiveJobContext = createContext<ActiveJobContextType | undefined>(
+export const ActiveJobContext = createContext<ActiveJobContextType | undefined>(
   undefined
 );
 
@@ -46,13 +46,13 @@ export const ActiveJobProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
-    console.log("Active job status changed:", activeJob?.status);
     const manageTracking = async () => {
-      const pickupDataDone = find(activeJob?.steps, {
-        step: EStepDefinition.PICKUP,
-        stepStatus: EStepStatus.DONE,
-      });
-      if (activeJob?.status === "PROGRESSING" && pickupDataDone) {
+      // const pickupDataDone = find(activeJob?.steps, {
+      //   step: EStepDefinition.PICKUP,
+      //   stepStatus: EStepStatus.DONE,
+      // });
+      // if (activeJob?.status === "PROGRESSING" && pickupDataDone) {
+      if (activeJob?.status === "PROGRESSING") {
         await startBackgroundTracking();
       } else {
         // หยุดการติดตามในทุกกรณีที่เหลือ (จบงาน, ยกเลิก, ไม่มีงาน)
@@ -77,13 +77,4 @@ export const ActiveJobProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </ActiveJobContext.Provider>
   );
-};
-
-// 5. สร้าง Custom Hook เพื่อให้เรียกใช้งานง่าย
-export const useActiveJob = () => {
-  const context = useContext(ActiveJobContext);
-  if (context === undefined) {
-    throw new Error("useActiveJob must be used within a ActiveJobProvider");
-  }
-  return context;
 };

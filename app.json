@@ -14,7 +14,16 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.movemateth.driver"
+      "bundleIdentifier": "com.movemateth.driver",
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Movemate Driver ใช้ตำแหน่งของท่านเพื่อติดตามงานขนส่งแบบ Real-time แม้ว่าแอปจะทำงานอยู่เบื้องหลัง",
+        "NSLocationWhenInUseUsageDescription": "Movemate Driver ใช้ตำแหน่งของท่านเพื่อแสดงตำแหน่งปัจจุบันบนแผนที่",
+        "NSMotionUsageDescription": "แอปใช้ข้อมูลการเคลื่อนไหวเพื่อเพิ่มความแม่นยำของตำแหน่ง",
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -32,8 +41,13 @@
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ]
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
+      ],
+      "foregroundService": {
+        "location": "ใช้สำหรับติดตามตำแหน่งของคนขับระหว่างการขนส่ง"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -52,14 +66,17 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "อนุญาตให้ $(PRODUCT_NAME) ใช้ตำแหน่งปัจจุบันของคุณ"
+          "locationAlwaysAndWhenInUsePermission": "อนุญาตให้ $(PRODUCT_NAME) ใช้ตำแหน่งของท่าน",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
         }
       ],
       [
         "expo-build-properties",
         {
           "android": {
-            "newArchEnabled": true
+            "newArchEnabled": true,
+            "enableProguardInReleaseBuilds": false
           },
           "ios": {
             "newArchEnabled": true

@@ -4,7 +4,6 @@ import React, {
   Fragment,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -13,17 +12,12 @@ import Text from "@components/Text";
 import { fDate } from "@utils/formatTime";
 import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
-import { get } from "lodash";
-import useAuth from "@/hooks/useAuth";
-import {
-  Shipment,
-  useGetActiveShipmentQuery,
-} from "@/graphql/generated/graphql";
 import { ActivityIndicator } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native";
 import hexToRgba from "hex-to-rgba";
 import Button from "../Button";
 import { router } from "expo-router";
+import { useActiveJob } from "@/hooks/useActiveJob";
 
 export interface TodayShipmentsRef {
   refetch: Function;
@@ -34,21 +28,12 @@ interface TodayShipmentsProps {}
 const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
   (_, ref) => {
     const isFocused = useIsFocused();
-    const { user, isAuthenticated } = useAuth();
+    const { refetchActiveJob, activeJob, isLoading } = useActiveJob();
 
     const [mainLoading, setMainLoading] = useState(false);
 
-    const { data, refetch, loading } = useGetActiveShipmentQuery({
-      notifyOnNetworkStatusChange: true,
-      skip: !isAuthenticated,
-      onError: (error) => {
-        console.log("error: ", error);
-      },
-      fetchPolicy: "network-only",
-    });
-
     function refetchShipment() {
-      refetch();
+      refetchActiveJob();
     }
 
     useImperativeHandle(ref, () => ({
@@ -62,23 +47,19 @@ const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
     }, [isFocused]);
 
     useEffect(() => {
-      if (loading) {
+      if (isLoading) {
         setMainLoading(true);
       } else {
         setTimeout(() => setMainLoading(false), 600);
       }
-    }, [loading]);
-
-    const shipment = useMemo(() => {
-      return get(data, "getTodayShipment", undefined) as Shipment | undefined;
-    }, [data?.getActiveShipment]);
+    }, [isLoading]);
 
     // TODO: To support business recheck
-    const vehicleImages = get(
-      user,
-      "individualDriver.serviceVehicleType.image.filename",
-      ""
-    );
+    // const vehicleImages = get(
+    //   user,
+    //   "individualDriver.serviceVehicleType.image.filename",
+    //   ""
+    // );
 
     const screenWidth = Dimensions.get("screen").width;
     const translateXAnim = useRef(new Animated.Value(0)).current;
@@ -111,11 +92,11 @@ const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
     function onViewShipment() {
       router.push({
         pathname: "/shipment-working",
-        params: { trackingNumber: shipment?.trackingNumber },
+        params: { trackingNumber: activeJob?.trackingNumber },
       });
     }
     // const status
-    const currentStatus = shipment?.currentStepId;
+    const currentStatus = activeJob?.currentStepId;
 
     return (
       <View style={todayCardStyles.todayContainer}>
@@ -127,10 +108,10 @@ const TodayCard = forwardRef<TodayShipmentsRef, TodayShipmentsProps>(
             <View style={todayCardStyles.loadingWrapper}>
               <ActivityIndicator size="small" color={colors.text.secondary} />
             </View>
-          ) : shipment ? (
+          ) : activeJob ? (
             <View style={todayCardStyles.shipmentStatusContainer}>
               <Text varient="body1" style={todayCardStyles.trackingNumber}>
-                {shipment.trackingNumber}
+                {activeJob.trackingNumber}
               </Text>
               {currentStatus && (
                 <Text

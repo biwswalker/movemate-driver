@@ -59,7 +59,6 @@ import ConfirmAssignShipmentModal, {
 import ConfirmCancelShipmentModal, {
   ConfirmCancelShipmentModalRef,
 } from "@/components/Modals/confirm-cancel-shipment";
-import { useSnackbarV2 } from "@/hooks/useSnackbar";
 import { differenceInMinutes } from "date-fns";
 import UserDetail, {
   UserDetailModalRef,
@@ -235,6 +234,7 @@ export default function ShipmentDetail() {
   }
 
   function handleOnShipmentComplete() {
+    refetchActiveJob();
     router.push({
       pathname: "/shipment-success",
       params: { trackingNumber: shipment?.trackingNumber || "" },

@@ -1,13 +1,12 @@
 import * as TaskManager from "expo-task-manager";
-import { UpdateDriverLocationDocument } from "@graphql/generated/graphql"; // Import Mutation ที่สร้างจาก Codegen
+import { UpdateDriverLocationDocument } from "@graphql/generated/graphql";
 import { storage } from "@/utils/mmkv-storage";
 import { createApolloClient } from "@/graphql/apollo-client";
 import { LocationObject } from "expo-location";
 
 export const LOCATION_TASK_NAME = "background-location-task";
 
-console.log(`✅ TaskManager: Defining task "${LOCATION_TASK_NAME}"`); // 🎯 เพิ่ม Log นี้
-
+console.log(`✅ TaskManager: Defining task "${LOCATION_TASK_NAME}"`);
 
 TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   console.log("--- BACKGROUND TASK IS RUNNING ---");

@@ -1,6 +1,7 @@
 import { LOCATION_TASK_NAME } from "@/tasks/locationTask";
 import * as Location from "expo-location";
 import { Alert, Linking } from "react-native";
+import * as TaskManager from "expo-task-manager";
 
 export const requestLocationPermissions = async (): Promise<boolean> => {
   // 1. ตรวจสอบสถานะ Permission ปัจจุบันก่อน
@@ -55,67 +56,46 @@ export const requestLocationPermissions = async (): Promise<boolean> => {
   return true;
 };
 
+// Start location tracking in background
 export const startBackgroundTracking = async () => {
-  try {
-    const hasPermission = await requestLocationPermissions();
-    if (!hasPermission) {
-      console.log("Cannot start tracking, permissions not granted.");
-      return;
-    }
-
-    const requestPermissions = async () => {
-      const { status: foregroundStatus } =
-        await Location.requestForegroundPermissionsAsync();
-      if (foregroundStatus === "granted") {
-        const { status: backgroundStatus } =
-          await Location.requestBackgroundPermissionsAsync();
-        if (backgroundStatus === "granted") {
-          await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-            accuracy: Location.Accuracy.Balanced,
-            timeInterval: 100
-          });
-        }
-      }
-    };
-
-    await requestPermissions()
-
-    return
-
-    const isAlreadyTracking =
-      await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
-    if (isAlreadyTracking) {
-      await stopBackgroundTracking();
-      // console.log("Background tracking is already active.");
-      // return;
-    }
-
-    console.log("Attempting to start background location tracking...");
-
-    try {
-      await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-        accuracy: Location.Accuracy.Balanced,
-        timeInterval: 1,
-        distanceInterval: 1,
-        foregroundService: {
-          notificationTitle: "Movemate Driver กำลังทำงาน",
-          notificationBody: "กำลังติดตามตำแหน่งสำหรับงานที่กำลังดำเนินการ",
-          notificationColor: "#FFFFFF",
-        },
-      });
-
-      const isNowTracking =
-        await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
-      console.log(
-        `Successfully called startLocationUpdatesAsync. Is tracking now? -> ${isNowTracking}`
-      );
-    } catch (error) {
-      console.error("ERROR calling startLocationUpdatesAsync:", error);
-    }
-  } catch (error) {
-    console.error("General error in startBackgroundTracking:", error);
+  // Don't track position if permission is not granted
+  const hasPermission = await requestLocationPermissions();
+  if (!hasPermission) {
+    console.log("Cannot start tracking, permissions not granted.");
+    return;
   }
+
+  // Make sure the task is defined otherwise do not start tracking
+  const isTaskDefined = await TaskManager.isTaskDefined(LOCATION_TASK_NAME);
+  if (!isTaskDefined) {
+    console.log("Task is not defined");
+    return;
+  }
+
+  // Don't track if it is already running in background
+  const hasStarted =
+    await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+  if (hasStarted) {
+    console.log("Already started");
+    // await stopBackgroundTracking();
+    return;
+  }
+
+  await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+    // For better logs, we set the accuracy to the most sensitive option
+    accuracy: Location.Accuracy.BestForNavigation,
+    // Make sure to enable this notification if you want to consistently track in the background
+    showsBackgroundLocationIndicator: true,
+    timeInterval: 20000, // 20 วินาที
+    distanceInterval: 40, // 50 เมตร
+    foregroundService: {
+      notificationTitle: "Movemate Driver กำลังทำงาน",
+      notificationBody: "กำลังติดตามตำแหน่งสำหรับงานที่กำลังดำเนินการ",
+      notificationColor: "#FFFFFF",
+    },
+  });
 };
+
 export const stopBackgroundTracking = async () => {
   const isTracking =
     await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);

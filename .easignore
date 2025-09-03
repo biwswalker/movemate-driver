@@ -15,5 +15,3 @@ web-build/
 
 expo-env.d.ts
 .env
-google-play-services.json
-google-services.json

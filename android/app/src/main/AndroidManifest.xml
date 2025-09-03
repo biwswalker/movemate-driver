@@ -32,7 +32,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="movemateth"/>
-        <data android:scheme="com.movemateth.driver"/>
+        <data android:scheme="com.movemateth.driverapp"/>
         <data android:scheme="exp+movemate-driver"/>
       </intent-filter>
     </activity>

@@ -1,4 +1,4 @@
-package com.movemateth.driver
+package com.movemateth.driverapp
 
 import android.app.Application
 import android.content.res.Configuration

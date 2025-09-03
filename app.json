@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.movemateth.driver",
+      "bundleIdentifier": "com.movemateth.driverapp",
       "infoPlist": {
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Movemate Driver ใช้ตำแหน่งของท่านเพื่อติดตามงานขนส่งแบบ Real-time แม้ว่าแอปจะทำงานอยู่เบื้องหลัง",
         "NSLocationWhenInUseUsageDescription": "Movemate Driver ใช้ตำแหน่งของท่านเพื่อแสดงตำแหน่งปัจจุบันบนแผนที่",
@@ -28,7 +28,7 @@
         "backgroundColor": "#ffffff"
       },
       "googleServicesFile": "./google-services.json",
-      "package": "com.movemateth.driver",
+      "package": "com.movemateth.driverapp",
       "usesCleartextTraffic": true,
       "config": {
         "googleMaps": {
@@ -75,12 +75,13 @@
             "newArchEnabled": true,
             "enableProguardInReleaseBuilds": false,
             "compileSdkVersion": 35,
-            "targetSdkVersion": 34,
+            "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0",
             "kotlinVersion": "1.9.25"
           },
           "ios": {
-            "newArchEnabled": true
+            "newArchEnabled": true,
+            "deploymentTarget": "15.1"
           }
         }
       ],

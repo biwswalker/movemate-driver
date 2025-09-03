@@ -1,4 +1,4 @@
-package com.movemateth.driver
+package com.movemateth.driverapp
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

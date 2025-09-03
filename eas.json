@@ -5,10 +5,8 @@
   },
   "build": {
     "development": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
+      "developmentClient": true,
+      "distribution": "internal"
     },
     "preview": {
       "extends": "production",
@@ -22,12 +20,6 @@
     }
   },
   "submit": {
-    "production": {
-      "android": {
-        "serviceAccountKeyPath": "./google-play-services.json",
-        "track": "internal",
-        "releaseStatus": "draft"
-      } 
-    }
+    "production": {}
   }
 }

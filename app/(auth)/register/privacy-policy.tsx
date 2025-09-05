@@ -124,7 +124,6 @@ export default function PrivacyPolicy() {
 
   function onAcceptPolicy() {
     if (policy) {
-      console.log("onAcceptPolicy: ", policy.version);
       router.dismiss();
       const registerRoutes: Href =
         driverType === EDriverType.BUSINESS

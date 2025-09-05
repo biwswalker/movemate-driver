@@ -23,6 +23,7 @@ import * as ImagePicker from "expo-image-picker";
 import { fileUploadAPI } from "@/services/upload";
 import { get, includes, isNumber, pick } from "lodash";
 import { useActionSheet } from "@expo/react-native-action-sheet";
+import Constants from "expo-constants";
 
 const styles = StyleSheet.create({
   container: {
@@ -34,29 +35,29 @@ const styles = StyleSheet.create({
   },
   contentWrapper: {
     flex: 1,
-    paddingTop: normalize(24),
+    paddingTop: 24,
     alignItems: "center",
   },
   textCenter: {
     textAlign: "center",
   },
   infoTextContainer: {
-    marginBottom: normalize(24),
+    marginBottom: 24,
     flexGrow: 1,
     flex: 1,
     width: "100%",
-    paddingHorizontal: normalize(24),
+    paddingHorizontal: 24,
   },
   infoTextWrapper: {
     backgroundColor: hexToRgba(colors.warning.main, 0.08),
     borderRadius: 8,
-    padding: normalize(16),
-    gap: normalize(4),
+    padding: 16,
+    gap: 4,
     flexDirection: "row",
     alignItems: "center",
   },
   iconWrapper: {
-    minWidth: normalize(32),
+    minWidth: 32,
   },
   infoText: {
     color: colors.warning.dark,
@@ -65,21 +66,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   userInfoTextWrapper: {
-    paddingTop: normalize(8),
+    paddingTop: 8,
     alignItems: "center",
   },
   menuWrapper: {
     width: "100%",
-    paddingTop: normalize(32),
-    paddingBottom: normalize(104),
+    paddingTop: 32,
+    paddingBottom: 104,
   },
   menuItemWrapper: {
     width: "100%",
+  },
+  versionText: {
+    paddingTop: 24,
+    padding: 16,
+    color: colors.text.disabled,
   },
 });
 
 export default function Profile() {
   const { user, refetchMe } = useAuth();
+  const appVersion = Constants.expoConfig?.version;
+
   const { showSnackbar, DropdownType } = useSnackbarV2();
   const [openLogout, setOpenLogout] = useState(false);
   const { showActionSheetWithOptions } = useActionSheet();
@@ -304,6 +312,15 @@ export default function Profile() {
                     </Text>
                   </TouchableOpacity>
                 </View>
+                {appVersion && (
+                  <Text
+                    varient="body2"
+                    color="disabled"
+                    style={styles.versionText}
+                  >
+                    เวอร์ชั่น {appVersion}
+                  </Text>
+                )}
               </View>
             </View>
           </ScrollView>

@@ -1,7 +1,6 @@
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -45,11 +44,7 @@ export default forwardRef<VehicleSelectorRef, VehicleSelectorModalProps>(
 
     const [selectedValue, setSelectedValue] = useState<string[]>(value);
 
-    const {
-      data: vehicleData,
-      called,
-      loading,
-    } = useGetVehicleTypeAvailableQuery();
+    const { data: vehicleData, loading } = useGetVehicleTypeAvailableQuery();
 
     const vehicleTypes = useMemo<VehicleType[]>(() => {
       if (vehicleData?.getVehicleTypeAvailable) {
@@ -114,7 +109,9 @@ export default forwardRef<VehicleSelectorRef, VehicleSelectorModalProps>(
           <View style={styles.headerTitle}>
             <Text varient="body1">ประเภทรถที่ให้บริการ</Text>
             <Text varient="caption" color="secondary">
-              {multiple ? "ท่านสามารถเลือกได้มากกว่า 1" : "เลือกประเภทรถให้บริการ"}
+              {multiple
+                ? "ท่านสามารถเลือกได้มากกว่า 1"
+                : "เลือกประเภทรถให้บริการ"}
             </Text>
           </View>
           <ButtonIcon
@@ -131,7 +128,7 @@ export default forwardRef<VehicleSelectorRef, VehicleSelectorModalProps>(
     }
 
     function _FooterAction() {
-      if (!called || loading) {
+      if (loading) {
         return (
           <View style={styles.loadingWrapper}>
             <ActivityIndicator size="small" color={colors.text.secondary} />
@@ -210,14 +207,14 @@ function VehicleItem({ vehicle, onPress, isActive }: VehicleItemProps) {
       underlayColor={colors.grey[100]}
       onPress={onPress}
     >
-      <BottomSheetView style={styles.itemWrapper}>
-        <BottomSheetView style={styles.textWrapper}>
+      <View style={styles.itemWrapper}>
+        <View style={styles.textWrapper}>
           <Text varient={isActive ? "subtitle1" : "body1"}>
             {vehicle.name}
             {vehicle.isPublic ? "" : " (ยังไม่เปิดให้บริการ)"}
           </Text>
-        </BottomSheetView>
-        <BottomSheetView style={styles.checkWrapper}>
+        </View>
+        <View style={styles.checkWrapper}>
           {isActive && (
             <Iconify
               icon="gg:check"
@@ -225,8 +222,8 @@ function VehicleItem({ vehicle, onPress, isActive }: VehicleItemProps) {
               size={normalize(24)}
             />
           )}
-        </BottomSheetView>
-      </BottomSheetView>
+        </View>
+      </View>
     </TouchableHighlight>
   );
 }
@@ -256,9 +253,10 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flex: 1,
+    flexGrow: 1,
     backgroundColor: colors.background.default,
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(12),
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   textWrapper: {
     flex: 1,

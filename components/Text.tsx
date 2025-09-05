@@ -2,6 +2,7 @@ import colors from "@constants/colors";
 import { normalize } from "@/utils/normalizeSize";
 import React from "react";
 import { Text as RNText, TextProps, TextStyle } from "react-native";
+import Animated, { AnimatedProps, AnimateProps } from "react-native-reanimated";
 
 export const FONT_NAME = {
   PROMPT_BLACK: "Prompt-Black",
@@ -141,6 +142,7 @@ export default function Text({
 }: TextComponentProps) {
   const fontVarient = getFontVarient(varient);
   const fontColor = colors.text[color];
+
   return (
     <RNText
       {...props}
@@ -148,5 +150,30 @@ export default function Text({
     >
       {children}
     </RNText>
+  );
+}
+
+interface AnimatedTextComponentProps extends AnimatedProps<TextProps> {
+  varient?: TFontVarient;
+  color?: TTextColor;
+}
+
+export function AnimatedText({
+  children,
+  style,
+  color = "primary",
+  varient = "body1",
+  ...props
+}: AnimatedTextComponentProps) {
+  const fontVarient = getFontVarient(varient);
+  const fontColor = colors.text[color];
+
+  return (
+    <Animated.Text
+      {...props}
+      style={[fontVarient, { color: fontColor, flexShrink: 1 }, style]}
+    >
+      {children}
+    </Animated.Text>
   );
 }

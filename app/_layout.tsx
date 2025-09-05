@@ -15,12 +15,15 @@ import { SnackbarV2Provider } from "@/contexts/SnackbarV2Context";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { StatusBar } from "expo-status-bar";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import SplashScreenCustom from "@components/SplashScreen";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ActiveJobProvider } from "@/contexts/ActiveJobContext";
-import '@/tasks/locationTask'
+import "@/tasks/locationTask";
+import * as Location from "expo-location";
+import { AppState } from "react-native";
+import { PermissionRequestScreen } from "@/components/PermissionRequest";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -88,15 +91,58 @@ const RootLayoutNav = () => {
     requireAcceptedPolicy,
   } = useAuth();
   const [fontLoaded, fontLoadError] = useAppFonts();
+  const [allPermissionsGranted, setAllPermissionsGranted] = useState(false);
+  const [isCheckingPermission, setIsCheckingPermission] = useState(true);
+
+  useEffect(() => {
+    const checkPermissions = async () => {
+      // 1. ตรวจสอบ Foreground
+      const { status: foregroundStatus } =
+        await Location.getForegroundPermissionsAsync();
+      if (foregroundStatus !== "granted") {
+        setIsCheckingPermission(false);
+        setAllPermissionsGranted(false);
+        return;
+      }
+
+      // 2. ถ้า Foreground ผ่านแล้ว ตรวจสอบ Background
+      const { status: backgroundStatus } =
+        await Location.getBackgroundPermissionsAsync();
+      if (backgroundStatus !== "granted") {
+        setIsCheckingPermission(false);
+        setAllPermissionsGranted(false);
+        return;
+      }
+
+      // 3. ผ่านทั้งคู่ ถึงจะถือว่าได้รับอนุญาตทั้งหมด
+      setAllPermissionsGranted(true);
+      setIsCheckingPermission(false);
+    };
+    checkPermissions();
+
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        checkPermissions();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (fontLoadError) throw fontLoadError;
 
     // รอจนกว่าฟอนต์และ auth จะพร้อม
-    if (!fontLoaded || !isInitialized) {
+    if (!fontLoaded || !isInitialized || isCheckingPermission) {
       return;
     }
 
+    // ซ่อน Splash screen หลังจากจัดการ routing เรียบร้อยแล้ว
+    SplashScreen.hideAsync();
+
+    // --- ทำการ Redirect ต่อเมื่อได้รับ Permission แล้วเท่านั้น ---
     // ตรวจสอบว่าผู้ใช้อยู่ในกลุ่ม route ที่ถูกต้องหรือยัง
     const inAuthGroup = segments[0] === "(auth)";
     const inAppGroup = segments[0] === "(app)";
@@ -104,16 +150,18 @@ const RootLayoutNav = () => {
     // --- 5. ปรับปรุง Logic การ Redirect ---
     if (isAuthenticated) {
       // เมื่อผู้ใช้ล็อกอินแล้ว
-      if (requirePasswordChange) {
-        // บังคับไปหน้าเปลี่ยนรหัสผ่าน
-        router.replace("/(app)/change-password");
-      } else if (requireAcceptedPolicy) {
-        // บังคับไปหน้ายอมรับนโยบาย
-        router.replace("/(app)/readfirst");
-      } else if (!inAppGroup) {
-        // ถ้าล็อกอินแล้ว แต่ไม่ได้อยู่ในโซน (app) ให้ส่งไปหน้าหลัก
-        // คำสั่งนี้จะทำงานแค่ครั้งแรกที่เข้าแอป หรือตอนที่ล็อกอินสำเร็จ
-        router.replace("/(app)/(tabs)");
+      if (allPermissionsGranted) {
+        if (requirePasswordChange) {
+          // บังคับไปหน้าเปลี่ยนรหัสผ่าน
+          router.replace("/(app)/change-password");
+        } else if (requireAcceptedPolicy) {
+          // บังคับไปหน้ายอมรับนโยบาย
+          router.replace("/(app)/readfirst");
+        } else if (!inAppGroup) {
+          // ถ้าล็อกอินแล้ว แต่ไม่ได้อยู่ในโซน (app) ให้ส่งไปหน้าหลัก
+          // คำสั่งนี้จะทำงานแค่ครั้งแรกที่เข้าแอป หรือตอนที่ล็อกอินสำเร็จ
+          router.replace("/(app)/(tabs)");
+        }
       }
     } else if (!inAuthGroup) {
       // เมื่อผู้ใช้ยังไม่ได้ล็อกอิน และไม่ได้อยู่ในโซน (auth) ให้ส่งไปหน้าล็อกอิน
@@ -123,9 +171,6 @@ const RootLayoutNav = () => {
         router.replace("/(auth)/landing");
       }
     }
-
-    // ซ่อน Splash screen หลังจากจัดการ routing เรียบร้อยแล้ว
-    SplashScreen.hideAsync();
   }, [
     fontLoaded,
     fontLoadError,
@@ -135,10 +180,16 @@ const RootLayoutNav = () => {
     requireAcceptedPolicy,
     segments, // เพิ่ม segments เข้าไปใน dependency array
     router,
+    allPermissionsGranted,
+    isCheckingPermission,
   ]);
 
-  if (!fontLoaded || !isInitialized) {
+  if (!fontLoaded || !isInitialized || isCheckingPermission) {
     return <SplashScreenCustom />;
+  }
+
+  if (isAuthenticated && !allPermissionsGranted) {
+    return <PermissionRequestScreen />;
   }
 
   return <Slot />;

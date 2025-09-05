@@ -1,70 +1,9 @@
 import { LOCATION_TASK_NAME } from "@/tasks/locationTask";
 import * as Location from "expo-location";
-import { Alert, Linking } from "react-native";
 import * as TaskManager from "expo-task-manager";
-
-export const requestLocationPermissions = async (): Promise<boolean> => {
-  // 1. ตรวจสอบสถานะ Permission ปัจจุบันก่อน
-  const { status: currentForegroundStatus } =
-    await Location.getForegroundPermissionsAsync();
-  const { status: currentBackgroundStatus } =
-    await Location.getBackgroundPermissionsAsync();
-
-  if (
-    currentForegroundStatus === "granted" &&
-    currentBackgroundStatus === "granted"
-  ) {
-    console.log("All location permissions already granted.");
-    return true; // ถ้าได้รับสิทธิ์ครบแล้ว ก็ไม่ต้องขออีก
-  }
-
-  // --- ขอสิทธิ์ Foreground ---
-  const { status: foregroundStatus } =
-    await Location.requestForegroundPermissionsAsync();
-  console.log("Foreground permission status:", foregroundStatus);
-
-  if (foregroundStatus !== "granted") {
-    Alert.alert(
-      "จำเป็นต้องใช้ตำแหน่ง",
-      "แอป Movemate Driver ต้องการเข้าถึงตำแหน่งของท่านเพื่อใช้ในการติดตามงาน กรุณาเปิดอนุญาตในการตั้งค่า",
-      [
-        { text: "ยกเลิก", style: "cancel" },
-        { text: "ไปที่ตั้งค่า", onPress: () => Linking.openSettings() },
-      ]
-    );
-    return false;
-  }
-
-  // --- ขอสิทธิ์ Background ---
-  const { status: backgroundStatus } =
-    await Location.requestBackgroundPermissionsAsync();
-  console.log("Background permission status:", backgroundStatus);
-
-  if (backgroundStatus !== "granted") {
-    Alert.alert(
-      "จำเป็นต้องติดตามตำแหน่งเบื้องหลัง",
-      'กรุณาเลือก "อนุญาตตลอดเวลา" (Allow all the time) เพื่อให้แอปสามารถติดตามงานได้แบบ Real-time แม้จะปิดหน้าจอไปแล้ว',
-      [
-        { text: "ยกเลิก", style: "cancel" },
-        { text: "ไปที่ตั้งค่า", onPress: () => Linking.openSettings() },
-      ]
-    );
-    return false;
-  }
-
-  console.log("All location permissions granted.");
-  return true;
-};
 
 // Start location tracking in background
 export const startBackgroundTracking = async () => {
-  // Don't track position if permission is not granted
-  const hasPermission = await requestLocationPermissions();
-  if (!hasPermission) {
-    console.log("Cannot start tracking, permissions not granted.");
-    return;
-  }
-
   // Make sure the task is defined otherwise do not start tracking
   const isTaskDefined = await TaskManager.isTaskDefined(LOCATION_TASK_NAME);
   if (!isTaskDefined) {

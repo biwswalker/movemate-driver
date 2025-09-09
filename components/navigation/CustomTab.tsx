@@ -10,6 +10,7 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { AnimatedText } from "../Text";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const AnimatedTouchableOpacity =
   Animated.createAnimatedComponent(PlatformPressable);
@@ -27,8 +28,9 @@ const CustomTab: FC<BottomTabBarProps & { businessDriver?: boolean }> = ({
   navigation,
   businessDriver = false,
 }) => {
+  const insets = useSafeAreaInsets()
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { bottom: insets.bottom + 4 }]}>
       {state.routes.map((route, index) => {
         if (
           ["_sitemap", "+not-found"]

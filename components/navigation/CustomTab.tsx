@@ -30,7 +30,7 @@ const CustomTab: FC<BottomTabBarProps & { businessDriver?: boolean }> = ({
 }) => {
   const insets = useSafeAreaInsets()
   return (
-    <View style={[styles.container, { bottom: insets.bottom + 4 }]}>
+    <View style={[styles.container, { bottom: insets.bottom + 16 }]}>
       {state.routes.map((route, index) => {
         if (
           ["_sitemap", "+not-found"]

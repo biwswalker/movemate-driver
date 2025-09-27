@@ -1,13 +1,14 @@
 import React, {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from "react";
 import Text from "@components/Text";
-import { StyleSheet, View } from "react-native";
+import { BackHandler, StyleSheet, View } from "react-native";
 import { includes, isEmpty, map } from "lodash";
 import { normalize } from "@utils/normalizeSize";
 import {
@@ -45,6 +46,18 @@ export default forwardRef<VehicleSelectorRef, VehicleSelectorModalProps>(
     const [selectedValue, setSelectedValue] = useState<string[]>(value);
 
     const { data: vehicleData, loading } = useGetVehicleTypeAvailableQuery();
+
+    useEffect(() => {
+      const backAction = () => {
+        handleOnClose();
+        return true;
+      };
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+      return () => backHandler.remove();
+    }, []);
 
     const vehicleTypes = useMemo<VehicleType[]>(() => {
       if (vehicleData?.getVehicleTypeAvailable) {
@@ -229,13 +242,8 @@ function VehicleItem({ vehicle, onPress, isActive }: VehicleItemProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.neutral,
-  },
-  wrapper: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: colors.background.neutral },
+  wrapper: { flex: 1 },
   headerWrapper: {
     backgroundColor: colors.background.default,
     alignItems: "center",
@@ -247,10 +255,7 @@ const styles = StyleSheet.create({
     borderColor: colors.divider,
     marginBottom: normalize(8),
   },
-  headerTitle: {
-    textAlign: "center",
-    alignItems: "center",
-  },
+  headerTitle: { textAlign: "center", alignItems: "center" },
   itemContainer: {
     flex: 1,
     flexGrow: 1,
@@ -258,18 +263,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  textWrapper: {
-    flex: 1,
-  },
+  textWrapper: { flex: 1 },
   itemWrapper: {
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
     flex: 1,
   },
-  checkWrapper: {
-    flex: 0,
-  },
+  checkWrapper: { flex: 0 },
   loadingWrapper: {
     padding: normalize(24),
     flex: 1,

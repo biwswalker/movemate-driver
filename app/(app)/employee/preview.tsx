@@ -386,7 +386,7 @@ export default function RegisterIndividualPreviewScreen() {
           <Button
             size="large"
             fullWidth
-            title="ยืนยันการเพิ่่มคนขับ"
+            title="ยืนยันการเพิ่มคนขับ"
             loading={loading}
             onPress={handleSubmitEmployee}
           />

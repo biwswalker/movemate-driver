@@ -335,198 +335,196 @@ export default function RegisterBusinessScreen() {
             router.navigate("/register");
           }}
         />
-        <View style={styles.contentContainer}>
+        <FormProvider
+          methods={methods}
+          containerStyle={styles.inputWrapper}
+          extraScrollHeight={120}
+        >
           <View style={styles.headerWrapper}>
             <Text varient="h3">ข้อมูลบริษัท</Text>
             <Text varient="body2" color="disabled">
               กรุญากรอกข้อมูลของท่านให้ครบถ้วน
             </Text>
           </View>
-          <FormProvider methods={methods} containerStyle={styles.inputWrapper}>
-            <RHFSelectDropdown
-              name="title"
-              label="คำนำหน้าบริษัท*"
-              options={BUSINESS_TITLE_NAME_OPTIONS}
-              value={values.title}
-              labelField="label"
-              valueField="value"
-            />
-            {values.title === "อื่นๆ" && (
-              <RHFTextInput name="otherTitle" label="ระบุคำนำหน้าชื่อ*" />
-            )}
-            <RHFTextInput name="businessName" label="ชื่อบริษัท*" />
-            <RHFTextInput name="businessBranch" label="สาขา" />
-            <RHFTextInput
-              name="taxNumber"
-              label="เลขประจำตัวผู้เสียภาษี*"
-              helperText="กรอกเป็นตัวเลข 13 ตัวเท่านั้น"
-            />
-            <View style={styles.formSubtitle}>
-              <Text varient="caption" color="disabled">
-                ข้อมูลการลงชื่อเข้าใช้
-              </Text>
-            </View>
-            <RHFTextInput
-              name="phoneNumber"
-              label="เบอร์โทรศัพท์*"
-              helperText={
-                errors.phoneNumber
-                  ? errors.phoneNumber.message
-                  : "กรอกเป็นตัวเลขไม่เกิน 10 ตัวเท่านั้น"
-              }
-            />
-            <RHFTextInput name="lineId" label="ไลน์ไอดี" />
-            <RHFTextInput
-              name="password"
-              label="ตั้งค่ารหัสผ่าน*"
-              secureTextEntry={!openPassword}
-              helperText={PassworHelperText}
+          <RHFSelectDropdown
+            name="title"
+            label="คำนำหน้าบริษัท*"
+            options={BUSINESS_TITLE_NAME_OPTIONS}
+            value={values.title}
+            labelField="label"
+            valueField="value"
+          />
+          {values.title === "อื่นๆ" && (
+            <RHFTextInput name="otherTitle" label="ระบุคำนำหน้าชื่อ*" />
+          )}
+          <RHFTextInput name="businessName" label="ชื่อบริษัท*" />
+          <RHFTextInput name="businessBranch" label="สาขา" />
+          <RHFTextInput
+            name="taxNumber"
+            label="เลขประจำตัวผู้เสียภาษี*"
+            helperText="กรอกเป็นตัวเลข 13 ตัวเท่านั้น"
+          />
+          <View style={styles.formSubtitle}>
+            <Text varient="caption" color="disabled">
+              ข้อมูลการลงชื่อเข้าใช้
+            </Text>
+          </View>
+          <RHFTextInput
+            name="phoneNumber"
+            label="เบอร์โทรศัพท์*"
+            helperText={
+              errors.phoneNumber
+                ? errors.phoneNumber.message
+                : "กรอกเป็นตัวเลขไม่เกิน 10 ตัวเท่านั้น"
+            }
+          />
+          <RHFTextInput name="lineId" label="ไลน์ไอดี" />
+          <RHFTextInput
+            name="password"
+            label="ตั้งค่ารหัสผ่าน*"
+            secureTextEntry={!openPassword}
+            helperText={PassworHelperText}
+            right={
+              <TextInput.Icon
+                icon={eyeIcon}
+                forceTextInputFocus={false}
+                color={colors.text.secondary}
+                onPress={() => setOpenPassword(!openPassword)}
+              />
+            }
+          />
+          <RHFTextInput
+            name="confirmPassword"
+            label="ยืนยันรหัสผ่าน*"
+            secureTextEntry={!openConfirmPassword}
+            helperText={ConfirmPassworHelperText}
+            right={
+              <TextInput.Icon
+                icon={eyeIconConfirm}
+                forceTextInputFocus={false}
+                color={colors.text.secondary}
+                onPress={() => setOpenConfirmPassword(!openConfirmPassword)}
+              />
+            }
+          />
+
+          <View style={styles.formSubtitle}>
+            <Text varient="caption" color="disabled">
+              ข้อมูลที่อยู่บริษัท
+            </Text>
+          </View>
+          <RHFTextInput name="address" label="ที่อยู่*" />
+          <RHFSelectDropdown
+            name="province"
+            label="จังหวัด*"
+            options={prvinces?.getProvince || []}
+            labelField="nameTh"
+            valueField="nameTh"
+            value={values.province}
+            onChanged={(province) => {
+              getDistrict({ variables: { provinceThName: province.nameTh } });
+              setValue("province", province.nameTh);
+              setValue("district", "");
+              setValue("subDistrict", "");
+              setValue("postcode", "");
+            }}
+          />
+          <RHFSelectDropdown
+            name="district"
+            label="อำเภอ*"
+            options={district?.getDistrict || []}
+            labelField="nameTh"
+            valueField="nameTh"
+            value={values.district}
+            disabled={!values.province}
+            onChanged={(district) => {
+              getSubDistrict({ variables: { districtName: district.nameTh } });
+              setValue("district", district.nameTh);
+              setValue("subDistrict", "");
+              setValue("postcode", "");
+            }}
+          />
+          <RHFSelectDropdown
+            name="subDistrict"
+            label="ตำบล*"
+            options={subDistrict?.getSubDistrict || []}
+            disabled={!values.district}
+            value={values.subDistrict}
+            labelField="nameTh"
+            valueField="nameTh"
+            onChanged={(subdistrict) => {
+              const subDistrictData = find(subDistrict?.getSubDistrict || [], [
+                "nameTh",
+                subdistrict.nameTh,
+              ]);
+              setValue("subDistrict", subdistrict.nameTh);
+              setValue("postcode", `${subDistrictData?.zipCode}` || "");
+            }}
+          />
+          <RHFTextInput name="postcode" label="รหัสไปรษณีย์*" readOnly />
+          <View style={styles.formSubtitle}>
+            <Text varient="caption" color="disabled">
+              บัญชีธนาคาร
+            </Text>
+          </View>
+          <RHFSelectDropdown
+            name="bank"
+            label="ธนาคาร*"
+            options={BANKPROVIDER}
+            value={values.bank}
+            labelField="label"
+            valueField="value"
+          />
+          <RHFTextInput name="bankBranch" label="สาขา*" />
+          <RHFTextInput name="bankName" label="ชื่อบัญชี*" />
+          <RHFTextInput name="bankNumber" label="เลขที่บัญชี*" />
+
+          <View style={styles.formSubtitle}>
+            <Text varient="caption" color="disabled">
+              เลือกประเภทรถที่ให้บริการ
+            </Text>
+            <CustomTextInput
+              multiline
+              onPress={handleSelectedVehicle}
+              value={reduce(
+                values.serviceVehicleTypes,
+                (prev, curr) => {
+                  const vehicle = find(vehicleTypes, ["_id", curr]);
+                  if (vehicle) {
+                    const vehicleName = vehicle.name;
+                    return prev ? `${prev}, ${vehicleName}` : vehicleName;
+                  }
+                  return prev;
+                },
+                ""
+              )}
+              label="ประเภทรถที่ให้บริการ"
+              disabled
+              error={!!errors.serviceVehicleTypes}
+              helperText={errors.serviceVehicleTypes?.message}
               right={
                 <TextInput.Icon
-                  icon={eyeIcon}
-                  forceTextInputFocus={false}
-                  color={colors.text.secondary}
-                  onPress={() => setOpenPassword(!openPassword)}
+                  icon={({ color, size }) => (
+                    <Iconify
+                      icon="system-uicons:plus"
+                      color={color || colors.text.primary}
+                      size={size}
+                    />
+                  )}
                 />
               }
             />
-            <RHFTextInput
-              name="confirmPassword"
-              label="ยืนยันรหัสผ่าน*"
-              secureTextEntry={!openConfirmPassword}
-              helperText={ConfirmPassworHelperText}
-              right={
-                <TextInput.Icon
-                  icon={eyeIconConfirm}
-                  forceTextInputFocus={false}
-                  color={colors.text.secondary}
-                  onPress={() => setOpenConfirmPassword(!openConfirmPassword)}
-                />
-              }
+          </View>
+          <View style={styles.actionWrapper}>
+            <Button
+              fullWidth
+              title="ดำเนินการต่อ"
+              size="large"
+              onPress={handleSubmit(onSubmit)}
+              loading={verifyLoading}
             />
-
-            <View style={styles.formSubtitle}>
-              <Text varient="caption" color="disabled">
-                ข้อมูลที่อยู่บริษัท
-              </Text>
-            </View>
-            <RHFTextInput name="address" label="ที่อยู่*" />
-            <RHFSelectDropdown
-              name="province"
-              label="จังหวัด*"
-              options={prvinces?.getProvince || []}
-              labelField="nameTh"
-              valueField="nameTh"
-              value={values.province}
-              onChanged={(province) => {
-                getDistrict({
-                  variables: { provinceThName: province.nameTh },
-                });
-                setValue("province", province.nameTh);
-                setValue("district", "");
-                setValue("subDistrict", "");
-                setValue("postcode", "");
-              }}
-            />
-            <RHFSelectDropdown
-              name="district"
-              label="อำเภอ*"
-              options={district?.getDistrict || []}
-              labelField="nameTh"
-              valueField="nameTh"
-              value={values.district}
-              disabled={!values.province}
-              onChanged={(district) => {
-                getSubDistrict({
-                  variables: { districtName: district.nameTh },
-                });
-                setValue("district", district.nameTh);
-                setValue("subDistrict", "");
-                setValue("postcode", "");
-              }}
-            />
-            <RHFSelectDropdown
-              name="subDistrict"
-              label="ตำบล*"
-              options={subDistrict?.getSubDistrict || []}
-              disabled={!values.district}
-              value={values.subDistrict}
-              labelField="nameTh"
-              valueField="nameTh"
-              onChanged={(subdistrict) => {
-                const subDistrictData = find(
-                  subDistrict?.getSubDistrict || [],
-                  ["nameTh", subdistrict.nameTh]
-                );
-                setValue("subDistrict", subdistrict.nameTh);
-                setValue("postcode", `${subDistrictData?.zipCode}` || "");
-              }}
-            />
-            <RHFTextInput name="postcode" label="รหัสไปรษณีย์*" readOnly />
-            <View style={styles.formSubtitle}>
-              <Text varient="caption" color="disabled">
-                บัญชีธนาคาร
-              </Text>
-            </View>
-            <RHFSelectDropdown
-              name="bank"
-              label="ธนาคาร*"
-              options={BANKPROVIDER}
-              value={values.bank}
-              labelField="label"
-              valueField="value"
-            />
-            <RHFTextInput name="bankBranch" label="สาขา*" />
-            <RHFTextInput name="bankName" label="ชื่อบัญชี*" />
-            <RHFTextInput name="bankNumber" label="เลขที่บัญชี*" />
-
-            <View style={styles.formSubtitle}>
-              <Text varient="caption" color="disabled">
-                เลือกประเภทรถที่ให้บริการ
-              </Text>
-              <CustomTextInput
-                multiline
-                onPress={handleSelectedVehicle}
-                value={reduce(
-                  values.serviceVehicleTypes,
-                  (prev, curr) => {
-                    const vehicle = find(vehicleTypes, ["_id", curr]);
-                    if (vehicle) {
-                      const vehicleName = vehicle.name;
-                      return prev ? `${prev}, ${vehicleName}` : vehicleName;
-                    }
-                    return prev;
-                  },
-                  ""
-                )}
-                label="ประเภทรถที่ให้บริการ"
-                disabled
-                error={!!errors.serviceVehicleTypes}
-                helperText={errors.serviceVehicleTypes?.message}
-                right={
-                  <TextInput.Icon
-                    icon={({ color, size }) => (
-                      <Iconify
-                        icon="system-uicons:plus"
-                        color={color || colors.text.primary}
-                        size={size}
-                      />
-                    )}
-                  />
-                }
-              />
-            </View>
-            <View style={styles.actionWrapper}>
-              <Button
-                fullWidth
-                title="ดำเนินการต่อ"
-                size="large"
-                onPress={handleSubmit(onSubmit)}
-                loading={verifyLoading}
-              />
-            </View>
-          </FormProvider>
-        </View>
+          </View>
+        </FormProvider>
       </SafeAreaView>
       <VehicleSelectorModal
         multiple
@@ -546,40 +544,17 @@ const CustomIcon = () => (
 );
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.common.white,
-  },
-  wrapper: {
-    flex: 1,
-  },
-  contentContainer: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: Colors.common.white },
+  wrapper: { flex: 1 },
+  contentContainer: { flex: 1 },
   headerWrapper: {
     paddingHorizontal: normalize(16),
     paddingBottom: normalize(16),
   },
-  contentWrapper: {
-    marginTop: normalize(48),
-    gap: normalize(12),
-  },
-  inputWrapper: {
-    paddingHorizontal: normalize(16),
-  },
-  actionWrapper: {
-    paddingVertical: normalize(32),
-  },
-  formSubtitle: {
-    paddingTop: normalize(32),
-    paddingLeft: 8,
-  },
-  helperText: {
-    marginTop: normalize(8),
-    paddingLeft: normalize(12),
-  },
-  inputWrapperColumn: {
-    flexDirection: "row",
-    gap: normalize(8),
-  },
+  contentWrapper: { marginTop: normalize(48), gap: normalize(12) },
+  inputWrapper: { paddingHorizontal: normalize(16) },
+  actionWrapper: { paddingVertical: normalize(32) },
+  formSubtitle: { paddingTop: normalize(32), paddingLeft: 8 },
+  helperText: { marginTop: normalize(8), paddingLeft: normalize(12) },
+  inputWrapperColumn: { flexDirection: "row", gap: normalize(8) },
 });

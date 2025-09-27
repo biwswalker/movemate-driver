@@ -147,7 +147,15 @@ export default function NewEmployee() {
     <View style={styles.container}>
       <SafeAreaView style={styles.wrapper}>
         <NavigationBar title="เพิ่มคนขับ" />
-        <KeyboardAwareScrollView style={styles.formWrapper}>
+        <KeyboardAwareScrollView
+          style={styles.formWrapper}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          enableOnAndroid
+          enableAutomaticScroll
+          // extraHeight={-120}
+          extraScrollHeight={120}
+        >
           <TextInput
             ref={phoneInputRef}
             value={phoneNumber}
@@ -325,34 +333,22 @@ function ExistingDriver({ user, exist }: ExistingDriverProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.default,
-  },
-  wrapper: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: colors.background.default },
+  wrapper: { flex: 1 },
   loadingWrapper: {
     padding: normalize(24),
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  formWrapper: {
-    flex: 1,
-    marginHorizontal: normalize(16),
-  },
+  formWrapper: { flex: 1, marginHorizontal: normalize(16) },
   pppContainer: {
     alignItems: "center",
     paddingVertical: normalize(24),
     gap: normalize(12),
   },
-  pppTextWrapper: {
-    alignItems: "center",
-  },
-  textCenter: {
-    textAlign: "center",
-  },
+  pppTextWrapper: { alignItems: "center" },
+  textCenter: { textAlign: "center" },
   itemContainer: {
     padding: 8,
     paddingVertical: 16,
@@ -362,30 +358,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.common.white,
     gap: 16,
   },
-  driverInfoWrapper: {
-    flexDirection: "row",
-    gap: normalize(4),
-  },
-  profileImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
+  driverInfoWrapper: { flexDirection: "row", gap: normalize(4) },
+  profileImage: { width: 44, height: 44, borderRadius: 22 },
   driverStatusWrapper: {
     backgroundColor: colors.grey[200],
     borderRadius: 8,
     padding: 12,
     gap: 12,
   },
-  driverStatusTextWrapper: {
-    flexDirection: "row",
-    flex: 1,
-  },
-  driverStatusText: {
-    flex: 1,
-  },
-  driverWraningWrapper: {
-    alignItems: "center",
-    paddingTop: normalize(8),
-  },
+  driverStatusTextWrapper: { flexDirection: "row", flex: 1 },
+  driverStatusText: { flex: 1 },
+  driverWraningWrapper: { alignItems: "center", paddingTop: normalize(8) },
 });

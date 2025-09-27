@@ -207,10 +207,10 @@ export default function Profile() {
         return { color: "success", text: "ใช้งานปกติ" };
       case EUserStatus.PENDING:
         return { color: "warning", text: "รอการอนุมัติ" };
-      case EUserStatus.INACTIVE:
-        return { color: "warning", text: "ห้ามใช้งาน" };
+      case EUserStatus.INACTIVE: // Susspended by admin
+        return { color: "warning", text: "ถูกระงับ" };
       case EUserStatus.BANNED:
-        return { color: "error", text: "บัญชีถูกระงับการใช้งาน" };
+        return { color: "error", text: "ห้ามใช้งาน" };
       case EUserStatus.DENIED:
         return { color: "error", text: "ปฏิเสธการอนุมัติ" };
       default:

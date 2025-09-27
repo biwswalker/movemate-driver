@@ -67,6 +67,11 @@ export default function Employees() {
     }
   }, [isFocused]);
 
+  const isActiveUser = useMemo(
+    () => [EUserStatus.ACTIVE].includes(user?.status || EUserStatus.INACTIVE),
+    [user?.status]
+  );
+
   const employees = useMemo<User[]>(() => {
     if (data?.users) {
       return data.users.docs as User[];
@@ -100,14 +105,19 @@ export default function Employees() {
           <Text color="secondary" style={{ marginTop: normalize(16) }}>
             ไม่พบคนขับ
           </Text>
-          <Text color="secondary">ท่านสามารถเพิ่มรายชื่อคนขับได้</Text>
-          <View style={styles.emptyDataActions}>
-            <Button
-              title="เพิ่มคนขับ"
-              varient="soft"
-              onPress={handleOnAddDriver}
-            />
-          </View>
+
+          {isActiveUser && (
+            <>
+              <Text color="secondary">ท่านสามารถเพิ่มรายชื่อคนขับได้</Text>
+              <View style={styles.emptyDataActions}>
+                <Button
+                  title="เพิ่มคนขับ"
+                  varient="soft"
+                  onPress={handleOnAddDriver}
+                />
+              </View>
+            </>
+          )}
         </View>
       );
     }
@@ -128,6 +138,7 @@ export default function Employees() {
       <UserItem
         onPress={() => handleViewDetail(item._id)}
         user={item}
+        disabled={!isActiveUser}
         onReload={refetch}
       />
     );
@@ -141,12 +152,16 @@ export default function Employees() {
             onBack={handleOnClose}
             title={`คนขับรถ${employees.length > 0 ? ` (${employees.length})` : ""}`}
             RightComponent={
-              <Button
-                size="small"
-                title="เพิ่มคนขับ"
-                varient="soft"
-                onPress={handleOnAddDriver}
-              />
+              isActiveUser ? (
+                <Button
+                  size="small"
+                  title="เพิ่มคนขับ"
+                  varient="soft"
+                  onPress={handleOnAddDriver}
+                />
+              ) : (
+                <></>
+              )
             }
           />
           <FlashList
@@ -167,11 +182,12 @@ export default function Employees() {
 
 interface UserItemProps {
   user: User;
+  disabled?: boolean;
   onPress: VoidFunction;
   onReload: VoidFunction;
 }
 
-function UserItem({ user, onPress, onReload }: UserItemProps) {
+function UserItem({ user, disabled, onPress, onReload }: UserItemProps) {
   const { user: me } = useAuth();
   const { DropdownType, showSnackbar } = useSnackbarV2();
   const [resentEmployee, { loading: resentLoading }] =
@@ -220,7 +236,7 @@ function UserItem({ user, onPress, onReload }: UserItemProps) {
       case EUserStatus.DENIED:
         return { label: "ถูกปฎิเสธบัญชี", color: colors.text.secondary };
       case EUserStatus.INACTIVE:
-        return { label: "โดนระงับ", color: colors.warning.darker };
+        return { label: "ถูกระงับ", color: colors.warning.darker };
       case EUserStatus.PENDING:
         return { label: "รอตรวจสอบ", color: colors.warning.light };
       default:
@@ -316,47 +332,44 @@ function UserItem({ user, onPress, onReload }: UserItemProps) {
             </Text>
           </View>
         )}
-        {isRejectedRequest ? (
-          <Button
-            title="ชวนอีกครั้ง"
-            color="warning"
-            varient="soft"
-            fullWidth
-            loading={resentLoading}
-            onPress={handleReInviteDriver}
-            StartIcon={
-              <Iconify icon="bi:plus" size={16} color={colors.warning.dark} />
-            }
-          />
-        ) : (
-          <Button
-            title="รายละเอียด"
-            color="info"
-            varient="soft"
-            fullWidth
-            onPress={handleViewDriver}
-            StartIcon={
-              <Iconify
-                icon="gg:details-more"
-                size={16}
-                color={colors.info.dark}
-              />
-            }
-          />
-        )}
+
+        {!disabled &&
+          (isRejectedRequest ? (
+            <Button
+              title="ชวนอีกครั้ง"
+              color="warning"
+              varient="soft"
+              fullWidth
+              loading={resentLoading}
+              onPress={handleReInviteDriver}
+              StartIcon={
+                <Iconify icon="bi:plus" size={16} color={colors.warning.dark} />
+              }
+            />
+          ) : (
+            <Button
+              title="รายละเอียด"
+              color="info"
+              varient="soft"
+              fullWidth
+              onPress={handleViewDriver}
+              StartIcon={
+                <Iconify
+                  icon="gg:details-more"
+                  size={16}
+                  color={colors.info.dark}
+                />
+              }
+            />
+          ))}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.common.white,
-  },
-  wrapper: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: colors.common.white },
+  wrapper: { flex: 1 },
   // employeeNumberWrapper: {
   //   marginHorizontal: normalize(16),
   //   flex: 0,
@@ -372,9 +385,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  listContainer: {
-    paddingHorizontal: normalize(16),
-  },
+  listContainer: { paddingHorizontal: normalize(16) },
   itemContainer: {
     padding: normalize(12),
     borderRadius: normalize(16),
@@ -384,10 +395,7 @@ const styles = StyleSheet.create({
     gap: normalize(16),
     marginBottom: normalize(16),
   },
-  driverInfoWrapper: {
-    flexDirection: "row",
-    gap: normalize(4),
-  },
+  driverInfoWrapper: { flexDirection: "row", gap: normalize(4) },
   profileImage: {
     width: normalize(44),
     height: normalize(44),
@@ -399,16 +407,9 @@ const styles = StyleSheet.create({
     padding: normalize(12),
     gap: normalize(12),
   },
-  driverStatusTextWrapper: {
-    flexDirection: "row",
-    flex: 1,
-  },
-  driverStatusText: {
-    flex: 1,
-  },
-  emptyDataActions: {
-    marginTop: normalize(16),
-  },
+  driverStatusTextWrapper: { flexDirection: "row", flex: 1 },
+  driverStatusText: { flex: 1 },
+  emptyDataActions: { marginTop: normalize(16) },
   waitingForRequestWrapper: {
     backgroundColor: hexToRgba(colors.warning.main, 0.08),
     borderRadius: normalize(6),
@@ -416,9 +417,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(8),
     paddingVertical: normalize(4),
   },
-  waitingForRequestText: {
-    color: colors.warning.dark,
-  },
+  waitingForRequestText: { color: colors.warning.dark },
   rejectedRequestWrapper: {
     backgroundColor: hexToRgba(colors.error.main, 0.08),
     borderRadius: normalize(6),
@@ -426,7 +425,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(8),
     paddingVertical: normalize(4),
   },
-  rejectedRequestText: {
-    color: colors.error.dark,
-  },
+  rejectedRequestText: { color: colors.error.dark },
 });

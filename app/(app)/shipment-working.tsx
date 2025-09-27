@@ -546,7 +546,7 @@ function AssingDriver({
         case EUserStatus.DENIED:
           return { label: "ปฎิเสธบัญชี", color: colors.text.secondary };
         case EUserStatus.INACTIVE:
-          return { label: "ระงับใช้งาน", color: colors.warning.darker };
+          return { label: "ถูกระงับ", color: colors.warning.darker };
         case EUserStatus.PENDING:
           return { label: "รอตรวจสอบบัญชี", color: colors.warning.main };
         default:

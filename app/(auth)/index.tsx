@@ -4,7 +4,8 @@ import Colors from "@constants/colors";
 import useAuth from "@/hooks/useAuth";
 import { Redirect, router } from "expo-router";
 import React, { Fragment } from "react";
-import { View, SafeAreaView, StyleSheet, Image } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -55,7 +56,7 @@ export default function GetStarted() {
           source={require("@/assets/images/getstarted_p1.jpg")}
         />
       </View>
-      <SafeAreaView>
+      <SafeAreaView edges={["bottom"]}>
         <View style={styles.wrapper}>
           <Text varient="h2">ร่วมงานกับเรา</Text>
           <Text

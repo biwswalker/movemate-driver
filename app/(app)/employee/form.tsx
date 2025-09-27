@@ -225,7 +225,11 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
 
   return (
     <View style={styles.container}>
-      <FormProvider methods={methods} containerStyle={styles.inputWrapper}>
+      <FormProvider
+        methods={methods}
+        containerStyle={styles.inputWrapper}
+        // extraScrollHeight={120}
+      >
         <RHFSelectDropdown
           name="title"
           label="คำนำหน้าชื่อ*"
@@ -260,9 +264,7 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
           valueField="nameTh"
           value={values.province}
           onChanged={(province) => {
-            getDistrict({
-              variables: { provinceThName: province.nameTh },
-            });
+            getDistrict({ variables: { provinceThName: province.nameTh } });
             setValue("province", province.nameTh);
             setValue("district", "");
             setValue("subDistrict", "");
@@ -279,9 +281,7 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
           value={values.district}
           disabled={!values.province}
           onChanged={(district) => {
-            getSubDistrict({
-              variables: { districtName: district.nameTh },
-            });
+            getSubDistrict({ variables: { districtName: district.nameTh } });
             setValue("district", district.nameTh);
             setValue("subDistrict", "");
             setValue("postcode", "");
@@ -307,7 +307,7 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
           }}
         />
         <RHFTextInput name="postcode" label="รหัสไปรษณีย์*" readOnly />
-        <View style={styles.formSubtitle}>
+        <View style={[styles.formSubtitle, { paddingLeft: 0 }]}>
           <Text varient="caption" color="disabled">
             เลือกประเภทรถที่ให้บริการ
           </Text>
@@ -372,16 +372,8 @@ export default function NewEmployeeForm({ phoneNumber }: NewEmployeeFormProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.default,
-  },
+  container: { flex: 1, backgroundColor: colors.background.default },
   inputWrapper: {},
-  formSubtitle: {
-    paddingTop: normalize(32),
-    paddingLeft: 8,
-  },
-  actionWrapper: {
-    paddingVertical: normalize(32),
-  },
+  formSubtitle: { paddingTop: normalize(32), paddingLeft: 8 },
+  actionWrapper: { paddingVertical: normalize(32) },
 });

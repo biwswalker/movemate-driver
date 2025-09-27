@@ -135,7 +135,7 @@ function DriverDetail({ userId, onClose }: DriverDetailProps) {
       case EUserStatus.DENIED:
         return { label: "ถูกปฎิเสธบัญชี", color: colors.text.secondary };
       case EUserStatus.INACTIVE:
-        return { label: "โดนระงับ", color: colors.warning.darker };
+        return { label: "ถูกระงับ", color: colors.warning.darker };
       case EUserStatus.PENDING:
         return { label: "รอตรวจสอบ", color: colors.warning.light };
       default:

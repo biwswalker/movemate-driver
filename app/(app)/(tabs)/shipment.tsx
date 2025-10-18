@@ -5,20 +5,9 @@ import { Image, Platform, StyleSheet, View } from "react-native";
 import TabCarousel, { TabItem } from "@components/TabCarousel";
 import Text from "@components/Text";
 import { fDateTime } from "@utils/formatTime";
-import { normalize } from "@utils/normalizeSize";
 import Button from "@components/Button";
 import Iconify from "@components/Iconify";
-import {
-  find,
-  get,
-  head,
-  includes,
-  isEmpty,
-  last,
-  map,
-  sortBy,
-  tail,
-} from "lodash";
+import { get, head, includes, isEmpty, last, sortBy, tail } from "lodash";
 import hexToRgba from "hex-to-rgba";
 import {
   EDriverType,
@@ -59,7 +48,7 @@ export default function HomeScreen() {
           <Iconify
             icon="bi:stars"
             color={isActive ? colors.primary.main : colors.text.primary}
-            size={normalize(16)}
+            size={16}
           />
         ),
       },
@@ -70,7 +59,7 @@ export default function HomeScreen() {
           <Iconify
             icon="ic:round-verified"
             color={isActive ? colors.primary.main : colors.text.primary}
-            size={normalize(16)}
+            size={16}
           />
         ),
       },
@@ -81,7 +70,7 @@ export default function HomeScreen() {
           <Iconify
             icon="pajamas:status-cancelled"
             color={isActive ? colors.primary.main : colors.text.primary}
-            size={normalize(16)}
+            size={16}
           />
         ),
       },
@@ -125,7 +114,7 @@ export default function HomeScreen() {
                 data={menus}
                 value={activeMenu}
                 onChange={handleChangeTabMenu}
-                width={normalize(132)}
+                width={132}
                 height={36}
               />
               <View
@@ -158,19 +147,19 @@ export default function HomeScreen() {
               <View style={shipmentStyle.footerEmptyWrapper}>
                 <Image
                   source={require("@assets/images/notfound-shipment.png")}
-                  style={{ height: normalize(144), objectFit: "contain" }}
+                  style={{ height: 144, objectFit: "contain" }}
                 />
                 <Text
                   varient="h4"
                   style={[
                     styles.textCenter,
-                    { color: colors.primary.darker, paddingTop: normalize(16) },
+                    { color: colors.primary.darker, paddingTop: 16 },
                   ]}
                 >
                   ไม่พบงานขนส่ง
                 </Text>
                 <Text
-                  style={[styles.textCenter, { paddingTop: normalize(4) }]}
+                  style={[styles.textCenter, { paddingTop: 4 }]}
                   varient="body1"
                   color="secondary"
                 >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nกรุณารอการตรวจสอบข้อมูลจกแอดมิน`}</Text>
@@ -243,7 +232,7 @@ function PendingApproval() {
       <View style={styles.infoTextWrapper}>
         <Iconify
           icon="iconoir:warning-circle-solid"
-          size={normalize(18)}
+          size={18}
           color={colors.warning.dark}
           style={styles.iconWrapper}
         />
@@ -266,7 +255,7 @@ function DeniedApproval() {
       >
         <Iconify
           icon="iconoir:warning-circle-solid"
-          size={normalize(18)}
+          size={18}
           color={colors.error.dark}
           style={styles.iconWrapper}
         />
@@ -281,7 +270,7 @@ function DeniedApproval() {
 const shipmentStyle = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: normalize(16),
+    paddingTop: 16,
   },
   cardWrapper: {
     flex: 1,
@@ -312,25 +301,25 @@ const shipmentStyle = StyleSheet.create({
   descriptionWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: normalize(8),
+    gap: 8,
   },
   detailWrapper: {
-    paddingTop: normalize(12),
+    paddingTop: 12,
   },
   pricingLabelText: {
-    height: normalize(16),
+    height: 16,
   },
   pricingText: {
     verticalAlign: "middle",
-    // height: normalize(28),
+    // height: (28),
   },
   actionWrapper: {
-    gap: normalize(8),
-    paddingTop: normalize(12),
+    gap: 8,
+    paddingTop: 12,
     flexDirection: "row",
   },
   statusContainer: {
-    paddingTop: normalize(12),
+    paddingTop: 12,
   },
   statusWrapper: {
     paddingHorizontal: 16,
@@ -340,12 +329,12 @@ const shipmentStyle = StyleSheet.create({
   },
   footerWrapper: {
     alignItems: "center",
-    paddingTop: normalize(16),
-    paddingHorizontal: normalize(24),
+    paddingTop: 16,
+    paddingHorizontal: 24,
   },
   footerEmptyWrapper: {
-    paddingTop: normalize(56),
-    paddingHorizontal: normalize(24),
+    paddingTop: 56,
+    paddingHorizontal: 24,
   },
 });
 
@@ -436,7 +425,7 @@ function Shipments({ status }: ShipmentsProps) {
       item.status
     );
 
-    const currentLog = item.currentStepId
+    const currentLog = item.currentStepId;
 
     const isFirstProcess =
       index === 0 &&
@@ -492,8 +481,8 @@ function Shipments({ status }: ShipmentsProps) {
                   varient="caption"
                   style={{
                     color: colors.info.main,
-                    lineHeight: normalize(20),
-                    marginLeft: normalize(6),
+                    lineHeight: 20,
+                    marginLeft: 6,
                   }}
                 >
                   ดำเนินการก่อน
@@ -514,7 +503,7 @@ function Shipments({ status }: ShipmentsProps) {
                 <Text varient="h3">
                   {fCurrency(_quotation?.cost.total || 0)}
                 </Text>
-                <Text varient="body2" style={{ lineHeight: normalize(26) }}>
+                <Text varient="body2" style={{ lineHeight: 26 }}>
                   {" "}
                   บาท
                 </Text>
@@ -534,7 +523,7 @@ function Shipments({ status }: ShipmentsProps) {
                 color={colors.text.disabled}
                 size={16}
               />
-              <View style={{ flexDirection: "row", gap: normalize(4) }}>
+              <View style={{ flexDirection: "row", gap: 4 }}>
                 <Text varient="body2" color="secondary" numberOfLines={1}>
                   งานจากนายหน้า
                 </Text>
@@ -551,7 +540,7 @@ function Shipments({ status }: ShipmentsProps) {
                 color={colors.text.disabled}
                 size={16}
               />
-              <View style={{ flexDirection: "row", gap: normalize(4) }}>
+              <View style={{ flexDirection: "row", gap: 4 }}>
                 <Text varient="body2" color="secondary" numberOfLines={1}>
                   คนขับ
                 </Text>
@@ -568,7 +557,7 @@ function Shipments({ status }: ShipmentsProps) {
                 color={colors.text.disabled}
                 size={16}
               />
-              <View style={{ flexDirection: "row", gap: normalize(4) }}>
+              <View style={{ flexDirection: "row", gap: 4 }}>
                 <Text
                   varient="body2"
                   numberOfLines={1}
@@ -645,7 +634,7 @@ function Shipments({ status }: ShipmentsProps) {
             color="master"
             size="large"
             title="รายละเอียดงาน"
-            style={{ paddingHorizontal: normalize(32) }}
+            style={{ paddingHorizontal: 32 }}
             StartIcon={
               <Iconify icon="gg:details-more" color={colors.common.white} />
             }
@@ -665,19 +654,19 @@ function Shipments({ status }: ShipmentsProps) {
         <View style={shipmentStyle.footerEmptyWrapper}>
           <Image
             source={require("@assets/images/notfound-shipment.png")}
-            style={{ height: normalize(144), objectFit: "contain" }}
+            style={{ height: 144, objectFit: "contain" }}
           />
           <Text
             varient="h4"
             style={[
               styles.textCenter,
-              { color: colors.primary.darker, paddingTop: normalize(16) },
+              { color: colors.primary.darker, paddingTop: 16 },
             ]}
           >
             ไม่พบงานขนส่ง
           </Text>
           <Text
-            style={[styles.textCenter, { paddingTop: normalize(4) }]}
+            style={[styles.textCenter, { paddingTop: 4 }]}
             varient="body1"
             color="secondary"
           >{`ไม่มีงานขนส่งใหม่ที่แสดงในขณะนี้\nโปรดตรวจสอบอีกครั้ง`}</Text>
@@ -705,7 +694,7 @@ function Shipments({ status }: ShipmentsProps) {
   }
 
   return (
-    <View style={[{ paddingTop: normalize(16) }]}>
+    <View style={[{ paddingTop: 16 }]}>
       <FlatList
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={refetch} />

@@ -9,13 +9,13 @@ const DashDivider = () => {
 const styles = StyleSheet.create({
   divider: {
     height: 1, // ความสูงของเส้น
-    borderWidth: normalize(6), // ต้องมี borderWidth เพื่อให้ borderStyle ทำงาน
+    borderWidth: 1, // ต้องมี borderWidth เพื่อให้ borderStyle ทำงาน
     borderTopWidth: 0,
     borderRightWidth: 0,
     borderLeftWidth: 0,
     borderColor: colors.divider, // สีของเส้นประ
     borderStyle: "dashed", // รูปแบบเส้นประ
-    marginVertical: normalize(16), // ระยะห่างบน-ล่าง
+    marginVertical: 4, // ระยะห่างบน-ล่าง
   },
 });
 

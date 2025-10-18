@@ -10,6 +10,7 @@ import {
   StepDefinition,
   useAvailableEmployeesQuery,
   useGetAvailableShipmentByTrackingNumberQuery,
+  useGetRealtimeShipmentUpdateFlagSubscription,
   User,
 } from "@/graphql/generated/graphql";
 import { normalize } from "@/utils/normalizeSize";
@@ -86,6 +87,18 @@ export default function ShipmentDetail() {
     fetchPolicy: "network-only",
   });
 
+  useGetRealtimeShipmentUpdateFlagSubscription({
+    variables: { trackingNumber: searchParam.trackingNumber },
+    skip: !searchParam.trackingNumber,
+    onData: (response) => {
+      const flag = response?.data?.data?.getRealtimeShipmentUpdateFlag;
+      console.log("Subscrib::", response?.data);
+      if (flag === "Y") {
+        refetch();
+      }
+    },
+  });
+
   const snapPoints = useMemo(() => ["15%", "90%"], []); // "85%"
   const shipment = useMemo<Shipment | undefined>(
     () => data?.getAvailableShipmentByTrackingNumber as Shipment,
@@ -145,7 +158,7 @@ export default function ShipmentDetail() {
       "hardwareBackPress",
       backAction
     );
-    isTrackingActive()
+    isTrackingActive();
     return () => backHandler.remove();
   }, []);
 
@@ -326,6 +339,7 @@ export default function ShipmentDetail() {
             <Fragment>
               <Overview shipment={shipment} />
               <Detail
+                showImages
                 shipment={shipment}
                 onViewUserDetail={handleOpenDriverDetail}
                 onChangeDriver={handleOpenChangeDriver}
@@ -542,11 +556,11 @@ function AssingDriver({
         case EUserStatus.ACTIVE:
           return { label: "ปกติ", color: colors.success.main };
         case EUserStatus.BANNED:
-          return { label: "ห้ามใช้งาน", color: colors.error.main };
+          return { label: "ห้ามใช้งาน", color: colors.primary.main };
         case EUserStatus.DENIED:
           return { label: "ปฎิเสธบัญชี", color: colors.text.secondary };
         case EUserStatus.INACTIVE:
-          return { label: "ถูกระงับ", color: colors.warning.darker };
+          return { label: "ถูกระงับ", color: colors.error.darker };
         case EUserStatus.PENDING:
           return { label: "รอตรวจสอบบัญชี", color: colors.warning.main };
         default:

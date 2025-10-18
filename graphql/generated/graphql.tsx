@@ -357,8 +357,9 @@ export type BillingReason = {
 export type BillingStatusPayload = {
   __typename?: "BillingStatusPayload";
   billingId: Scalars["ID"]["output"];
+  billingStatus: Scalars["String"]["output"];
   paymentMethod: EPaymentMethod;
-  status: Scalars["String"]["output"];
+  status: EBillingStatus;
   statusName: Scalars["String"]["output"];
 };
 
@@ -512,11 +513,13 @@ export type ConfirmShipmentDateInput = {
 export type Contact = {
   __typename?: "Contact";
   _id: Scalars["ID"]["output"];
+  contactDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   contactNumber: Scalars["String"]["output"];
   createdAt: Scalars["DateTimeISO"]["output"];
   detail: Scalars["String"]["output"];
   email: Scalars["String"]["output"];
   fullname: Scalars["String"]["output"];
+  isContacted?: Maybe<Scalars["Boolean"]["output"]>;
   read: Scalars["Boolean"]["output"];
   title: Scalars["String"]["output"];
   updatedAt: Scalars["DateTimeISO"]["output"];
@@ -968,6 +971,8 @@ export type DriverPayment = {
   paymentDate: Scalars["DateTimeISO"]["output"];
   paymentNumber: Scalars["String"]["output"];
   paymentTime: Scalars["DateTimeISO"]["output"];
+  receiptDocument?: Maybe<BillingDocument>;
+  receiveReceiptDate?: Maybe<Scalars["DateTimeISO"]["output"]>;
   shipments: Array<Shipment>;
   subtotal: Scalars["Float"]["output"];
   tax: Scalars["Float"]["output"];
@@ -1526,6 +1531,7 @@ export enum EUserStatus {
   BANNED = "BANNED",
   DENIED = "DENIED",
   INACTIVE = "INACTIVE",
+  OVERDUE = "OVERDUE",
   PENDING = "PENDING",
 }
 
@@ -1928,6 +1934,7 @@ export type Mutation = {
   changeDrivingStatus: Scalars["Boolean"]["output"];
   changePassword: Scalars["Boolean"]["output"];
   confirmBillingDocumentPostalSent: Scalars["Boolean"]["output"];
+  confirmReceiveReceiptDocument: Scalars["Boolean"]["output"];
   confirmReceiveWHTDocument: Scalars["Boolean"]["output"];
   confirmShipmentDatetime: Scalars["Boolean"]["output"];
   continueMatchingShipment: Scalars["Boolean"]["output"];
@@ -1958,12 +1965,14 @@ export type Mutation = {
   markAsFinish: Scalars["Boolean"]["output"];
   markAsVerifiedEmail: Scalars["Boolean"]["output"];
   markAsVerifiedOTP: Scalars["Boolean"]["output"];
+  markIsContacted: Scalars["Boolean"]["output"];
   markNotificationAsRead: Scalars["Boolean"]["output"];
   nextShipmentStep: Scalars["Boolean"]["output"];
   otpRequest: OtpRequst;
   preregister: Scalars["Boolean"]["output"];
   processBillingRefund: Scalars["Boolean"]["output"];
   processPendingUser: Scalars["Boolean"]["output"];
+  regenerateDriverReceipt: Scalars["Boolean"]["output"];
   regenerateReceipt: Scalars["Boolean"]["output"];
   regenerateRefundReceipt: Scalars["Boolean"]["output"];
   register: Scalars["Boolean"]["output"];
@@ -2103,6 +2112,12 @@ export type MutationConfirmBillingDocumentPostalSentArgs = {
   trackingNumber: Scalars["String"]["input"];
 };
 
+export type MutationConfirmReceiveReceiptDocumentArgs = {
+  documentNumber: Scalars["String"]["input"];
+  paymentNumber: Scalars["String"]["input"];
+  receiveDate: Scalars["DateTimeISO"]["input"];
+};
+
 export type MutationConfirmReceiveWhtDocumentArgs = {
   billingId: Scalars["String"]["input"];
   documentId: Scalars["String"]["input"];
@@ -2236,6 +2251,10 @@ export type MutationMarkAsVerifiedOtpArgs = {
   userId: Scalars["String"]["input"];
 };
 
+export type MutationMarkIsContactedArgs = {
+  id: Scalars["String"]["input"];
+};
+
 export type MutationMarkNotificationAsReadArgs = {
   notificationId: Scalars["String"]["input"];
 };
@@ -2260,6 +2279,10 @@ export type MutationProcessBillingRefundArgs = {
 export type MutationProcessPendingUserArgs = {
   pendingId: Scalars["String"]["input"];
   status: EUpdateUserStatus;
+};
+
+export type MutationRegenerateDriverReceiptArgs = {
+  paymentNumber: Scalars["String"]["input"];
 };
 
 export type MutationRegenerateReceiptArgs = {
@@ -2788,6 +2811,7 @@ export type Query = {
   getCustomerTermsInfo?: Maybe<SettingCustomerTerms>;
   getDashboard: DashboardPayload;
   getDistrict: Array<District>;
+  getDriverPaymentByPaymentNumber: DriverPayment;
   getDriverPaymentIds: Array<Scalars["String"]["output"]>;
   getDriverPayments: DriverPaymentAggregatePayload;
   getDriverPoliciesInfo?: Maybe<SettingDriverPolicies>;
@@ -2800,6 +2824,8 @@ export type Query = {
   getFAQInfo?: Maybe<Array<SettingFaq>>;
   getFavoriteDrivers: Array<FavoriteDriverPayload>;
   getFinancialInfo?: Maybe<SettingFinancial>;
+  /** ดึงตำแหน่งล่าสุดของคนขับจาก Redis สำหรับการแสดงผลครั้งแรก */
+  getInitialDriverLocation?: Maybe<DriverLocation>;
   getInstructionInfo?: Maybe<Array<SettingInstruction>>;
   getLatestOtp: OtpRequst;
   getMonthBilling: Array<Billing>;
@@ -2818,6 +2844,7 @@ export type Query = {
   /** ดึงข้อมูลการติดตามสถานะสำหรับบุคคลภายนอก */
   getPublicShipmentTracking: PublicTrackingPayload;
   getShipmentByTracking: Shipment;
+  getShipmentByTrackingLookup: Shipment;
   getShipmentCancellationPreview: CancellationPreview;
   getShipmentList: Array<ShipmentListPayload>;
   getSubDistrict: Array<SubDistrict>;
@@ -2838,6 +2865,7 @@ export type Query = {
   getVehicleTypes: Array<VehicleType>;
   isExistingParentDriverByPhonenumber: Scalars["Boolean"]["output"];
   isNearbyDuedate: Scalars["Boolean"]["output"];
+  isTodayDuedate: Scalars["Boolean"]["output"];
   locationMarker: Marker;
   locationMarkerByCoords: Marker;
   lookupDriverByPhonenumber?: Maybe<User>;
@@ -3033,6 +3061,10 @@ export type QueryGetDistrictArgs = {
   provinceThName?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+export type QueryGetDriverPaymentByPaymentNumberArgs = {
+  paymentNumber: Scalars["String"]["input"];
+};
+
 export type QueryGetDriverPaymentIdsArgs = {
   driverId?: InputMaybe<Scalars["String"]["input"]>;
   driverName?: InputMaybe<Scalars["String"]["input"]>;
@@ -3090,6 +3122,10 @@ export type QueryGetDriverTransactionsIdsArgs = {
 
 export type QueryGetFavoriteDriversArgs = {
   uid?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type QueryGetInitialDriverLocationArgs = {
+  shipmentId: Scalars["String"]["input"];
 };
 
 export type QueryGetLatestOtpArgs = {
@@ -3165,6 +3201,10 @@ export type QueryGetPublicShipmentTrackingArgs = {
 };
 
 export type QueryGetShipmentByTrackingArgs = {
+  trackingNumber: Scalars["String"]["input"];
+};
+
+export type QueryGetShipmentByTrackingLookupArgs = {
   trackingNumber: Scalars["String"]["input"];
 };
 
@@ -3917,6 +3957,7 @@ export type Subscription = {
   forceLogout: Scalars["String"]["output"];
   getAdminNotificationCount: AdminNotificationCountPayload;
   getRealtimeShipmentList: Array<ShipmentListPayload>;
+  getRealtimeShipmentUpdateFlag: Scalars["String"]["output"];
   listenAvailableShipment: Array<Shipment>;
   listenLocationLimitCount: LocationRequestLimitPayload;
   listenNotificationCount: Scalars["Float"]["output"];
@@ -3934,6 +3975,14 @@ export type SubscriptionGetRealtimeShipmentListArgs = {
   skip?: InputMaybe<Scalars["Int"]["input"]>;
   sortAscending?: InputMaybe<Scalars["Boolean"]["input"]>;
   sortField?: InputMaybe<Array<Scalars["String"]["input"]>>;
+};
+
+export type SubscriptionGetRealtimeShipmentUpdateFlagArgs = {
+  trackingNumber: Scalars["String"]["input"];
+};
+
+export type SubscriptionOnDriverLocationUpdateArgs = {
+  shipmentId: Scalars["String"]["input"];
 };
 
 export type SubscriptionRealtimeNotificationsArgs = {
@@ -44932,6 +44981,15 @@ export type GetRealtimeNotificationSubscription = {
   }>;
 };
 
+export type GetRealtimeShipmentUpdateFlagSubscriptionVariables = Exact<{
+  trackingNumber: Scalars["String"]["input"];
+}>;
+
+export type GetRealtimeShipmentUpdateFlagSubscription = {
+  __typename?: "Subscription";
+  getRealtimeShipmentUpdateFlag: string;
+};
+
 export type ListenUserStatusSubscriptionVariables = Exact<{
   [key: string]: never;
 }>;
@@ -49698,6 +49756,52 @@ export type GetRealtimeNotificationSubscriptionHookResult = ReturnType<
 >;
 export type GetRealtimeNotificationSubscriptionResult =
   Apollo.SubscriptionResult<GetRealtimeNotificationSubscription>;
+export const GetRealtimeShipmentUpdateFlagDocument = gql`
+  subscription GetRealtimeShipmentUpdateFlag($trackingNumber: String!) {
+    getRealtimeShipmentUpdateFlag(trackingNumber: $trackingNumber)
+  }
+`;
+
+/**
+ * __useGetRealtimeShipmentUpdateFlagSubscription__
+ *
+ * To run a query within a React component, call `useGetRealtimeShipmentUpdateFlagSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGetRealtimeShipmentUpdateFlagSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRealtimeShipmentUpdateFlagSubscription({
+ *   variables: {
+ *      trackingNumber: // value for 'trackingNumber'
+ *   },
+ * });
+ */
+export function useGetRealtimeShipmentUpdateFlagSubscription(
+  baseOptions: Apollo.SubscriptionHookOptions<
+    GetRealtimeShipmentUpdateFlagSubscription,
+    GetRealtimeShipmentUpdateFlagSubscriptionVariables
+  > &
+    (
+      | {
+          variables: GetRealtimeShipmentUpdateFlagSubscriptionVariables;
+          skip?: boolean;
+        }
+      | { skip: boolean }
+    ),
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useSubscription<
+    GetRealtimeShipmentUpdateFlagSubscription,
+    GetRealtimeShipmentUpdateFlagSubscriptionVariables
+  >(GetRealtimeShipmentUpdateFlagDocument, options);
+}
+export type GetRealtimeShipmentUpdateFlagSubscriptionHookResult = ReturnType<
+  typeof useGetRealtimeShipmentUpdateFlagSubscription
+>;
+export type GetRealtimeShipmentUpdateFlagSubscriptionResult =
+  Apollo.SubscriptionResult<GetRealtimeShipmentUpdateFlagSubscription>;
 export const ListenUserStatusDocument = gql`
   subscription ListenUserStatus {
     listenUserStatus

@@ -1,0 +1,3 @@
+subscription GetRealtimeShipmentUpdateFlag($trackingNumber: String!) {
+  getRealtimeShipmentUpdateFlag(trackingNumber: $trackingNumber)
+}

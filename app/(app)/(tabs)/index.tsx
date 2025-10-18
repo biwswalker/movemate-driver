@@ -3,7 +3,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import React, { Fragment, useCallback, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import AccountHeader from "@components/AccountHeader";
-import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
 import useAuth from "@/hooks/useAuth";
 import { router } from "expo-router";
@@ -13,6 +12,7 @@ import NewShipments, {
 } from "@/components/Shipment/NewShipment";
 import TodayCard, {
   DeniedApproval,
+  InActiveUserStatus,
   PendingApproval,
   TodayShipmentsRef,
 } from "@/components/Shipment/TodayCard";
@@ -139,7 +139,7 @@ export default function HomeScreen() {
                   <Iconify
                     icon="bi:stars"
                     color={colors.primary.main}
-                    size={normalize(16)}
+                    size={16}
                   />
                   <Text varient="buttonM" style={{ flex: 1 }}>
                     งานขนส่งใหม่
@@ -153,7 +153,7 @@ export default function HomeScreen() {
                     StartIcon={
                       <Iconify
                         icon="tabler:reload"
-                        size={normalize(16)}
+                        size={16}
                         color={colors.text.primary}
                       />
                     }
@@ -169,15 +169,15 @@ export default function HomeScreen() {
                   <Iconify
                     icon="lets-icons:user-add-duotone"
                     color={hexToRgba(colors.primary.main, 0.32)}
-                    size={normalize(124)}
+                    size={124}
                   />
                   <View
                     style={{
                       flexDirection: "row",
-                      gap: normalize(6),
-                      paddingHorizontal: normalize(16),
-                      paddingTop: normalize(16),
-                      paddingBottom: normalize(8),
+                      gap: 6,
+                      paddingHorizontal: 16,
+                      paddingTop: 16,
+                      paddingBottom: 8,
                     }}
                   >
                     <Text color="secondary">
@@ -213,14 +213,14 @@ export default function HomeScreen() {
                   <Iconify
                     icon="solar:sticker-smile-circle-2-bold-duotone"
                     color={hexToRgba(colors.primary.main, 0.32)}
-                    size={normalize(124)}
+                    size={124}
                   />
                   <View
                     style={{
                       flexDirection: "row",
-                      gap: normalize(6),
-                      paddingTop: normalize(16),
-                      paddingBottom: normalize(8),
+                      gap: 6,
+                      paddingTop: 16,
+                      paddingBottom: 8,
                     }}
                   >
                     <Text color="secondary">ยินดีต้อนรับสู่</Text>
@@ -252,7 +252,9 @@ export default function HomeScreen() {
                 />
               )
             ) : user?.status === EUserStatus.INACTIVE ? (
-              <Fragment />
+              <View style={styles.inactiveWrapper}>
+                <InActiveUserStatus />
+              </View>
             ) : user?.status === EUserStatus.DENIED ? (
               <DeniedApproval
                 reasonMessage={user.validationRejectedMessage || "-"}
@@ -276,27 +278,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountContainer: {
-    paddingHorizontal: normalize(16),
-    paddingBottom: normalize(8),
+    paddingHorizontal: 16,
+    paddingBottom: 8,
   },
   contentWrapper: {
-    paddingTop: normalize(16),
+    paddingTop: 16,
     alignItems: "center",
   },
   textCenter: {
     textAlign: "center",
   },
   infoTextContainer: {
-    marginTop: normalize(24),
+    marginTop: 24,
     backgroundColor: colors.background.neutral,
-    borderRadius: normalize(24),
-    padding: normalize(24),
-    gap: normalize(16),
+    borderRadius: 24,
+    padding: 24,
+    gap: 16,
   },
   infoTextWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: normalize(16),
+    gap: 16,
   },
   infoTexts: {
     flexWrap: "wrap",
@@ -305,20 +307,20 @@ const styles = StyleSheet.create({
     color: colors.master.dark,
   },
   iconWrapper: {
-    minWidth: normalize(32),
+    minWidth: 32,
   },
   tabMenuWrapper: {
-    paddingHorizontal: normalize(24),
-    gap: normalize(8),
+    paddingHorizontal: 24,
+    gap: 8,
     flexDirection: "row",
     alignItems: "center",
     position: "relative",
-    marginBottom: normalize(16),
+    marginBottom: 16,
   },
   onlyBusinessDriverWrapper: {
-    paddingVertical: normalize(16),
+    paddingVertical: 16,
     alignItems: "center",
-    gap: normalize(8),
+    gap: 8,
   },
   gradient: {
     flex: 1,
@@ -328,10 +330,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   userHeaderStyle: {
-    marginHorizontal: normalize(16),
-    marginTop: normalize(8),
+    marginHorizontal: 16,
+    marginTop: 8,
   },
   employmentApprovalContainer: {
-    marginHorizontal: normalize(16),
+    marginHorizontal: 16,
+  },
+  inactiveWrapper: {
+    marginTop: 16,
   },
 });

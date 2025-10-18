@@ -1,7 +1,6 @@
 import React, { Dispatch, Fragment, SetStateAction, useState } from "react";
 import { Image, Modal, StyleSheet, TouchableOpacity, View } from "react-native";
 import Text, { getFontVarient } from "@components/Text";
-import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
 import { imagePath } from "@utils/file";
@@ -71,14 +70,13 @@ const styles = StyleSheet.create({
   },
   menuWrapper: {
     width: "100%",
-    paddingTop: 32,
-    paddingBottom: 104,
+    paddingTop: 16,
+    paddingBottom: 72,
   },
   menuItemWrapper: {
     width: "100%",
   },
   versionText: {
-    paddingTop: 24,
     padding: 16,
     color: colors.text.disabled,
   },
@@ -208,7 +206,7 @@ export default function Profile() {
       case EUserStatus.PENDING:
         return { color: "warning", text: "รอการอนุมัติ" };
       case EUserStatus.INACTIVE: // Susspended by admin
-        return { color: "warning", text: "ถูกระงับ" };
+        return { color: "error", text: "ถูกระงับ" };
       case EUserStatus.BANNED:
         return { color: "error", text: "ห้ามใช้งาน" };
       case EUserStatus.DENIED:
@@ -230,16 +228,16 @@ export default function Profile() {
                   {user?.profileImage ? (
                     <Image
                       style={{
-                        width: normalize(88),
-                        height: normalize(88),
-                        borderRadius: normalize(44),
+                        width: 88,
+                        height: 88,
+                        borderRadius: 44,
                       }}
                       source={{ uri: imagePath(user.profileImage.filename) }}
                     />
                   ) : (
                     <Iconify
                       icon="solar:user-circle-bold-duotone"
-                      size={normalize(88)}
+                      size={88}
                       color={colors.text.disabled}
                     />
                   )}
@@ -263,7 +261,7 @@ export default function Profile() {
                 <Text
                   varient="body2"
                   color="secondary"
-                  style={[{ paddingHorizontal: normalize(16) }]}
+                  style={[{ paddingHorizontal: 16 }]}
                 >
                   ตั้งค่าโปรไฟล์
                 </Text>
@@ -286,8 +284,8 @@ export default function Profile() {
                   color="secondary"
                   style={[
                     {
-                      paddingHorizontal: normalize(16),
-                      paddingTop: normalize(16),
+                      paddingHorizontal: 16,
+                      paddingTop: 16,
                     },
                   ]}
                 >
@@ -302,8 +300,8 @@ export default function Profile() {
                 <View
                   style={{
                     alignItems: "flex-start",
-                    paddingHorizontal: normalize(16),
-                    paddingTop: normalize(16),
+                    paddingHorizontal: 16,
+                    paddingTop: 16,
                   }}
                 >
                   <TouchableOpacity onPress={handleLogout}>
@@ -337,7 +335,7 @@ function PendingApproval() {
       <View style={styles.infoTextWrapper}>
         <Iconify
           icon="iconoir:warning-circle-solid"
-          size={normalize(18)}
+          size={18}
           color={colors.warning.dark}
           style={styles.iconWrapper}
         />
@@ -352,11 +350,11 @@ function PendingApproval() {
 const itemStyled = StyleSheet.create({
   wrapper: {
     width: "100%",
-    paddingVertical: normalize(12),
+    paddingVertical: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: normalize(16),
+    paddingHorizontal: 16,
   },
 });
 
@@ -375,7 +373,7 @@ function Item({ onPress, label }: ItemProps) {
         <Text varient="body1">{label}</Text>
         <Iconify
           icon="mi:chevron-right"
-          size={normalize(16)}
+          size={16}
           color={colors.text.primary}
         />
       </View>
@@ -444,23 +442,23 @@ const modalStyle = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    padding: normalize(24),
+    padding: 24,
   },
   wrapper: {
     backgroundColor: colors.common.white,
     overflow: "hidden",
-    borderRadius: normalize(16),
+    borderRadius: 16,
     width: "100%",
-    padding: normalize(24),
+    padding: 16,
   },
   actionWrapper: {
     gap: 8,
     flexDirection: "row",
   },
   titleWrapper: {
-    marginBottom: normalize(16),
+    marginBottom: 16,
   },
   detailWrapper: {
-    marginBottom: normalize(24),
+    marginBottom: 24,
   },
 });

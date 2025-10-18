@@ -29,12 +29,14 @@ import Reanimated, {
   withTiming,
 } from "react-native-reanimated";
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import Button from "@/components/Button";
 import ButtonIcon from "@/components/ButtonIcon";
 import { isBefore, parseISO } from "date-fns";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { useRouter } from "expo-router";
 
 interface OverviewDetailProps {
   shipment: Shipment;
+  showImages?: boolean;
   defaultExpanded?: boolean;
   onViewUserDetail?: (userId: string) => void;
   onChangeDriver?: VoidFunction;
@@ -42,10 +44,12 @@ interface OverviewDetailProps {
 
 export default function Detail({
   shipment,
+  showImages = false,
   defaultExpanded = false,
   onViewUserDetail = () => {},
   onChangeDriver = () => {},
 }: OverviewDetailProps) {
+  const router = useRouter();
   const { user } = useAuth();
   const { showActionSheetWithOptions } = useActionSheet();
 
@@ -354,6 +358,43 @@ export default function Detail({
               {shipment?.vehicleId?.name || "-"}
             </Text>
           </View>
+
+          {showImages && (shipment.additionalImages?.length || 0) > 0 && (
+            <View style={detailStyles.additionalImageWrapper}>
+              {map(shipment.additionalImages, (file, index) => {
+                const isPDF = ["application/pdf"].includes(file.mimetype);
+                const pathName = isPDF ? "/view-pdf" : "/view-images";
+                return (
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      router.push({
+                        pathname: pathName,
+                        params: { uri: imagePath(file.filename) },
+                      });
+                    }}
+                    style={[detailStyles.imageStyle]}
+                  >
+                    {isPDF ? (
+                      <View
+                        style={[
+                          detailStyles.imageStyle,
+                          detailStyles.pdfContainer,
+                        ]}
+                      >
+                        <Iconify icon="vscode-icons:file-type-pdf2" size={60} />
+                      </View>
+                    ) : (
+                      <Image
+                        key={`image-${file._id}-${index}`}
+                        style={[detailStyles.imageStyle]}
+                        source={{ uri: imagePath(file.filename) }}
+                      />
+                    )}
+                  </TouchableWithoutFeedback>
+                );
+              })}
+            </View>
+          )}
         </View>
       </Reanimated.View>
     </Reanimated.View>
@@ -495,5 +536,24 @@ const detailStyles = StyleSheet.create({
   },
   locationDetailWrapper: {
     flex: 1,
+  },
+  additionalImageWrapper: {
+    marginLeft: 46,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    paddingTop: 8,
+    height: 88,
+  },
+  imageStyle: {
+    aspectRatio: 1,
+    flex: 1,
+    maxWidth: 88,
+    resizeMode: "cover",
+  },
+  pdfContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: hexToRgba(colors.grey[500], 0.2),
   },
 });

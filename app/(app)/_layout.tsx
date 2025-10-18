@@ -72,6 +72,14 @@ export default function AppLayout() {
         options={{ presentation: "fullScreenModal" }}
       />
       <Stack.Screen name="re-register" />
+      <Stack.Screen
+        name="view-images"
+        options={{ presentation: "fullScreenModal" }}
+      />
+      <Stack.Screen
+        name="view-pdf"
+        options={{ presentation: "fullScreenModal" }}
+      />
     </Stack>
   );
 }

@@ -8,7 +8,6 @@ import {
   View,
 } from "react-native";
 import Text from "@components/Text";
-import { normalize } from "@utils/normalizeSize";
 import Iconify from "@components/Iconify";
 import hexToRgba from "hex-to-rgba";
 import AccountHeader from "@components/AccountHeader";
@@ -87,7 +86,7 @@ export default function Financial() {
                     styles.innerBoxWrapper,
                     {
                       backgroundColor: hexToRgba(colors.primary.main, 0.08),
-                      paddingVertical: normalize(12),
+                      paddingVertical: 12,
                     },
                   ]}
                 >
@@ -99,7 +98,10 @@ export default function Financial() {
                     รายได้เดือนนี้
                   </Text>
                   <Text varient="h5" style={{ color: colors.primary.dark }}>
-                    {fNumber(transactionSummarize.monthly.amount || 0, "0,0.0")}{" "}
+                    {fNumber(
+                      transactionSummarize.monthly.amount || 0,
+                      "0,0.0"
+                    )}{" "}
                   </Text>
                 </View>
               </View>
@@ -117,7 +119,10 @@ export default function Financial() {
                     รอรับเงิน
                   </Text>
                   <Text varient="h5" style={{ color: colors.info.dark }}>
-                    {fNumber(transactionSummarize.pending.amount || 0, "0,0.0")}{" "}
+                    {fNumber(
+                      transactionSummarize.pending.amount || 0,
+                      "0,0.0"
+                    )}{" "}
                   </Text>
                 </View>
                 <View style={[styles.innerBoxWrapper]}>
@@ -128,7 +133,10 @@ export default function Financial() {
                     ได้รับเงินแล้ว
                   </Text>
                   <Text varient="h5" style={{ color: colors.success.dark }}>
-                    {fNumber(transactionSummarize.paid.amount || 0, "0,0.0")}{" "}
+                    {fNumber(
+                      transactionSummarize.paid.amount || 0,
+                      "0,0.0"
+                    )}{" "}
                   </Text>
                 </View>
               </View>
@@ -143,7 +151,7 @@ export default function Financial() {
               <Iconify
                 icon="uil:setting"
                 color={colors.text.primary}
-                size={normalize(16)}
+                size={16}
               />
               <Text varient="subtitle1">ตั้งค่าบัญชี</Text>
             </TouchableOpacity>
@@ -187,7 +195,7 @@ export default function Financial() {
                 }
                 contentContainerStyle={{
                   paddingBottom: 80,
-                  paddingTop: normalize(8),
+                  paddingTop: 8,
                   paddingHorizontal: 8,
                 }}
               />
@@ -205,7 +213,7 @@ function PendingApproval() {
       <View style={styles.infoTextWrapper}>
         <Iconify
           icon="iconoir:warning-circle-solid"
-          size={normalize(18)}
+          size={18}
           color={colors.warning.dark}
           style={styles.iconWrapper}
         />
@@ -228,7 +236,7 @@ function DeniedApproval() {
       >
         <Iconify
           icon="iconoir:warning-circle-solid"
-          size={normalize(18)}
+          size={18}
           color={colors.error.dark}
           style={styles.iconWrapper}
         />
@@ -242,12 +250,11 @@ function DeniedApproval() {
 
 const finStyle = StyleSheet.create({
   container: {
-    marginVertical: normalize(4),
-    paddingVertical: normalize(8),
-    padding: normalize(12),
-    borderRadius: normalize(8),
+    marginVertical: 4,
+    paddingVertical: 8,
+    padding: 12,
+    borderRadius: 8,
     borderColor: colors.divider,
-    borderWidth: normalize(1.5),
   },
   trackingNumberWrapper: {
     flexDirection: "row",
@@ -308,30 +315,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountContainer: {
-    paddingHorizontal: normalize(16),
-    paddingBottom: normalize(8),
+    paddingHorizontal: 16,
+    paddingBottom: 8,
   },
   contentWrapper: {
-    paddingTop: normalize(24),
+    paddingTop: 24,
     // alignItems: "center",
   },
   textCenter: {
     textAlign: "center",
   },
   infoTextContainer: {
-    marginBottom: normalize(24),
-    paddingHorizontal: normalize(24),
+    marginBottom: 24,
+    paddingHorizontal: 24,
   },
   infoTextWrapper: {
     backgroundColor: hexToRgba(colors.warning.main, 0.08),
-    padding: normalize(16),
-    borderRadius: normalize(8),
+    padding: 16,
+    borderRadius: 8,
     gap: 4,
     flexDirection: "row",
     alignItems: "center",
   },
   iconWrapper: {
-    minWidth: normalize(32),
+    minWidth: 32,
   },
   infoText: {
     color: colors.warning.dark,
@@ -343,45 +350,45 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   summaryContainer: {
-    gap: normalize(8),
+    gap: 8,
   },
   totalWrapper: {
-    marginHorizontal: normalize(16),
-    borderRadius: normalize(8),
+    marginHorizontal: 16,
+    borderRadius: 8,
     flexDirection: "row",
     gap: 8,
   },
   innerBoxWrapper: {
     flex: 1,
-    borderRadius: normalize(16),
+    borderRadius: 16,
     backgroundColor: hexToRgba(colors.success.main, 0.08),
     alignItems: "center",
-    paddingHorizontal: normalize(8),
-    paddingVertical: normalize(8),
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
   actionWrapper: {
-    marginTop: normalize(8),
-    marginHorizontal: normalize(16),
-    padding: normalize(8),
-    borderRadius: normalize(8),
+    marginTop: 8,
+    marginHorizontal: 16,
+    padding: 8,
+    borderRadius: 8,
     backgroundColor: colors.grey[100],
     flexDirection: "row",
-    gap: normalize(8),
+    gap: 8,
   },
   buttonWrapper: {
     flex: 1,
     backgroundColor: colors.common.white,
-    borderRadius: normalize(8),
+    borderRadius: 8,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    padding: normalize(8),
-    gap: normalize(8),
+    padding: 8,
+    gap: 8,
   },
   transactionWrapper: {
-    paddingTop: normalize(16),
-    paddingBottom: normalize(8),
-    paddingHorizontal: normalize(16),
+    paddingTop: 16,
+    paddingBottom: 8,
+    paddingHorizontal: 16,
   },
   transactionTitleWrapper: {
     flexDirection: "row",
@@ -389,7 +396,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   emptyTransaction: {
-    paddingTop: normalize(32),
+    paddingTop: 32,
     alignItems: "center",
   },
 });

@@ -286,6 +286,56 @@ export function DeniedApproval({ reasonMessage }: { reasonMessage: string }) {
   );
 }
 
+export function InActiveUserStatus() {
+  return (
+    <Fragment>
+      <Text
+        varient="h6"
+        style={[todayCardStyles.textCenter, { color: colors.error.dark }]}
+      >
+        ไม่สามารถใช้ฟีเจอร์นี้ได้
+      </Text>
+      <Text
+        varient="body2"
+        color="secondary"
+        style={todayCardStyles.textCenter}
+      >
+        เนื่องจากบัญชีของท่านถูกระงับใช้งาน
+      </Text>
+      <View style={todayCardStyles.infoTextContainer}>
+        <View style={todayCardStyles.infoTextWrapper}>
+          <Iconify
+            icon="mingcute:user-forbid-fill"
+            size={normalize(24)}
+            color={colors.text.secondary}
+            style={todayCardStyles.iconWrapper}
+          />
+          <View style={todayCardStyles.infoTexts}>
+            <Text varient="subtitle1">บัญชีท่านถูกระงับใช้งาน</Text>
+            <Text varient="body2" color="secondary">
+              {`บัญชีของท่านยังสามารถเข้าใช้ระบบได้\nแต่ไม่สามารถใช้งานอื่นๆได้`}
+            </Text>
+          </View>
+        </View>
+        <View style={todayCardStyles.infoTextWrapper}>
+          <Iconify
+            icon="mage:message-question-mark-fill"
+            size={normalize(24)}
+            color={colors.text.secondary}
+            style={todayCardStyles.iconWrapper}
+          />
+          <View style={todayCardStyles.infoTexts}>
+            <Text varient="subtitle1">หากมีข้อสงใส ติดต่อเราทันที</Text>
+            <Text varient="body2" color="secondary">
+              {`หากท่านยังประสงค์ใช้งานต่อ\nท่านสามารถเปลี่ยนแปลงข้อมูลได้\nหากได้รับการพิจารณาจากผู้ดูแล`}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Fragment>
+  );
+}
+
 const todayCardStyles = StyleSheet.create({
   textCenter: {
     textAlign: "center",

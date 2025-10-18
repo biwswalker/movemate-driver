@@ -11,7 +11,7 @@ import { normalize } from "@/utils/normalizeSize";
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: normalize(8),
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
@@ -32,16 +32,16 @@ const styles = StyleSheet.create({
     backgroundColor: hexToRgba(Colors.primary.main, 0.16),
   },
   buttonSM: {
-    padding: normalize(4),
+    padding: 4,
   },
   buttonMD: {
-    padding: normalize(8),
+    padding: 8,
   },
   buttonLG: {
-    padding: normalize(16),
+    padding: 16,
   },
   buttonCircle: {
-    borderRadius: normalize(30),
+    borderRadius: 30,
   },
   fullwidth: {
     width: "100%",

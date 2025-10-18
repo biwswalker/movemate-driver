@@ -135,6 +135,8 @@ export default function UploadButton({
 
   const { name, size, uri } = fileData(inputFile || "");
 
+  console.log('inputFile: ', inputFile)
+
   async function handleSelectedImage(
     response:
       | ImagePicker.ImagePickerResult

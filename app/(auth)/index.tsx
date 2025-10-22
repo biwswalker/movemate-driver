@@ -53,7 +53,7 @@ export default function GetStarted() {
       <View style={styles.imageWrapper}>
         <Image
           style={styles.image}
-          source={require("@/assets/images/getstarted_p1.jpg")}
+          source={require("@/assets/images/getstarted_p2.jpg")}
         />
       </View>
       <SafeAreaView edges={["bottom"]}>

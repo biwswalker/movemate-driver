@@ -68,7 +68,7 @@ export default function Landing() {
         <View style={styles.imageWrapper}>
           <Image
             style={styles.image}
-            source={require("@assets/images/landing_p1.jpg")}
+            source={require("@assets/images/landing_p3.jpg")}
           />
         </View>
         <View style={styles.wrapper}>
